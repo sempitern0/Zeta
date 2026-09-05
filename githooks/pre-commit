@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+# Git pre-commit hook to run ShellCheck before committing
+
+set -euo pipefail
+
+# Enable colors for terminal output
+if [[ -t 1 ]]; then
+    RED='\033[0;31m'
+    GREEN='\033[0;32m'
+    YELLOW='\033[0;33m'
+    RESET='\033[0m'
+else
+    RED="" GREEN="" YELLOW="" RESET=""
+fi
+
+echo -e "${YELLOW}🔍 Running pre-commit ShellCheck...${RESET}"
+
+# Ensure ShellCheck is installed
+if ! command -v shellcheck &>/dev/null; then
+    echo -e "${RED}x Error: ShellCheck is not installed. Commit aborted.${RESET}"
+    echo "Run 'make install-shellcheck' or install it via your package manager."
+    exit 1
+fi
+
+# Find all shell scripts staged for commit
+FILES=$(git diff --cached --name-only --diff-filter=d | grep -E '\.(sh|bash)$' || true)
+
+if [[ -z "$FILES" ]]; then
+    # Fallback to scanning all repository scripts if no staged .sh files were detected
+    FILES=$(find . -maxdepth 2 -type f \( -name "*.sh" -o -name "cli.sh" \) ! -path "*/.git/*")
+fi
+
+# Normalize line endings to prevent CRLF SC1017 errors in WSL/Windows environments
+# shellcheck disable=SC2086
+sed -i 's/\r$//' .shellcheckrc $FILES 2>/dev/null || true
+
+# Run ShellCheck
+# shellcheck disable=SC2086
+if shellcheck $FILES; then
+    echo -e "${GREEN}✓ ShellCheck passed. Proceeding with commit.${RESET}"
+    exit 0
+else
+    echo -e "${RED}x ShellCheck failed. Fix the errors above before committing.${RESET}"
+    exit 1
+fi

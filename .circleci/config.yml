@@ -1,0 +1,22 @@
+version: 2.1
+
+jobs:
+  lint:
+    docker:
+      - image: cimg/base:current
+    steps:
+      - checkout
+      - run:
+          name: Install Dependencies
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y shellcheck make
+      - run:
+          name: Run ShellCheck via Makefile
+          command: make lint
+
+workflows:
+  version: 2
+  lint-workflow:
+    jobs:
+      - lint

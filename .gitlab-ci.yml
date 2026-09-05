@@ -1,0 +1,11 @@
+image: ubuntu:latest
+
+stages:
+  - test
+
+shellcheck:
+  stage: test
+  before_script:
+    - apt-get update && apt-get install -y make shellcheck
+  script:
+    - make lint

@@ -1,0 +1,9 @@
+color=always
+shell=bash
+external-sources=true
+
+# SC2034: Variables declared but not used locally (common in exported configs/libraries)
+# SC2329: Functions declared but not invoked internally (common in lib/ files)
+# SC1090: Dynamic sourcing where path is a variable (e.g., source "$module")
+# SC1091: Sourced files that cannot be followed locally during static analysis
+disable=SC2034,SC2329,SC1090,SC1091

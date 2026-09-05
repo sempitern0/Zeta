@@ -1,0 +1,9 @@
+image: ubuntu:latest
+
+pipelines:
+  default:
+    - step:
+        name: ShellCheck Lint
+        script:
+          - apt-get update && apt-get install -y make shellcheck
+          - make lint
