@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="{{SITE_LANG}}">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{SITE_TITLE}} // Index</title>
+    <meta name="description" content="{{SITE_DESC}}" />
+    {{CSS_LINKS}}
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="header-container">
+        <a href="/" class="site-title">{{SITE_AUTHOR}}@blog:~#</a>
+        <nav class="site-nav">
+          <a href="/">/posts</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="container">
+      <section>
+        <p style="color: var(--text-muted); margin-bottom: 1rem">
+          $ ls -la ./posts/
+        </p>
+
+        <ul class="post-list">
+          {{POSTS_LIST}}
+        </ul>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>Powered by Zeta SSG | Clean & Accessible Design</p>
+    </footer>
+  </body>
+</html>

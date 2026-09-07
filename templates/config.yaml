@@ -1,0 +1,41 @@
+site:
+  title: "Mi Nuevo Blog"
+  description: "Blog generado con zero-cms"
+  author: "Usuario"
+  language: "es"
+
+theme:
+  name: "basic"
+
+build:
+  content_dir: "posts"
+  output_dir: "public"
+  minify: false
+
+deploy:
+  provider: "none" # github, ssh, cloudflare...
+  
+  github:
+    repo: "git@github.com:tu_usuario/tu_usuario.github.io.git"
+    branch: "main"
+
+  gitlab:
+    repo: "git@gitlab.com:tu_usuario/tu_usuario.gitlab.io.git"
+    branch: "main"
+
+  ssh:
+    host: "usuario@midominio.com"
+    path: "/var/www/html/"
+    port: 22
+
+  cloudflare:
+    project: "mi-blog-estatico"
+
+  netlify:
+      site_id: "tu-site-id-o-nombre"
+
+    vercel:
+      project: "mi-blog-vercel"
+
+    custom:
+      command: "bash ./scripts/custom-deploy.sh"

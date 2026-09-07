@@ -1,0 +1,56 @@
+# ==============================================================================
+# THREE LAWS OF ROBOTICS (ISAAC ASIMOV)
+# ==============================================================================
+# Law I:   A robot may not injure a human being or, through inaction,
+#          allow a human being to come to harm.
+# Law II:  A robot must obey the orders given it by human beings, except
+#          where such orders would conflict with the First Law.
+# Law III: A robot must protect its own existence as long as such protection
+#          does not conflict with the First or Second Laws.
+# ==============================================================================
+
+Sitemap: https://zerocms.com/sitemap.xml
+
+User-agent: *
+Allow: /
+Crawl-delay: 5
+
+Disallow: /*.md$
+Disallow: /*.markdown$
+Disallow: /*.json$
+Disallow: /*.log$
+Disallow: /drafts/
+Disallow: /borradores/
+Disallow: /.git/
+Disallow: /.github/
+Disallow: /node_modules/
+Disallow: /build/
+
+Disallow: /wp-admin/
+Disallow: /wp-includes/
+Disallow: /wp-content/
+Disallow: /xmlrpc.php
+Disallow: /cgi-bin/
+
+Content-Signal: ai-train=no, search=yes, ai-input=no
+
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ChatGPT-User
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: Bytespider
+Disallow: /
+
+User-agent: Anthropic-ai
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
+
+User-agent: Omegabot
+Disallow: /

@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="{{SITE_LANG}}">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{TITLE}} — {{SITE_TITLE}}</title>
+    <meta name="description" content="{{DESCRIPTION}}" />
+    <meta name="author" content="{{AUTHOR}}" />
+    {{CSS_LINKS}}
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="header-container">
+        <a href="/" class="site-title">{{SITE_AUTHOR}}@blog:~#</a>
+        <nav class="site-nav">
+          <a href="/">/posts</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="container">
+      <article>
+        <header class="article-header">
+          <h1 class="article-title">{{TITLE}}</h1>
+          <div class="article-meta">
+            <span class="meta-author">👤 {{AUTHOR}}</span>
+            <time datetime="{{DATE}}">[Date: {{DATE}}]</time>
+            <div class="article-tags">{{TAGS}}</div>
+          </div>
+        </header>
+
+        {{TOC}}
+
+        <div class="article-body">{{BODY}}</div>
+      </article>
+    </main>
+
+    <footer class="site-footer">
+      <p><a href="#">^ back to top</a></p>
+    </footer>
+  </body>
+</html>

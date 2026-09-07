@@ -1,4 +1,4 @@
-.PHONY: help lint chmod setup install-shellcheck install-hooks
+.PHONY: help lint chmod init-dirs certs setup install-shellcheck install-hooks up up-detached up-build down ps restart stop build build-nc destroy destroy-volumes
 
 .DEFAULT_GOAL := help
 
@@ -9,12 +9,28 @@ help: ## Show this help message
 	@echo "Usage: make [target]"
 	@echo ""
 	@echo "Available targets:"
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-18s\033[0m %s\n", $$1, $$2}'
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
-chmod: ## Make main script and hook executable
+chmod: ## Make main scripts and hooks executable
 	@chmod +x *.sh 2>/dev/null || true
 	@chmod +x githooks/pre-commit 2>/dev/null || true
 	@echo "✓ Granted execution permissions to scripts"
+
+init-dirs: ## Create required project directory structure
+	@mkdir -p sites content templates lib nginx/certs backend
+	@echo "✓ Directory structure verified"
+
+certs: init-dirs ## Generate self-signed SSL certificates for zeta.local if missing
+	@if [ ! -f nginx/certs/zeta.crt ]; then \
+		echo "Generating SSL self-signed certificates for zeta.local..."; \
+		openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+			-keyout nginx/certs/zeta.key \
+			-out nginx/certs/zeta.crt \
+			-subj "/CN=zeta.local/O=Zeta SSG/C=ES" 2>/dev/null; \
+		echo "✓ Certificates generated in nginx/certs/"; \
+	else \
+		echo "✓ SSL certificates already exist."; \
+	fi
 
 install-shellcheck: ## Install ShellCheck automatically if missing
 	@if ! command -v shellcheck >/dev/null 2>&1; then \
@@ -40,10 +56,56 @@ lint: install-shellcheck ## Run ShellCheck on all .sh scripts
 	@shellcheck $(SCRIPTS)
 	@echo "✓ ShellCheck passed cleanly!"
 
-install-hooks: ## Install Git pre-commit hook into .git/hooks
-	@mkdir -p .git/hooks
-	@cp githooks/pre-commit .git/hooks/pre-commit
-	@chmod +x .git/hooks/pre-commit
-	@echo "✓ Git pre-commit hook installed successfully!"
+install-hooks: ## Install Git pre-commit hook into .git/hooks if git repository exists
+	@if [ -d .git ]; then \
+		mkdir -p .git/hooks; \
+		cp githooks/pre-commit .git/hooks/pre-commit 2>/dev/null || true; \
+		chmod +x .git/hooks/pre-commit 2>/dev/null || true; \
+		echo "✓ Git pre-commit hook installed successfully!"; \
+	fi
 
-setup: chmod install-hooks lint ## Run full setup: permissions, hooks, and linter
+setup: chmod init-dirs certs install-hooks up-build ## Full setup: permissions, dirs, SSL certs, git hooks & build Docker containers
+	@echo ""
+	@echo "================================================================="
+	@echo " 🎉 Zeta SSG is ready!"
+	@echo " Remember to include this lines in /etc/hosts:"
+	@echo "   127.0.0.1 zeta.local"
+	@echo "   ::1       zeta.local"
+	@echo ""
+	@echo "Sites Dashboard available: https://zeta.local"
+	@echo "================================================================="
+
+# ==========================================
+# Docker Compose Shortcuts
+# ==========================================
+up: ## Start containers in foreground
+	docker compose up
+
+up-detached: ## Start containers in background (detached)
+	docker compose up -d
+
+up-build: ## Rebuild and start containers in background
+	docker compose up -d --build
+
+down: ## Stop and remove containers
+	docker compose down --remove-orphans
+
+ps: ## List running containers
+	docker compose ps
+
+restart: down up-detached ## Restart all containers
+
+stop: ## Stop containers without removing them
+	docker compose stop
+
+build: ## Build container images
+	docker compose build
+
+build-nc: ## Build container images without cache
+	docker compose build --no-cache
+
+destroy: ## Tear down containers, networks, images, and volumes
+	docker compose down --rmi all --volumes --remove-orphans
+
+destroy-volumes: ## Tear down containers and volumes
+	docker compose down --volumes --remove-orphans
