@@ -185,6 +185,7 @@ create_new_site() {
     fi
 
     local available_pandoc_themes=()
+
     if command_exists pandoc; then
         readarray -t available_pandoc_themes < <(pandoc --list-highlight-styles 2>/dev/null || pandoc --list-highlight-languages 2>/dev/null)
     fi
@@ -223,9 +224,7 @@ create_new_site() {
         cp -r "${TEMPLATES_DIR}/${selected_theme}/"* "$site_path/" 2>/dev/null || true
     fi
 
-    local template_config="${TEMPLATES_DIR}/config.yaml"
-    [[ ! -f "$template_config" && -f "${TEMPLATES_DIR}/config.yml" ]] && template_config="${TEMPLATES_DIR}/config.yml"
-    
+    local template_config="${TEMPLATES_DIR}/config.yaml"    
     local target_config="${site_path}/config.yaml"
 
     if [[ -f "$template_config" ]]; then
@@ -245,6 +244,8 @@ create_new_site() {
         -e "s|pandoc_theme: \".*\"|pandoc_theme: \"${selected_pandoc_theme}\"|" \
         "$target_config" > "$tmp_config" && mv "$tmp_config" "$target_config"
 
+    build_site "$site_slug"
     update_sites_index
+
     msg_success "Site '${site_title}' created successfully at: ${site_path}"
 }

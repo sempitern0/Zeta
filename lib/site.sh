@@ -91,8 +91,12 @@ update_robots_txt() {
         return 1
     fi
 
-    local target_robots="${SITES_DIR}/${site_slug}/robots.txt"  
-    local site_prefix="${SITES_URL%/}"
+    local site_dir="${SITES_DIR}/${site_slug}"
+    local config_file="${site_dir}/config.yaml"
+    local sites_url=$(get_site_yaml_prop "$config_file" "site" "url" "")
+
+    local target_robots="${site_dir}/robots.txt"  
+    local site_prefix="${sites_url%/}"
     local site_path="${site_slug#/}"
     local clean_base_url="${site_prefix}/${site_path}"
 
@@ -100,6 +104,7 @@ update_robots_txt() {
         sed -i "s|^Sitemap:.*|Sitemap: ${clean_base_url}/sitemap.xml|g" "$target_robots"
     fi
 }
+
 generate_sitemap() {
     local site_slug="${1:-}"
     local site_theme="${2:-basic}"
@@ -110,6 +115,10 @@ generate_sitemap() {
     fi
 
     local site_dir="${SITES_DIR}/${site_slug}"
+
+    local config_file="${site_dir}/config.yaml"
+    local sites_url=$(get_site_yaml_prop "$config_file" "site" "url" "")
+
     local posts_dir="${site_dir}/posts"
     local sitemap_file="${site_dir}/sitemap.xml"
     local target_xsl="${site_dir}/sitemap.xsl"
@@ -117,7 +126,7 @@ generate_sitemap() {
     local theme_xsl="${TEMPLATES_DIR}/${site_theme}/sitemap.xsl"
     local common_xsl="${TEMPLATES_DIR}/common/sitemap.xsl"
 
-    local site_prefix="${SITES_URL%/}"
+    local site_prefix="${sites_url%/}"
     local site_path="${site_slug#/}"
     local clean_base_url="${site_prefix}/${site_path}"
     local today
@@ -321,6 +330,6 @@ build_site() {
     
     update_robots_txt "$site_slug"
     generate_sitemap "$site_slug" "$site_theme"
-    
+
     msg_success "✅ Site '${site_slug}' built successfully!"
 }

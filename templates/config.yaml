@@ -3,6 +3,8 @@ site:
   description: "Blog generado con zero-cms"
   author: "Usuario"
   language: "es"
+  url: "https://zeta.local"
+  deploy_url: "https://zeta.local"
 
 theme:
   name: "basic"
