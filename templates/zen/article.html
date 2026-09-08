@@ -1,17 +1,19 @@
 <!doctype html>
-<html lang="{{SITE_LANG}}">
+<html lang="$site_lang$">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{{TITLE}} — {{SITE_TITLE}}</title>
-    <meta name="description" content="{{DESCRIPTION}}" />
-    <meta name="author" content="{{AUTHOR}}" />
-    {{CSS_LINKS}}
+    <title>$title$ — $site_title$</title>
+    <meta name="description" content="$description$" />
+    <meta name="author" content="$author$" />
+    $for(css)$
+    <link rel="stylesheet" href="$css$" />
+    $endfor$
   </head>
   <body>
     <header class="site-header">
       <div class="header-container">
-        <a href="/" class="site-title">{{SITE_AUTHOR}}@blog:~#</a>
+        <a href="/" class="site-title">$site_author$@blog:~#</a>
         <nav class="site-nav">
           <a href="/">/posts</a>
         </nav>
@@ -21,17 +23,23 @@
     <main class="container">
       <article>
         <header class="article-header">
-          <h1 class="article-title">{{TITLE}}</h1>
+          <h1 class="article-title">$title$</h1>
           <div class="article-meta">
-            <span class="meta-author">👤 {{AUTHOR}}</span>
-            <time datetime="{{DATE}}">[Date: {{DATE}}]</time>
-            <div class="article-tags">{{TAGS}}</div>
+            <span class="meta-author">👤 $author$</span>
+            <time datetime="$date$">[Date: $date$]</time>
+            <div class="article-tags">
+              $for(tags)$
+              <span class="tag">#$tags$</span>
+              $endfor$
+            </div>
           </div>
         </header>
 
-        {{TOC}}
+        $if(toc)$
+        <div class="article-toc">$toc$</div>
+        $endif$
 
-        <div class="article-body">{{BODY}}</div>
+        <div class="article-body">$body$</div>
       </article>
     </main>
 

@@ -87,6 +87,7 @@ build_site() {
 
     # 6. Búsqueda recursiva de archivos Markdown
     local md_files=()
+
     while IFS= read -r -d '' file; do
         md_files+=("$file")
     done < <(find "$site_dir" -type f -name "*.md" \
@@ -97,6 +98,10 @@ build_site() {
         ! -path "*/.*" -print0 2>/dev/null)
 
     local posts_list_html=""
+    local base_url="/${site_slug}"
+
+    declare -A posts_by_year
+    local post_count=0
 
     # 7. Procesar cada archivo Markdown
     for md_file in "${md_files[@]}"; do
@@ -112,6 +117,7 @@ build_site() {
         description=$(extract_frontmatter_property "$md_file" "description" 2>/dev/null || echo "")
         year=$(extract_frontmatter_property "$md_file" "year" 2>/dev/null || echo "")
         slug=$(extract_frontmatter_property "$md_file" "slug" 2>/dev/null || echo "")
+        tags=$(extract_frontmatter_tags "$md_file" 2>/dev/null || echo "")
 
         if [[ -z "$slug" ]]; then
             if [[ "$raw_filename" =~ ^([0-9]{4})-[0-9]{2}-[0-9]{2}-(.*)$ ]]; then
@@ -153,12 +159,13 @@ build_site() {
         local rel_root="../../"
 
         local pandoc_opts=(
-            --read=markdown
+            --from=markdown
+            --to=html
             --table-of-contents
             --toc-depth=2
             --preserve-tabs
             --standalone
-            --highlight-style="${pandoc_theme}"
+            --syntax-highlighting="${pandoc_theme}"
             -V "path=${rel_path}"
             -V "rel_root=${rel_root}"
             -V "title=${title}"
@@ -176,65 +183,62 @@ build_site() {
             pandoc_opts+=(--template="${article_template}")
         fi
 
-        if pandoc "${md_file}" "${pandoc_opts[@]}" -o "${output_file}" 2>/dev/null; then
-            if grep -q "{{BODY}}" "${output_file}" 2>/dev/null; then
-                local body_html
-                body_html=$(pandoc --from=markdown --to=html "$md_file")
-                local template_content
-                template_content=$(cat "$article_template")
-
-                local rendered_post="$template_content"
-                rendered_post="${rendered_post//\{\{SITE_TITLE\}\}/$site_title}"
-                rendered_post="${rendered_post//\{\{SITE_AUTHOR\}\}/$site_author}"
-                rendered_post="${rendered_post//\{\{TITLE\}\}/$title}"
-                rendered_post="${rendered_post//\{\{AUTHOR\}\}/$author}"
-                rendered_post="${rendered_post//\{\{DATE\}\}/$human_date}"
-                rendered_post="${rendered_post//\{\{YEAR\}\}/$year}"
-                rendered_post="${rendered_post//\{\{SLUG\}\}/$slug}"
-                rendered_post="${rendered_post//\{\{DESCRIPTION\}\}/$description}"
-                rendered_post="${rendered_post//\{\{REL_ROOT\}\}/$rel_root}"
-                rendered_post="${rendered_post//\{\{PATH\}\}/$rel_path}"
-                rendered_post="${rendered_post//\{\{BODY\}\}/$body_html}"
-
-                echo "$rendered_post" > "$output_file"
-            fi
-        else
-            local body_html
-            body_html=$(pandoc --from=markdown --to=html "$md_file" 2>/dev/null || cat "$md_file")
-            echo "<!DOCTYPE html><html><head><title>${title}</title></head><body>${body_html}</body></html>" > "$output_file"
+        # Asignar CSS dinámicamente como bucle para Pandoc
+        if [[ -d "${site_dir}/styles" ]]; then
+            for css_file in "${site_dir}/styles"/*.css; do
+                [[ -f "$css_file" ]] || continue
+                pandoc_opts+=(-V "css=${rel_root}styles/$(basename "$css_file")")
+            done
         fi
 
-        # Acumular HTML para la lista de publicaciones del índice del sitio
+        # Asignar tags dinámicamente como bucle para Pandoc
+        if [[ -n "$tags" ]]; then
+            local clean_tags
+            clean_tags=$(echo "$tags" | tr -d '[]"' | tr ',' ' ')
+            for tag in $clean_tags; do
+                pandoc_opts+=(-V "tags=${tag}")
+            done
+        fi
+
+        # Compilación real con Pandoc
+        pandoc "${md_file}" "${pandoc_opts[@]}" -o "${output_file}"
+
         posts_list_html+="          <li class=\"post-item\">\n"
         posts_list_html+="            <span class=\"post-date\">[${human_date}]</span>\n"
         posts_list_html+="            <a href=\"/${site_slug}/${rel_path}\" class=\"post-link\">${title}</a>\n"
         posts_list_html+="          </li>\n"
 
     done
-
-    # 8. Renderizar plantillas HTML principales del sitio (index.html, etc.)
+    
+    # 8. Renderizar plantillas raíz del tema con Pandoc (index.html, etc.)
     if [[ -d "$theme_dir" ]]; then
         while IFS= read -r -d '' html_file; do
             local base_html
             base_html=$(basename "$html_file")
             
-            # Omitir la plantilla dedicada a artículos
-            if [[ "$html_file" == "$article_template" ]]; then
+            if [[ -n "$article_template" && "$html_file" == "$article_template" ]]; then
                 continue
             fi
 
-            local html_content
-            html_content=$(cat "$html_file")
+            local index_opts=(
+                --template="${html_file}"
+                -V "site_lang=${site_lang}"
+                -V "site_title=${site_title}"
+                -V "site_desc=${site_desc}"
+                -V "site_author=${site_author}"
+                -V "posts_list=${posts_list_html}"
+            )
 
-            html_content="${html_content//\{\{SITE_TITLE\}\}/$site_title}"
-            html_content="${html_content//\{\{SITE_DESC\}\}/$site_desc}"
-            html_content="${html_content//\{\{SITE_AUTHOR\}\}/$site_author}"
-            html_content="${html_content//\{\{SITE_LANG\}\}/$site_lang}"
-            html_content="${html_content//\{\{POSTS_LIST\}\}/$posts_list_html}"
+            if [[ -d "${site_dir}/styles" ]]; then
+                for css_file in "${site_dir}/styles"/*.css; do
+                    [[ -f "$css_file" ]] || continue
+                    index_opts+=(-V "css=./styles/$(basename "$css_file")")
+                done
+            fi
 
-            printf "%b" "$html_content" > "${site_dir}/${base_html}"
+            pandoc /dev/null "${index_opts[@]}" -o "${site_dir}/${base_html}"
         done < <(find "$theme_dir" -maxdepth 1 -type f -name "*.html" -print0)
     fi
-
+    
     echo "✅ Site '${site_slug}' built successfully!"
 }

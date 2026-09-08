@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="$if(site_lang)$ $site_lang$ $else$es$endif$">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Artículos - $site_title$</title>
+    $if(site_desc)$
+    <meta name="description" content="$site_desc$" />
+    $endif$ $for(css)$
+    <link rel="stylesheet" href="$css$" />
+    $endfor$
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container">
+        <a href="$base_url$/" class="site-logo">$site_title$</a>
+        <nav class="site-nav">
+          <a href="$base_url$/">Inicio</a>
+          <a href="$base_url$/posts.html" class="active">Artículos</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="container content">
+      <section class="posts-archive">
+        <header class="archive-header">
+          <h1>Archivo de Artículos</h1>
+          <p class="archive-description">
+            Listado cronológico de todas las publicaciones.
+          </p>
+        </header>
+
+        <div class="posts-by-year">$posts_by_year$</div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <p>&copy; $site_author$ - Generado con Zeta</p>
+      </div>
+    </footer>
+  </body>
+</html>
