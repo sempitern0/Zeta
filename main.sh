@@ -12,9 +12,12 @@ else
     TARGET_HOME="$(eval echo "~${TARGET_USER}")"
 fi
 
+SITES_URL="https://zeta.local"
+
 readonly CURRENT_DIR
 readonly TARGET_USER
 readonly TARGET_HOME
+readonly SITES_URL
 
 SITES_DIR="${CURRENT_DIR}/sites"
 TEMPLATES_DIR="${CURRENT_DIR}/templates"

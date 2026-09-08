@@ -9,6 +9,7 @@ get_site_yaml_prop() {
     [[ -f "$file" ]] || { echo "$default_val"; return 0; }
 
     local val
+
     val=$(awk -v sec="${section}:" -v k="${key}:" '
         $0 ~ "^"sec { in_sec=1; next }
         in_sec && /^[^ \t]/ { in_sec=0 }
@@ -28,6 +29,141 @@ get_site_yaml_prop() {
     fi
 }
 
+get_post_metadata() {
+    local md_file="$1"
+    declare -n meta="$2" 
+    local site_author_fallback="${3:-}"
+
+    meta=()
+
+    local raw_filename
+    raw_filename=$(basename "$md_file" .md)
+    meta["raw_filename"]="$raw_filename"
+
+    meta["title"]=$(extract_frontmatter_property "$md_file" "title" 2>/dev/null || echo "")
+    meta["author"]=$(extract_frontmatter_property "$md_file" "author" 2>/dev/null || echo "")
+    meta["date"]=$(extract_frontmatter_property "$md_file" "date" 2>/dev/null || echo "")
+    meta["human_date"]=$(extract_frontmatter_property "$md_file" "human_date" 2>/dev/null || echo "")
+    meta["description"]=$(extract_frontmatter_property "$md_file" "description" 2>/dev/null || echo "")
+    meta["year"]=$(extract_frontmatter_property "$md_file" "year" 2>/dev/null || echo "")
+    meta["slug"]=$(extract_frontmatter_property "$md_file" "slug" 2>/dev/null || echo "")
+    meta["tags"]=$(extract_frontmatter_tags "$md_file" 2>/dev/null || echo "")
+
+    if [[ -z "${meta["slug"]}" ]]; then
+        if [[ "$raw_filename" =~ ^([0-9]{4})-[0-9]{2}-[0-9]{2}-(.*)$ ]]; then
+            meta["slug"]="${BASH_REMATCH[2]}"
+        elif [[ "$raw_filename" =~ ^([0-9]{4})-(.*)$ ]]; then
+            meta["slug"]="${BASH_REMATCH[2]}"
+        else
+            meta["slug"]="$raw_filename"
+        fi
+    fi
+
+    if [[ -z "${meta["year"]}" ]]; then
+        if [[ "${meta["date"]}" =~ ^([0-9]{4}) ]]; then
+            meta["year"]="${BASH_REMATCH[1]}"
+        elif [[ "$raw_filename" =~ ^([0-9]{4}) ]]; then
+            meta["year"]="${BASH_REMATCH[1]}"
+        else
+            local parent_dir
+            parent_dir=$(basename "$(dirname "$md_file")")
+            if [[ "$parent_dir" =~ ^[0-9]{4}$ ]]; then
+                meta["year"]="$parent_dir"
+            else
+                meta["year"]=$(date +%Y)
+            fi
+        fi
+    fi
+
+    # Fallbacks seguros
+    meta["title"]="${meta["title"]:-${meta["slug"]}}"
+    meta["author"]="${meta["author"]:-$site_author_fallback}"
+    meta["human_date"]="${meta["human_date"]:-${meta["date"]:-${meta["year"]}}}"
+
+    return 0
+}
+
+update_robots_txt() {
+    local site_slug="${1:-}"
+
+    if [[ -z "$site_slug" ]]; then
+        echo "❌ Error: No site slug provided to update_robots_txt." >&2
+        return 1
+    fi
+
+    local target_robots="${SITES_DIR}/${site_slug}/robots.txt"  
+    local site_prefix="${SITES_URL%/}"
+    local site_path="${site_slug#/}"
+    local clean_base_url="${site_prefix}/${site_path}"
+
+    if [[ -f "$target_robots" ]]; then
+        sed -i "s|^Sitemap:.*|Sitemap: ${clean_base_url}/sitemap.xml|g" "$target_robots"
+    fi
+}
+generate_sitemap() {
+    local site_slug="${1:-}"
+    local site_theme="${2:-basic}"
+
+    if [[ -z "$site_slug" ]]; then
+        echo "❌ Error: No site slug provided to generate_sitemap." >&2
+        return 1
+    fi
+
+    local site_dir="${SITES_DIR}/${site_slug}"
+    local posts_dir="${site_dir}/posts"
+    local sitemap_file="${site_dir}/sitemap.xml"
+    local target_xsl="${site_dir}/sitemap.xsl"
+    
+    local theme_xsl="${TEMPLATES_DIR}/${site_theme}/sitemap.xsl"
+    local common_xsl="${TEMPLATES_DIR}/common/sitemap.xsl"
+
+    local site_prefix="${SITES_URL%/}"
+    local site_path="${site_slug#/}"
+    local clean_base_url="${site_prefix}/${site_path}"
+    local today
+    today=$(date +%Y-%m-%d)
+
+    echo "🗺️  Generating sitemap.xml for '${site_slug}' (Theme: ${site_theme})..."
+
+    if [[ -f "$theme_xsl" ]]; then
+        cp "$theme_xsl" "$target_xsl"
+    elif [[ -f "$common_xsl" ]]; then
+        cp "$common_xsl" "$target_xsl"
+    else
+        echo "⚠️  Warning: No sitemap.xsl found in theme or common. Proceeding without stylesheet." >&2
+    fi
+
+    cat <<EOF > "$sitemap_file"
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="${clean_base_url}/sitemap.xsl"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>${clean_base_url}/</loc>
+    <lastmod>${today}</lastmod>
+    <priority>1.00</priority>
+  </url>
+EOF
+
+    if [[ -d "$posts_dir" ]]; then
+        while IFS= read -r -d '' html_file; do
+            local rel_path="${html_file#"${site_dir}/"}"
+            local mod_date
+            mod_date=$(date -r "$html_file" +%Y-%m-%d 2>/dev/null || echo "$today")
+
+            cat <<EOF >> "$sitemap_file"
+  <url>
+    <loc>${clean_base_url}/${rel_path}</loc>
+    <lastmod>${mod_date}</lastmod>
+    <priority>0.80</priority>
+  </url>
+EOF
+        done < <(find "$posts_dir" -type f -name "*.html" -print0 2>/dev/null)
+    fi
+
+    # 4. Cierre de la etiqueta principal
+    echo "</urlset>" >> "$sitemap_file"
+}
+
 build_site() {
     local site_slug="${1:-}"
 
@@ -36,15 +172,8 @@ build_site() {
         return 1
     fi
 
-    local current_dir="${CURRENT_DIR:-$(pwd)}"
-    local sites_dir="${SITES_DIR:-${current_dir}/sites}"
-    local site_dir="${sites_dir}/${site_slug}"
-    
-    # 1. Detección flexible de config.yaml o config.yml
+    local site_dir="${SITES_DIR}/${site_slug}"
     local config_file="${site_dir}/config.yaml"
-    if [[ ! -f "$config_file" && -f "${site_dir}/config.yml" ]]; then
-        config_file="${site_dir}/config.yml"
-    fi
 
     if [[ ! -d "$site_dir" ]]; then
         echo "❌ Error: Site directory '${site_dir}' does not exist." >&2
@@ -53,7 +182,6 @@ build_site() {
 
     echo -e "\n🚀 Starting build process for site: '${site_slug}'"
 
-    # 2. Leer propiedades desde YAML
     local site_title site_desc site_author site_lang site_theme pandoc_theme
 
     site_title=$(get_site_yaml_prop "$config_file" "site" "title" "$site_slug")
@@ -63,29 +191,19 @@ build_site() {
     site_theme=$(get_site_yaml_prop "$config_file" "theme" "name" "basic")
     pandoc_theme=$(get_site_yaml_prop "$config_file" "theme" "pandoc_theme" "zenburn")
 
-    # 3. Localizar plantilla del tema
     local theme_dir="$TEMPLATES_DIR/$site_theme"
 
-    echo "⚙️  Title: ${site_title}"
-    echo "🎨 Active Theme: ${site_theme} (${theme_dir})"
-    echo "💡 Syntax Highlight: ${pandoc_theme}"
+    echo -e "⚙️  Title: ${site_title}"
+    echo -e "🎨 Active Theme: ${site_theme} (${theme_dir})"
+    echo -e "💡 Syntax Highlight: ${pandoc_theme}"
 
-    # 4. Copiar recursos estáticos (Assets y CSS)
     mkdir -p "${site_dir}/assets" "${site_dir}/styles"
-    cp -r "${TEMPLATES_DIR}/common/assets/"* "${site_dir}/assets/" 2>/dev/null || true
-    cp -r "${TEMPLATES_DIR}/common/styles/"* "${site_dir}/styles/" 2>/dev/null || true
+    cp -r "${TEMPLATES_DIR}/common/"{assets,styles} "${site_dir}/" 2>/dev/null || true
+    cp "${TEMPLATES_DIR}/robots.txt" "${site_dir}/" 2>/dev/null || true
 
-    # 5. Determinar la plantilla HTML de artículo
-    local article_template=""
-    if [[ -f "${theme_dir}/article.html" ]]; then
-        article_template="${theme_dir}/article.html"
-    elif [[ -f "${theme_dir}/post.html" ]]; then
-        article_template="${theme_dir}/post.html"
-    elif [[ -f "${theme_dir}/single.html" ]]; then
-        article_template="${theme_dir}/single.html"
-    fi
+    local article_template="${theme_dir}/article.html"
+    local post_link_template="${theme_dir}/post_link.html"
 
-    # 6. Búsqueda recursiva de archivos Markdown
     local md_files=()
 
     while IFS= read -r -d '' file; do
@@ -100,63 +218,17 @@ build_site() {
     local posts_list_html=""
     local base_url="/${site_slug}"
 
-    declare -A posts_by_year
-    local post_count=0
-
-    # 7. Procesar cada archivo Markdown
     for md_file in "${md_files[@]}"; do
-        local raw_filename
-        raw_filename=$(basename "$md_file" .md)
+        declare -A post
+        get_post_metadata "$md_file" post "$site_author"
 
-        local title author date human_date description year slug
+        echo "   -> Compiling post: ${post[raw_filename]}.md => posts/${post[year]}/${post[slug]}.html"
 
-        title=$(extract_frontmatter_property "$md_file" "title" 2>/dev/null || echo "")
-        author=$(extract_frontmatter_property "$md_file" "author" 2>/dev/null || echo "")
-        date=$(extract_frontmatter_property "$md_file" "date" 2>/dev/null || echo "")
-        human_date=$(extract_frontmatter_property "$md_file" "human_date" 2>/dev/null || echo "")
-        description=$(extract_frontmatter_property "$md_file" "description" 2>/dev/null || echo "")
-        year=$(extract_frontmatter_property "$md_file" "year" 2>/dev/null || echo "")
-        slug=$(extract_frontmatter_property "$md_file" "slug" 2>/dev/null || echo "")
-        tags=$(extract_frontmatter_tags "$md_file" 2>/dev/null || echo "")
-
-        if [[ -z "$slug" ]]; then
-            if [[ "$raw_filename" =~ ^([0-9]{4})-[0-9]{2}-[0-9]{2}-(.*)$ ]]; then
-                slug="${BASH_REMATCH[2]}"
-            elif [[ "$raw_filename" =~ ^([0-9]{4})-(.*)$ ]]; then
-                slug="${BASH_REMATCH[2]}"
-            else
-                slug="$raw_filename"
-            fi
-        fi
-
-        if [[ -z "$year" ]]; then
-            if [[ "$date" =~ ^([0-9]{4}) ]]; then
-                year="${BASH_REMATCH[1]}"
-            elif [[ "$raw_filename" =~ ^([0-9]{4}) ]]; then
-                year="${BASH_REMATCH[1]}"
-            else
-                local parent_dir
-                parent_dir=$(basename "$(dirname "$md_file")")
-                if [[ "$parent_dir" =~ ^[0-9]{4}$ ]]; then
-                    year="$parent_dir"
-                else
-                    year=$(date +%Y)
-                fi
-            fi
-        fi
-
-        [[ -z "$title" ]] && title="$slug"
-        [[ -z "$author" ]] && author="$site_author"
-        [[ -z "$human_date" ]] && human_date="${date:-$year}"
-
-        echo "   -> Compiling post: ${raw_filename}.md => posts/${year}/${slug}.html"
-
-        local post_target_dir="${site_dir}/posts/${year}"
-        mkdir -p "$post_target_dir"
-        local output_file="${post_target_dir}/${slug}.html"
-
-        local rel_path="posts/${year}/${slug}.html"
+        local rel_path="posts/${post[year]}/${post[slug]}.html"
         local rel_root="../../"
+        local output_file="${site_dir}/${rel_path}"
+
+        mkdir -p "$(dirname "$output_file")"
 
         local pandoc_opts=(
             --from=markdown
@@ -168,12 +240,12 @@ build_site() {
             --syntax-highlighting="${pandoc_theme}"
             -V "path=${rel_path}"
             -V "rel_root=${rel_root}"
-            -V "title=${title}"
-            -V "author=${author}"
-            -V "date=${human_date}"
-            -V "year=${year}"
-            -V "slug=${slug}"
-            -V "description=${description}"
+            -V "title=${post[title]}"
+            -V "author=${post[author]}"
+            -V "date=${post[human_date]}"
+            -V "year=${post[year]}"
+            -V "slug=${post[slug]}"
+            -V "description=${post[description]}"
             -V "site_title=${site_title}"
             -V "site_author=${site_author}"
             -V "site_lang=${site_lang}"
@@ -183,7 +255,7 @@ build_site() {
             pandoc_opts+=(--template="${article_template}")
         fi
 
-        # Asignar CSS dinámicamente como bucle para Pandoc
+        # Asignar CSS dinámicamente
         if [[ -d "${site_dir}/styles" ]]; then
             for css_file in "${site_dir}/styles"/*.css; do
                 [[ -f "$css_file" ]] || continue
@@ -191,36 +263,43 @@ build_site() {
             done
         fi
 
-        # Asignar tags dinámicamente como bucle para Pandoc
-        if [[ -n "$tags" ]]; then
+        # Asignar tags dinámicamente
+        if [[ -n "${post[tags]}" ]]; then
             local clean_tags
-            clean_tags=$(echo "$tags" | tr -d '[]"' | tr ',' ' ')
+            clean_tags=$(echo "${post[tags]}" | tr -d '[]"' | tr ',' ' ')
             for tag in $clean_tags; do
                 pandoc_opts+=(-V "tags=${tag}")
             done
         fi
 
-        # Compilación real con Pandoc
         pandoc "${md_file}" "${pandoc_opts[@]}" -o "${output_file}"
 
-        posts_list_html+="          <li class=\"post-item\">\n"
-        posts_list_html+="            <span class=\"post-date\">[${human_date}]</span>\n"
-        posts_list_html+="            <a href=\"/${site_slug}/${rel_path}\" class=\"post-link\">${title}</a>\n"
-        posts_list_html+="          </li>\n"
+        # Renderizar cada item del post usando post_link.html
+        local item_html
+        item_html=$(pandoc /dev/null \
+            --quiet \
+            --template="${post_link_template}" \
+            -V "title=${post[title]}" \
+            -V "date=${post[human_date]}" \
+            -V "base_url=${base_url}" \
+            -V "path=${rel_path}")
+        posts_list_html+="${item_html}"$'\n'
 
     done
     
-    # 8. Renderizar plantillas raíz del tema con Pandoc (index.html, etc.)
+    # Renderizar plantillas raíz del tema con Pandoc (index.html, etc.)
     if [[ -d "$theme_dir" ]]; then
         while IFS= read -r -d '' html_file; do
             local base_html
             base_html=$(basename "$html_file")
             
-            if [[ -n "$article_template" && "$html_file" == "$article_template" ]]; then
+            # Omitir plantillas parciales/de artículo
+            if [[ "$base_html" == "article.html" || "$base_html" == "post_link.html" ]]; then
                 continue
             fi
 
             local index_opts=(
+                --from=markdown
                 --template="${html_file}"
                 -V "site_lang=${site_lang}"
                 -V "site_title=${site_title}"
@@ -236,9 +315,12 @@ build_site() {
                 done
             fi
 
-            pandoc /dev/null "${index_opts[@]}" -o "${site_dir}/${base_html}"
+            pandoc /dev/null --quiet "${index_opts[@]}" -o "${site_dir}/${base_html}"
         done < <(find "$theme_dir" -maxdepth 1 -type f -name "*.html" -print0)
     fi
     
-    echo "✅ Site '${site_slug}' built successfully!"
+    update_robots_txt "$site_slug"
+    generate_sitemap "$site_slug" "$site_theme"
+    
+    msg_success "✅ Site '${site_slug}' built successfully!"
 }

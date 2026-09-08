@@ -173,7 +173,9 @@ show_menu() {
     while true; do
         clear 2>/dev/null || true
         show_banner
-        
+        ensure_pandoc_installed
+        ensure_minify_dependencies_installed
+
         echo -e "${boldYellow}Workspace Commands:${endColour}\n"
         echo -e "  ${boldGreen}[1]${endColour} ✨ ${boldWhite}Create new site${endColour}            ${grayColour}(Interactive wizard)${endColour}"
         echo -e "  ${boldGreen}[2]${endColour} 📦 ${boldWhite}Build specific site${endColour}        ${grayColour}(Select from list)${endColour}"

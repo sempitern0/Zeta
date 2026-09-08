@@ -9,7 +9,7 @@
 #          does not conflict with the First or Second Laws.
 # ==============================================================================
 
-Sitemap: https://zerocms.com/sitemap.xml
+Sitemap: {{BASE_URL}}/sitemap.xml
 
 User-agent: *
 Allow: /
