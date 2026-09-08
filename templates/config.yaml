@@ -6,6 +6,7 @@ site:
 
 theme:
   name: "basic"
+  pandoc_theme: "zenburn"
 
 build:
   content_dir: "posts"

@@ -1,9 +1,5 @@
 # shellcheck disable=SC2034,SC2329,SC2155,SC2154
 
-VERBOSE=false
-FORCE=false
-
-# Fallbacks defensivos de color para garantizar compatibilidad aislada
 boldWhite="${boldWhite:-\033[1;37m}"
 boldCyan="${boldCyan:-\033[1;36m}"
 boldYellow="${boldYellow:-\033[1;33m}"
@@ -12,11 +8,7 @@ boldRed="${boldRed:-\033[1;31m}"
 grayColour="${grayColour:-\033[0;90m}"
 endColour="${endColour:-\033[0m}"
 
-# ==============================================================================
-# UI & BANNER CON GRADIENTE ANSI
-# ==============================================================================
 show_banner() {
-    # Gradiente de 256 colores: Cyan -> Azul Electrónico -> Púrpura -> Magenta
     local g1="\033[38;5;51m"
     local g2="\033[38;5;45m"
     local g3="\033[38;5;39m"
@@ -46,9 +38,6 @@ show_banner() {
     print_separator
 }
 
-# ==============================================================================
-# AYUDA Y PARSER DE ARGUMENTOS CLI
-# ==============================================================================
 show_help() {
     show_banner
     echo -e "${boldWhite}Usage:${endColour} $0 [options] [command]\n"

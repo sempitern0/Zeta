@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2034,SC2155
 
-
 extract_frontmatter_property() {
     local markdown_file="$1"
     local property="$2"
@@ -66,7 +65,6 @@ extract_frontmatter_tags() {
 
     raw_tags=$(extract_frontmatter_property "$markdown_file" "tags")
 
-    # 1. Formato inline: tags: [bash, linux] o tags: bash, linux
     if [[ -n "$raw_tags" ]]; then
         local cleaned
         cleaned=$(echo "$raw_tags" | tr -d '[]"' | tr -d "'")
@@ -80,10 +78,6 @@ extract_frontmatter_tags() {
         return 0
     fi
 
-    # 2. Formato multilínea YAML:
-    # tags:
-    #   - bash
-    #   - linux
     local line_num=0
     local in_frontmatter=0
     local in_tags=0

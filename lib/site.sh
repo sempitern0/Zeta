@@ -1,8 +1,5 @@
-#!/usr/bin/env bash
-# lib/site.sh - Motor de compilación individual por sitio
 # shellcheck disable=SC1091,SC2034,SC2155
 
-# Extractor de propiedades YAML (soporta formato clave: valor)
 get_site_yaml_prop() {
     local file="$1"
     local section="$2"
@@ -31,30 +28,6 @@ get_site_yaml_prop() {
     fi
 }
 
-# Extractor de propiedades Frontmatter de archivos Markdown (.md)
-extract_frontmatter_property() {
-    local file="$1"
-    local prop="$2"
-
-    [[ -f "$file" ]] || return 1
-
-    awk -v p="${prop}:" '
-        BEGIN { in_fm=0 }
-        /^---$/ {
-            if (in_fm == 0) { in_fm=1; next }
-            else { exit }
-        }
-        in_fm && $1 == p {
-            $1="";
-            sub(/^ +/, "");
-            gsub(/^["'\''"]|["'\''"]$/, "");
-            print;
-            exit
-        }
-    ' "$file" 2>/dev/null
-}
-
-# Compila un único sitio según su slug
 build_site() {
     local site_slug="${1:-}"
 
@@ -66,7 +39,12 @@ build_site() {
     local current_dir="${CURRENT_DIR:-$(pwd)}"
     local sites_dir="${SITES_DIR:-${current_dir}/sites}"
     local site_dir="${sites_dir}/${site_slug}"
-    local config_file="${site_dir}/config.yml"
+    
+    # 1. Detección flexible de config.yaml o config.yml
+    local config_file="${site_dir}/config.yaml"
+    if [[ ! -f "$config_file" && -f "${site_dir}/config.yml" ]]; then
+        config_file="${site_dir}/config.yml"
+    fi
 
     if [[ ! -d "$site_dir" ]]; then
         echo "❌ Error: Site directory '${site_dir}' does not exist." >&2
@@ -75,40 +53,29 @@ build_site() {
 
     echo -e "\n🚀 Starting build process for site: '${site_slug}'"
 
-    # 1. Leer configuración desde config.yml
-    local site_title site_desc site_author site_lang site_theme
+    # 2. Leer propiedades desde YAML
+    local site_title site_desc site_author site_lang site_theme pandoc_theme
 
     site_title=$(get_site_yaml_prop "$config_file" "site" "title" "$site_slug")
     site_desc=$(get_site_yaml_prop "$config_file" "site" "description" "Blog generado con Zeta")
     site_author=$(get_site_yaml_prop "$config_file" "site" "author" "Usuario")
     site_lang=$(get_site_yaml_prop "$config_file" "site" "language" "es")
     site_theme=$(get_site_yaml_prop "$config_file" "theme" "name" "basic")
+    pandoc_theme=$(get_site_yaml_prop "$config_file" "theme" "pandoc_theme" "zenburn")
 
-
-    # 2. Localizar plantilla del tema
-    local templates_dir="${TEMPLATES_DIR:-${current_dir}/templates}"
-    local theme_dir=""
-
-    if [[ -d "${templates_dir}/${site_theme}" ]]; then
-        theme_dir="${templates_dir}/${site_theme}"
-    elif [[ -d "${site_dir}/templates" ]]; then
-        theme_dir="${site_dir}/templates"
-    else
-        theme_dir="${templates_dir}/basic"
-    fi
+    # 3. Localizar plantilla del tema
+    local theme_dir="$TEMPLATES_DIR/$site_theme"
 
     echo "⚙️  Title: ${site_title}"
     echo "🎨 Active Theme: ${site_theme} (${theme_dir})"
-    echo "📁 Source Content: ${site_dir} (Recursive)"
-    echo "🎯 Posts Output: ${site_dir}/posts/<year>/<slug>.html"
+    echo "💡 Syntax Highlight: ${pandoc_theme}"
 
-    # 3. Copiar recursos estáticos del tema si existen
-    if [[ -d "${theme_dir}/assets" ]]; then
-        mkdir -p "${site_dir}/assets"
-        cp -r "${theme_dir}/assets/"* "${site_dir}/assets/" 2>/dev/null || true
-    fi
+    # 4. Copiar recursos estáticos (Assets y CSS)
+    mkdir -p "${site_dir}/assets" "${site_dir}/styles"
+    cp -r "${TEMPLATES_DIR}/common/assets/"* "${site_dir}/assets/" 2>/dev/null || true
+    cp -r "${TEMPLATES_DIR}/common/styles/"* "${site_dir}/styles/" 2>/dev/null || true
 
-    # 4. Determinar la plantilla HTML de artículo
+    # 5. Determinar la plantilla HTML de artículo
     local article_template=""
     if [[ -f "${theme_dir}/article.html" ]]; then
         article_template="${theme_dir}/article.html"
@@ -118,7 +85,7 @@ build_site() {
         article_template="${theme_dir}/single.html"
     fi
 
-    # 5. Búsqueda recursiva de archivos Markdown
+    # 6. Búsqueda recursiva de archivos Markdown
     local md_files=()
     while IFS= read -r -d '' file; do
         md_files+=("$file")
@@ -129,28 +96,23 @@ build_site() {
         ! -path "*/public/*" \
         ! -path "*/.*" -print0 2>/dev/null)
 
-    if (( ${#md_files[@]} == 0 )); then
-        echo "⚠️  No .md files found in ${site_dir}"
-        return 0
-    fi
+    local posts_list_html=""
 
-    # 6. Procesar cada archivo Markdown
+    # 7. Procesar cada archivo Markdown
     for md_file in "${md_files[@]}"; do
         local raw_filename
         raw_filename=$(basename "$md_file" .md)
 
-        # Extraer metadatos de Frontmatter
         local title author date human_date description year slug
 
-        title=$(extract_frontmatter_property "$md_file" "title")
-        author=$(extract_frontmatter_property "$md_file" "author")
-        date=$(extract_frontmatter_property "$md_file" "date")
-        human_date=$(extract_frontmatter_property "$md_file" "human_date")
-        description=$(extract_frontmatter_property "$md_file" "description")
-        year=$(extract_frontmatter_property "$md_file" "year")
-        slug=$(extract_frontmatter_property "$md_file" "slug")
+        title=$(extract_frontmatter_property "$md_file" "title" 2>/dev/null || echo "")
+        author=$(extract_frontmatter_property "$md_file" "author" 2>/dev/null || echo "")
+        date=$(extract_frontmatter_property "$md_file" "date" 2>/dev/null || echo "")
+        human_date=$(extract_frontmatter_property "$md_file" "human_date" 2>/dev/null || echo "")
+        description=$(extract_frontmatter_property "$md_file" "description" 2>/dev/null || echo "")
+        year=$(extract_frontmatter_property "$md_file" "year" 2>/dev/null || echo "")
+        slug=$(extract_frontmatter_property "$md_file" "slug" 2>/dev/null || echo "")
 
-        # A) Obtener Slug limpio
         if [[ -z "$slug" ]]; then
             if [[ "$raw_filename" =~ ^([0-9]{4})-[0-9]{2}-[0-9]{2}-(.*)$ ]]; then
                 slug="${BASH_REMATCH[2]}"
@@ -161,7 +123,6 @@ build_site() {
             fi
         fi
 
-        # B) Obtener Año con prioridad: 1. Frontmatter 'year' -> 2. Frontmatter 'date' -> 3. Nombre archivo -> 4. Nombre carpeta padre -> 5. Año actual
         if [[ -z "$year" ]]; then
             if [[ "$date" =~ ^([0-9]{4}) ]]; then
                 year="${BASH_REMATCH[1]}"
@@ -184,23 +145,20 @@ build_site() {
 
         echo "   -> Compiling post: ${raw_filename}.md => posts/${year}/${slug}.html"
 
-        # Ruta de destino final: sites/<misitio>/posts/<año>/<slug>.html
         local post_target_dir="${site_dir}/posts/${year}"
         mkdir -p "$post_target_dir"
         local output_file="${post_target_dir}/${slug}.html"
 
-        # Cálculo de variables relativas
         local rel_path="posts/${year}/${slug}.html"
         local rel_root="../../"
 
-        # Opciones completas de Pandoc con flags customizados
         local pandoc_opts=(
             --read=markdown
             --table-of-contents
             --toc-depth=2
             --preserve-tabs
             --standalone
-            --highlight-style=zenburn
+            --highlight-style="${pandoc_theme}"
             -V "path=${rel_path}"
             -V "rel_root=${rel_root}"
             -V "title=${title}"
@@ -214,14 +172,11 @@ build_site() {
             -V "site_lang=${site_lang}"
         )
 
-        # Si existe plantilla de artículo en el tema, la pasamos como opción a Pandoc
         if [[ -n "$article_template" && -f "$article_template" ]]; then
             pandoc_opts+=(--template="${article_template}")
         fi
 
-        # Compilación con Pandoc
         if pandoc "${md_file}" "${pandoc_opts[@]}" -o "${output_file}" 2>/dev/null; then
-            # Si la plantilla usa marcadores estilo Mustache {{BODY}} en lugar de variables de Pandoc ($body$)
             if grep -q "{{BODY}}" "${output_file}" 2>/dev/null; then
                 local body_html
                 body_html=$(pandoc --from=markdown --to=html "$md_file")
@@ -244,13 +199,42 @@ build_site() {
                 echo "$rendered_post" > "$output_file"
             fi
         else
-            # Fallback en caso de fallo en la llamada de Pandoc
             local body_html
             body_html=$(pandoc --from=markdown --to=html "$md_file" 2>/dev/null || cat "$md_file")
             echo "<!DOCTYPE html><html><head><title>${title}</title></head><body>${body_html}</body></html>" > "$output_file"
         fi
 
+        # Acumular HTML para la lista de publicaciones del índice del sitio
+        posts_list_html+="          <li class=\"post-item\">\n"
+        posts_list_html+="            <span class=\"post-date\">[${human_date}]</span>\n"
+        posts_list_html+="            <a href=\"/${site_slug}/${rel_path}\" class=\"post-link\">${title}</a>\n"
+        posts_list_html+="          </li>\n"
+
     done
 
-    echo "✅ Site '${site_slug}' posts built successfully!"
+    # 8. Renderizar plantillas HTML principales del sitio (index.html, etc.)
+    if [[ -d "$theme_dir" ]]; then
+        while IFS= read -r -d '' html_file; do
+            local base_html
+            base_html=$(basename "$html_file")
+            
+            # Omitir la plantilla dedicada a artículos
+            if [[ "$html_file" == "$article_template" ]]; then
+                continue
+            fi
+
+            local html_content
+            html_content=$(cat "$html_file")
+
+            html_content="${html_content//\{\{SITE_TITLE\}\}/$site_title}"
+            html_content="${html_content//\{\{SITE_DESC\}\}/$site_desc}"
+            html_content="${html_content//\{\{SITE_AUTHOR\}\}/$site_author}"
+            html_content="${html_content//\{\{SITE_LANG\}\}/$site_lang}"
+            html_content="${html_content//\{\{POSTS_LIST\}\}/$posts_list_html}"
+
+            printf "%b" "$html_content" > "${site_dir}/${base_html}"
+        done < <(find "$theme_dir" -maxdepth 1 -type f -name "*.html" -print0)
+    fi
+
+    echo "✅ Site '${site_slug}' built successfully!"
 }

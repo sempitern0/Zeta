@@ -4,23 +4,29 @@ set -euo pipefail
 
 ## Works on Linux/macOS
 CURRENT_DIR="$(cd -- "$(dirname -- "$0")" && pwd -P)"
-TARGET_USER="${SUDO_USER:-$USER}"
-TARGET_HOME=$(getent passwd "$TARGET_USER" | cut -d: -f6)
+TARGET_USER="${SUDO_USER:-${USER:-$(whoami)}}"
+
+if command -v getent >/dev/null 2>&1; then
+    TARGET_HOME="$(getent passwd "$TARGET_USER" | cut -d: -f6)"
+else
+    TARGET_HOME="$(eval echo "~${TARGET_USER}")"
+fi
 
 readonly CURRENT_DIR
 readonly TARGET_USER
 readonly TARGET_HOME
 
 SITES_DIR="${CURRENT_DIR}/sites"
-TEMPLATE_NAME="basic"
 TEMPLATES_DIR="${CURRENT_DIR}/templates"
 
+VERBOSE=false
+FORCE=false
 MINIFY=false
 HAS_HTML_CSS_MINIFIER=false
 HAS_IMAGE_OPTIMIZER=false
 
-declare -A TAG_MAP     
-declare -A TAG_COUNT
+declare -gA TAG_MAP=()
+declare -gA TAG_COUNT=()
 
 ## Load all the modules
 source "${CURRENT_DIR}/lib/common.sh"
