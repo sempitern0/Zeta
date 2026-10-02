@@ -17,19 +17,20 @@ $styles.html()$
   <body id="top">
     <a class="skip-link" href="#content">Skip to content</a>
 
-    <header class="site-header">
-      <div class="header-container">
-        <a href="$rel_root$index.html" class="site-title">$site_title$</a>
-        <nav class="site-nav" aria-label="Primary navigation">
+    <header class="paper-header">
+      <div class="paper-shell paper-header-inner">
+        <a class="paper-brand" href="$rel_root$index.html">$site_title$</a>
+        <nav class="paper-nav" aria-label="Primary navigation">
           <a href="$rel_root$index.html">Home</a>
-          <a href="$rel_root$posts.html">Posts</a>
+          <a href="$rel_root$posts.html">Archive</a>
         </nav>
       </div>
     </header>
 
-    <main id="content" class="container">
-      <article>
-        <header class="article-header">
+    <main id="content" class="paper-shell paper-article-shell">
+      <article class="paper-article">
+        <header class="article-header paper-article-header">
+          <p class="paper-kicker">Article</p>
           <h1 class="article-title">$title$</h1>
           <div class="article-meta">
             <span class="meta-author">$author$</span>
@@ -51,8 +52,10 @@ $styles.html()$
       </article>
     </main>
 
-    <footer class="site-footer">
-      <p><a href="#top">Back to top</a></p>
+    <footer class="paper-footer">
+      <div class="paper-shell">
+        <p><a href="#top">Back to top</a> · <a href="$rel_root$posts.html">Archive</a></p>
+      </div>
     </footer>
   </body>
 </html>

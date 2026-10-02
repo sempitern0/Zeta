@@ -1,0 +1,64 @@
+.paper-article-shell {
+  display: grid;
+  grid-template-columns: minmax(0, var(--paper-reading));
+  justify-content: center;
+  padding-top: clamp(2.5rem, 6vw, 5rem);
+  padding-bottom: 5rem;
+}
+
+.paper-article {
+  min-width: 0;
+}
+
+.paper-article-header {
+  margin-bottom: 2rem;
+}
+
+.article-title {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(2.2rem, 7vw, 4.5rem);
+  line-height: 1.03;
+  letter-spacing: -0.03em;
+}
+
+.article-meta {
+  margin-top: 1rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.article-toc {
+  margin: 2rem 0 2.5rem;
+}
+
+.article-body {
+  font-size: 1.05rem;
+}
+
+.article-body p,
+.article-body li,
+.article-body dd {
+  max-width: 68ch;
+}
+
+.article-body h2,
+.article-body h3,
+.article-body h4 {
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.article-body h2 {
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.article-body blockquote {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.1em;
+}
+
+.article-body div.sourceCode,
+.article-body pre:not(.sourceCode) {
+  font-size: 0.92rem;
+}

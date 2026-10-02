@@ -1,43 +1,39 @@
 <!doctype html>
-<html lang="$if(site_lang)$ $site_lang$ $else$es$endif$">
+<html lang="$site_lang$">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Artículos - $site_title$</title>
-    $if(site_desc)$
-    <meta name="description" content="$site_desc$" />
-    $endif$ $for(css)$
-    <link rel="stylesheet" href="$css$" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Posts — $site_title$</title>
+    <meta name="description" content="$site_desc$">
+    $for(css)$
+    <link rel="stylesheet" href="$css$">
     $endfor$
   </head>
-  <body>
+  <body id="top">
+    <a class="skip-link" href="#content">Skip to content</a>
+
     <header class="site-header">
-      <div class="container">
-        <a href="$base_url$/" class="site-logo">$site_title$</a>
-        <nav class="site-nav">
-          <a href="$base_url$/">Inicio</a>
-          <a href="$base_url$/posts.html" class="active">Artículos</a>
+      <div class="header-container">
+        <a href="./index.html" class="site-title">$site_title$</a>
+        <nav class="site-nav" aria-label="Primary navigation">
+          <a href="./index.html">Home</a>
+          <a href="./posts.html" aria-current="page">Posts</a>
         </nav>
       </div>
     </header>
 
-    <main class="container content">
-      <section class="posts-archive">
-        <header class="archive-header">
-          <h1>Archivo de Artículos</h1>
-          <p class="archive-description">
-            Listado cronológico de todas las publicaciones.
-          </p>
-        </header>
-
-        <div class="posts-by-year">$posts_by_year$</div>
+    <main id="content" class="container">
+      <section aria-labelledby="all-posts">
+        <h1 id="all-posts">All posts</h1>
+        <p class="archive-description">All published Markdown entries.</p>
+        <ul class="post-list">
+          $posts_list$
+        </ul>
       </section>
     </main>
 
     <footer class="site-footer">
-      <div class="container">
-        <p>&copy; $site_author$ - Generado con Zeta</p>
-      </div>
+      <p>&copy; $site_author$ · Built with Zeta.</p>
     </footer>
   </body>
 </html>

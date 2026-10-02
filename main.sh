@@ -2,36 +2,25 @@
 set -euo pipefail
 # shellcheck disable=SC1090,SC1091
 
-## Works on Linux/macOS
-CURRENT_DIR="$(cd -- "$(dirname -- "$0")" && pwd -P)"
-TARGET_USER="${SUDO_USER:-${USER:-$(whoami)}}"
-
-if command -v getent >/dev/null 2>&1; then
-    TARGET_HOME="$(getent passwd "$TARGET_USER" | cut -d: -f6)"
-else
-    TARGET_HOME="$(eval echo "~${TARGET_USER}")"
+if (( BASH_VERSINFO[0] < 4 || (BASH_VERSINFO[0] == 4 && BASH_VERSINFO[1] < 3) )); then
+    printf 'Zeta requires Bash 4.3 or newer. Current version: %s\n' "$BASH_VERSION" >&2
+    exit 2
 fi
 
-SITES_URL="https://zeta.local"
-
+CURRENT_DIR="$(cd -- "$(dirname -- "$0")" && pwd -P)"
 readonly CURRENT_DIR
-readonly TARGET_USER
-readonly TARGET_HOME
-readonly SITES_URL
 
 SITES_DIR="${CURRENT_DIR}/sites"
 TEMPLATES_DIR="${CURRENT_DIR}/templates"
+PREVIEW_PORT="${ZETA_PORT:-8000}"
 
 VERBOSE=false
 FORCE=false
-MINIFY=false
-HAS_HTML_CSS_MINIFIER=false
-HAS_IMAGE_OPTIMIZER=false
+readonly SITES_DIR TEMPLATES_DIR
 
 declare -gA TAG_MAP=()
 declare -gA TAG_COUNT=()
 
-## Load all the modules
 source "${CURRENT_DIR}/lib/common.sh"
 
 for module in "${CURRENT_DIR}/lib"/*.sh; do
@@ -41,62 +30,10 @@ for module in "${CURRENT_DIR}/lib"/*.sh; do
     fi
 done
 
-
 main() {
     parse_args "$@"
     show_menu
 }
 
-
-trap 'cleanup 130' INT TERM
+trap 'exit 143' TERM
 main "$@"
-
-
-
-# [ Ejecución del Script ]
-#                                   │
-#                                   ▼
-#                    ┌─────────────────────────────┐
-#                    │ 1. Actualización Automática │
-#                    │    Index del Dashboard      │
-#                    └──────────────┬──────────────┘
-#                                   │
-#                                   ▼
-#                    ┌─────────────────────────────┐
-#                    │   2. Menú Principal CLI     │
-#                    └──────────────┬──────────────┘
-#                                   │
-#          ┌────────────────────────┴────────────────────────┐
-#          ▼                                                 ▼
-# [ Opción: Crear Nuevo Sitio ]            [ Opción: Compilar Sitio Existente ]
-#          │                                                 │
-#          ▼                                                 ▼
-# ┌─────────────────────────┐               ┌─────────────────────────┐
-# │ 3A. Asistente Inicial   │               │ 3B. Escanear carpeta    │
-# │ (Inputs de configuración)│               │ sites/<blog>/posts/*.md │
-# └────────┬────────────────┘               └────────┬────────────────┘
-#          │                                                 │
-#          ▼                                                 ▼
-# ┌─────────────────────────┐               ┌─────────────────────────┐
-# │ 4A. Crear estructura    │               │ 4B. Extraer Frontmatter │
-# │ sites/<nuevoblog>/posts/│               │ + Convertir MD (Pandoc) │
-# └────────┬────────────────┘               └────────┬────────────────┘
-#          │                                                 │
-#          ▼                                                 ▼
-# ┌─────────────────────────┐               ┌─────────────────────────┐
-# │ 5A. Generar Markdown    │               │ 5B. Inyectar variables  │
-# │ de prueba con metadatos │               │ en article.html y index │
-# └────────┬────────────────┘               └────────┬────────────────┘
-#          │                                                 │
-#          │                                                 ▼
-#          │                                ┌─────────────────────────┐
-#          │                                │ 6B. Volcar HTMLs en     │
-#          │                                │ la raíz de sites/<blog>/│
-#          │                                └────────┬────────────────┘
-#          │                                                 │
-#          └────────────────────────┬────────────────────────┘
-#                                   │
-#                                   ▼
-#                    ┌─────────────────────────────┐
-#                    │  Fin / Servido vía Docker   │
-#                    └─────────────────────────────┘

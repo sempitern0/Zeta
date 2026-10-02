@@ -1,332 +1,381 @@
-🌐 **Leer en otros idiomas:** [English](README.md)
+# Zeta
 
----
+Zeta convierte publicaciones Markdown en un blog estático listo para desplegar usando **Bash + Pandoc**.
 
-# bash-cli-starter
+El flujo de trabajo es deliberadamente pequeño:
 
-Una plantilla modular y lista para producción para construir aplicaciones y herramientas CLI en Bash robustas. Viene preconfigurada con linter ShellCheck, normalización multiplataforma CRLF-a-LF, tareas automatizadas mediante Makefile y hooks de Git pre-commit.
+1. Escribe Markdown en `sites/<sitio>/posts/`.
+2. Genera el sitio.
+3. Pruébalo localmente.
+4. Despliega únicamente `sites/<sitio>/public/`.
 
-## 🌟 Características Principales
+No necesita base de datos, framework JavaScript, runtime Node.js, servidor CMS ni servidor de aplicaciones para generar o alojar el sitio.
 
-- **Arquitectura Modular**: Separación de responsabilidades integrada (punto de entrada `cli.sh`, módulos en `lib/`).
-- **Comprobaciones Automáticas de Calidad**: Archivo `.shellcheckrc` preconfigurado y adaptado para proyectos Bash basados en librerías.
-- **Compatibilidad Multiplataforma**: Conversión automática de saltos de línea (`CRLF` a `LF`) previniendo errores de ejecución en Windows/WSL (`SC1017`).
-- **Hook de Git Pre-Commit**: Intercepta `git commit` para analizar automáticamente los scripts en Bash preparados en el _stage_.
-- **Automatización con Makefile**: Configuración sencilla en un solo comando para permisos, instalación de hooks y análisis de código.
-- **Soporte CI Multiplataforma**: Pipeline nativo de GitHub Actions activo por defecto, con configuraciones listas para usar en GitLab, Bitbucket, Azure y CircleCI.
+**English:** [README.md](README.md)
 
-## 📁 Estructura del Repositorio
+## Requisitos
+
+Obligatorios:
+
+- Bash 4.3+
+- Pandoc
+
+Opcionales:
+
+- Python 3 — servidor de preview local integrado
+- Docker + Docker Compose — stack Nginx/HTTPS heredado y opcional
+- ShellCheck — lint para desarrollo y contribuciones
+
+Zeta no instala dependencias opcionales al abrir el asistente. En macOS instala un Bash actual con Homebrew, porque el Bash incluido por el sistema es anterior a la versión 4.3 requerida.
+
+## Inicio rápido
+
+```bash
+git clone https://github.com/sempitern0/Zeta.git
+cd Zeta
+make setup
+./main.sh
+```
+
+`make setup` comprueba el runtime, prepara `sites/`, valida la sintaxis Bash e instala el hook Git del repositorio cuando corresponde. No inicia Docker ni modifica `/etc/hosts`.
+
+## Flujo de trabajo diario
+
+### 1. Crear un sitio
+
+```bash
+./main.sh create
+```
+
+Se crea una estructura local como esta:
 
 ```text
-.
-├── .github/
-│   └── workflows/
-│       └── lint.yml         # Pipeline CI activo para GitHub Actions
-├── ci/                      # Plantillas preconfiguradas para otros proveedores de CI
-│   ├── .gitlab-ci.yml.example
-│   ├── azure-pipelines.yml.example
-│   ├── bitbucket-pipelines.yml.example
-│   └── circleci-config.yml.example
-├── .gitattributes      # Fuerza saltos de línea LF en todos los entornos de SO
-├── .shellcheckrc       # Reglas de ShellCheck adaptadas para scripts modulares
-├── Makefile            # Ejecutor de tareas automatizadas
-├── cli.sh              # Script principal y punto de entrada de la CLI
-├── lib/
-│   ├── cli.sh          # Procesamiento de argumentos y manejadores de opciones
-│   └── common.sh       # Funciones auxiliares compartidas y utilidades del sistema
-└── scripts/
-    └── pre-commit      # Plantilla del hook pre-commit de Git
+sites/mi-blog/
+├── config.yaml     # configuración local de generación
+└── posts/          # fuentes Markdown locales
 ```
 
-## 🚀 Primeros Pasos
+Después del primer build:
 
-### Requisitos previos
+```text
+sites/mi-blog/
+├── config.yaml
+├── posts/
+└── public/         # despliega únicamente este directorio
+    ├── index.html
+    ├── posts.html
+    ├── posts/
+    ├── styles/
+    ├── assets/        # sólo si el tema/sitio aporta assets
+    ├── robots.txt
+    ├── sitemap.xml
+    └── sitemap.xsl
+```
 
-Asegúrate de tener instalados `git`, `make` y `shellcheck` en tu sistema.
+`config.yaml` y `posts/` son entradas de autoría/generación. Zeta no los copia a `public/`.
 
-- **macOS**: `brew install shellcheck`
-- **Ubuntu/Debian**: `sudo apt-get install shellcheck`
-- **Windows (PowerShell)**: `winget install koalaman.shellcheck`
+### 2. Añadir un post Markdown
 
-### Configuración en un solo comando
-
-Ejecuta el comando de preparación para otorgar permisos de ejecución, instalar el hook pre-commit de Git y verificar el código:
+La vía más rápida es el propio asistente:
 
 ```bash
-make setup
+./main.sh new-post mi-blog
 ```
 
-## 🛠️ Uso y Comandos del Makefile
+También puedes crear manualmente un archivo dentro de `sites/mi-blog/posts/`:
 
-| Comando                   | Descripción                                                                        |
-| :------------------------ | :--------------------------------------------------------------------------------- |
-| `make setup`              | Configuración inicial completa: otorga permisos, instala hooks y ejecuta el linter |
-| `make lint`               | Corrige saltos de línea y ejecuta ShellCheck en todos los archivos `.sh`           |
-| `make install-hooks`      | Copia el script de pre-commit a `.git/hooks/pre-commit`                            |
-| `make chmod`              | Otorga permisos de ejecución (`+x`) a scripts y hooks                              |
-| `make install-shellcheck` | Intenta autoinstalar ShellCheck usando el gestor de paquetes del sistema           |
-
-## 🧪 Hook de Pre-commit
-
-Una vez instalado, el hook de pre-commit se ejecuta automáticamente cada vez que realizas un `git commit`. Convierte los saltos de línea a `LF` y verifica todos los archivos `.sh` en _stage_ con ShellCheck. Si se detecta algún error de sintaxis o estilo, el commit se bloquea hasta que sea resuelto.
-
-## 🔄 Integración Continua (CI/CD)
-
-La integración continua está preconfigurada directamente en el directorio raíz (y `.circleci/`), lista para ejecutar `make lint` en las principales plataformas. No requiere mover archivos ni configuraciones adicionales; simplemente sube tu repositorio a tu proveedor de preferencia:
-
-| Proveedor                  | Archivo de Configuración     | Estado             |
-| :------------------------- | :--------------------------- | :----------------- |
-| **🐙 GitHub Actions**      | `.github/workflows/lint.yml` | ✅ Listo para usar |
-| **🦊 GitLab CI**           | `.gitlab-ci.yml`             | ✅ Listo para usar |
-| **🪣 Bitbucket Pipelines** | `bitbucket-pipelines.yml`    | ✅ Listo para usar |
-| **☁️ Azure Pipelines**     | `azure-pipelines.yml`        | ✅ Listo para usar |
-| **⭕ CircleCI**            | `.circleci/config.yml`       | ✅ Listo para usar |
-
+```markdown
+---
+title: "Desplegando un sitio estático pequeño"
+author: "Ada"
+date: "2026-10-02"
+description: "Una nota práctica de despliegue."
+slug: "desplegando-un-sitio-estatico-pequeno"
+tags: [linux, devops, web]
 ---
 
-# Cómo Extender los Argumentos del CLI (`parse_args` y `show_help`)
+# Desplegando un sitio estático pequeño
 
-Esta guía explica cómo añadir nuevas _flags_, opciones con valores y opciones largas al analizador de argumentos en `lib/cli.sh`.
-
----
-
-## 1. Visión general de `getopts`
-
-El analizador de argumentos utiliza la herramienta integrada `getopts` de Bash combinada con lógica personalizada para manejar argumentos cortos (`-o`) y largos (`--option`).
-
-La cadena pasada a `getopts` controla los requisitos de cada opción:
-
-```bash
-while getopts "o:c:fvh-:" opt; do
+Escribe el artículo en Markdown normal.
 ```
 
-- `v`: Una letra **sin** dos puntos es un _flag_ booleano (no requiere valor).
-- `o:`: Una letra **con** dos puntos requiere un valor (ej. `-o <archivo>`).
-- `-:`: El `-:` al final intercepta opciones largas que comienzan con `--`.
+Se recomienda un nombre de archivo prefijado por fecha:
 
----
-
-## 2. Paso a Paso: Añadir una Nueva Opción Corta y Larga
-
-Supongamos que deseas añadir una opción `--target` / `-t` que acepte un texto, y un _flag_ booleano `--dry-run`.
-
-### Paso 1: Declarar Variables por Defecto
-
-Define los valores por defecto al inicio de `lib/cli.sh` (o a nivel de script):
-
-```bash
-TARGET_ENV="production"
-DRY_RUN=false
+```text
+2026-10-02-desplegando-un-sitio-estatico-pequeno.md
 ```
 
-### Paso 2: Actualizar la Cadena de `getopts`
-
-Añade `t:` (requiere valor) a la cadena de opciones:
+### 3. Listar posts locales
 
 ```bash
-# Antes: "o:c:fvh-:"
-# Después: "o:c:t:fvh-:"
-while getopts "o:c:t:fvh-:" opt; do
+./main.sh posts mi-blog
 ```
 
-### Paso 3: Manejar la Opción Corta (`case "$opt"`)
+El listado lee directamente los metadatos Markdown de `posts/`; no necesita generar el sitio antes.
 
-Añade el controlador de la letra en el `case` principal:
+Para el ciclo rápido de actualización después de copiar un Markdown nuevo:
 
 ```bash
-case "$opt" in
-    t) TARGET_ENV="$OPTARG" ;;
-    # ...
-esac
+cp articulo.md sites/mi-blog/posts/
+./main.sh posts mi-blog
+./main.sh update mi-blog
+./main.sh preview mi-blog
 ```
 
-### Paso 4: Manejar Opciones Largas (`case "${OPTARG}"`)
-
-Añade los casos para la sintaxis de opciones largas en la sección `-)`:
+### 4. Generar o actualizar el sitio estático
 
 ```bash
--)
-    case "${OPTARG}" in
-        # Flag booleano largo
-        dry-run) DRY_RUN=true ;;
-
-        # Opción larga con sintaxis '=' (--target=staging)
-        target=*) TARGET_ENV="${OPTARG#*=}" ;;
-
-        # Opción larga con espacio (--target staging)
-        target)
-            TARGET_ENV="${!OPTIND}"
-            OPTIND=$((OPTIND + 1))
-            ;;
-
-        # ...
-    esac
-    ;;
+./main.sh build mi-blog
 ```
 
-### Paso 5: Actualizar `show_help`
+Cada build regenera `public/` desde Markdown y plantillas. Esto elimina páginas generadas obsoletas cuando un post se renombra o borra. Zeta genera primero en staging y sólo sustituye `public/` cuando Pandoc termina correctamente; si el build falla, el último artefacto válido permanece intacto.
 
-Actualiza el mensaje de ayuda en `lib/cli.sh` para documentar los nuevos parámetros:
+Generar todos los sitios:
 
 ```bash
-show_help() {
-    cat << EOF
-Uso: $(basename "$0") [OPCIONES]
-
-Opciones:
-  -o, --output <archivo>  Especifica la ruta del archivo de salida
-  -c, --config <archivo>  Ruta al archivo de configuración
-  -t, --target <env>      Establece el entorno de destino (por defecto: production)
-  -f, --force             Fuerza la ejecución sin confirmación
-      --dry-run           Simula la ejecución sin modificar el sistema
-  -v, --verbose           Habilita la salida detallada en los logs
-  -h, --help              Muestra este mensaje de ayuda y sale
-EOF
-}
+./main.sh build-all
 ```
 
----
+### 5. Probar localmente
 
-## 3. Lista de Comprobación Rápida
-
-Al añadir un nuevo argumento:
-
-1. [ ] Declarar una variable global por defecto.
-2. [ ] Actualizar la cadena de `getopts` (añadir `:` si acepta un valor).
-3. [ ] Añadir el controlador de opción corta (`t)`).
-4. [ ] Añadir los controladores de opción larga (`target=*` y `target)`).
-5. [ ] Actualizar el texto de salida en `show_help()`.
-6. [ ] Probar la sintaxis corta y larga (`-t dev`, `--target=dev`, `--target dev`).
-
----
-
-# Referencia de Utilidades de `lib/common.sh`
-
-El módulo `lib/common.sh` proporciona utilidades estándar para salida en interfaz, detección del sistema, manipulación de archivos e interacción con el usuario.
-
----
-
-## 1. Logs y Formato
-
-Todas las funciones de mensajes formatean el texto con colores ANSI y envían la salida directamente a `STDERR` (`>&2`) para evitar corromper los flujos de datos en `STDOUT`.
-
-### Registros Estándar
+Preview de un único sitio:
 
 ```bash
-msg_info "Cargando configuración..."     # [INFO] Cian
-msg_success "Base de datos conectada."   # [OK] Verde
-msg_warn "Poco espacio en disco."        # [WARN] Amarillo
-msg_error "Error al escribir archivo."   # [ERROR] Rojo
+./main.sh preview mi-blog
 ```
 
-### Registros de Procesos
+URL por defecto:
+
+```text
+http://127.0.0.1:8000/
+```
+
+Usar otro puerto:
 
 ```bash
-msg_search "Buscando paquetes..."        # [SEARCH] Púrpura
-msg_exec "Ejecutando migración..."       # [EXEC] Azul
-msg_download "Descargando archivo..."    # [FETCH] Azul Negrita
-msg_build "Compilando binario..."        # [BUILD] Cian Negrita
-msg_skip "El archivo existe, omitiendo..." # [SKIP] Gris
-msg_debug "Nivel de OPTIND: $OPTIND"     # [DEBUG] Gris
+./main.sh --port 8080 preview mi-blog
 ```
 
-### Separadores Visuales
+Generar todos los sitios y servir el dashboard local:
 
 ```bash
-print_section "Fase de Compilación" # Muestra "===> Fase de Compilación" en blanco negrita
-print_separator                    # Imprime una línea gris de 50 caracteres
+./main.sh serve
 ```
 
----
+Después abre `http://127.0.0.1:8000/`. El dashboard enlaza al `public/` generado de cada sitio.
 
-## 2. Detección de SO y Sistema
+Python 3 sólo se utiliza para este servidor de preview. Si no está instalado, `build` sigue funcionando y puedes servir `public/` con cualquier servidor HTTP estático.
 
-### Gestor de Paquetes y Distribución
+## Comandos de gestión
 
-- **`detect_package_manager`**: Imprime `apt` o `pacman` en `STDOUT`. Devuelve código `1` si no encuentra ninguno.
-- **`detect_distribution`**: Analiza `/etc/os-release` o `uname` para identificar la familia del SO (`debian`, `arch`, `fedora` o `macos`).
+| Comando | Uso |
+| --- | --- |
+| `./main.sh` | Abrir el asistente interactivo |
+| `./main.sh sites` | Listar sitios y estado de generación |
+| `./main.sh create` | Crear un sitio |
+| `./main.sh edit <sitio>` | Editar metadatos, URL de producción y tema |
+| `./main.sh delete <sitio>` | Borrar un sitio local con confirmación explícita |
+| `./main.sh clean <sitio>` | Borrar únicamente el `public/` generado |
+| `./main.sh posts <sitio>` | Listar posts Markdown |
+| `./main.sh new-post <sitio>` | Crear el esqueleto de un nuevo post |
+| `./main.sh build <sitio>` / `update <sitio>` | Regenerar el `public/` de un sitio |
+| `./main.sh build-all` | Regenerar todos los sitios |
+| `./main.sh preview <sitio> [puerto]` | Generar y servir un sitio |
+| `./main.sh serve [puerto]` | Generar todos y servir el dashboard local |
+| `./main.sh dashboard` | Regenerar `sites/index.html` sin servidor |
+| `./main.sh --force ...` | Omitir confirmaciones destructivas donde esté soportado |
+
+## `config.yaml`
+
+La configuración generada se mantiene pequeña:
+
+```yaml
+site:
+  title: "Mi Blog"
+  description: "Notas sobre sistemas y software"
+  author: "Ada"
+  language: "es"
+  url: "https://example.com"
+
+theme:
+  name: "zen"
+  pandoc_theme: "zenburn"
+
+build:
+  content_dir: "posts"
+  output_dir: "public"
+```
+
+Antes de producción, cambia `site.url` por la URL pública real. Zeta la usa para crear las URLs absolutas de `sitemap.xml` y la referencia al sitemap dentro de `robots.txt`.
+
+En un GitHub Pages de tipo proyecto, incluye la ruta del repositorio cuando forme parte de la URL pública, por ejemplo:
+
+```yaml
+url: "https://usuario.github.io/proyecto"
+```
+
+La navegación HTML utiliza enlaces relativos, por lo que el resultado puede moverse entre preview local, raíz de dominio y hosting bajo subrutas.
+
+## Despliegue
+
+El contrato de despliegue es siempre el mismo, independientemente del proveedor:
+
+```text
+sites/<sitio>/public/
+```
+
+Ese directorio es el artefacto estático completo. No subas `posts/` ni `config.yaml`. Zeta mantiene deliberadamente fuera del generador las credenciales y SDK de cada proveedor: genera localmente y publica el artefacto con el hosting que prefieras.
+
+### Netlify — despliegue manual muy simple
+
+1. Ejecuta `./main.sh build <sitio>`.
+2. Abre Netlify Drop.
+3. Arrastra `sites/<sitio>/public/` al área de despliegue.
+4. Para actualizarlo, vuelve a generar localmente y arrastra el `public/` actualizado al área de despliegues del mismo sitio.
+
+Guía oficial: https://docs.netlify.com/start/quickstarts/netlify-drop-quickstart/
+
+### Vercel Drop — despliegue manual simple
+
+1. Ejecuta `./main.sh build <sitio>`.
+2. Abre Vercel Drop.
+3. Arrastra la carpeta `public/`.
+4. Vercel sirve los archivos estáticos directamente; no hace falta framework.
+
+Vercel Drop: https://vercel.com/drop
+
+### Cloudflare Pages
+
+Para el modelo de fuentes locales de Zeta, **Direct Upload** es el encaje más limpio: genera el sitio y sube los assets estáticos ya preparados desde `public/`. Cloudflare no necesita ejecutar ningún framework.
+
+Si más adelante creas un repositorio Git separado que contenga únicamente archivos desplegables, Pages también puede publicarlo configurando su directorio de salida estático.
+
+Documentación oficial:
+
+- https://developers.cloudflare.com/pages/get-started/direct-upload/
+- https://developers.cloudflare.com/pages/configuration/build-configuration/
+
+### GitHub Pages
+
+GitHub Pages puede publicar desde una rama o mediante GitHub Actions.
+
+El flujo de menor acoplamiento con Zeta consiste en mantener las fuentes de autoría localmente y copiar el contenido de `public/` a un repositorio Pages dedicado o a una rama de publicación. Configura Pages para servir esa rama desde la raíz del repositorio.
+
+Si prefieres CI, usa un workflow de Pages que suba el artefacto estático. Un build CI desde Markdown debe instalar Pandoc antes de ejecutar Zeta.
+
+Guía oficial: https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site
+
+## HTML, CSS y compatibilidad
+
+El tema `zen` mantiene una salida deliberadamente simple y sin JavaScript:
+
+- HTML5 semántico;
+- navegación con rutas relativas;
+- foco de teclado visible;
+- enlace para saltar directamente al contenido;
+- soporte para `prefers-reduced-motion`;
+- fuentes de sistema y monospace como fallback;
+- layout responsive con CSS estándar;
+- sin framework cliente ni hidratación.
+
+El objetivo es que el resultado sea fácil de inspeccionar, cachear, archivar y servir desde prácticamente cualquier hosting estático.
+
+## Docker/Nginx opcional
+
+El stack existente Docker/Nginx sigue disponible para quien necesite reproducir HTTPS/proxy localmente. No es necesario para el ciclo normal de autoría; `preview` es la ruta recomendada cuando quieres servir únicamente el artefacto público:
 
 ```bash
-distro=$(detect_distribution)
-case "$distro" in
-    debian) apt-get update ;;
-    arch) pacman -Sy ;;
-esac
+make docker-up
+make docker-ps
+make docker-down
 ```
 
-### Comprobaciones del Entorno
+Ya no forma parte del setup por defecto ni del ciclo diario de autoría.
 
-- **`is_server_environment`**: Devuelve `0` (verdadero) si es un entorno sin interfaz gráfica (_headless_/servidor), o `1` (falso) si detecta una sesión gráfica (Xorg/Wayland/GDM/SDDM).
-- **`is_wsl`**: Devuelve `0` si se ejecuta dentro del Subsistema de Windows para Linux (WSL).
+## Comprobaciones de desarrollo
+
+Validación de sintaxis Bash sin dependencias adicionales:
 
 ```bash
-if is_wsl; then
-    msg_info "Ejecutándose en entorno WSL."
-fi
+make syntax
 ```
 
----
-
-## 3. Operaciones de Sistema y Archivos
-
-### Permisos y Root
-
-- **`check_root`**: Obliga la ejecución como root. Detiene el script con código `1` si `$EUID` no es cero.
-- **`ensure_sudo_installed`**: Verifica si `sudo` está instalado; intenta instalarlo automáticamente mediante el gestor de paquetes si se ejecuta como root.
-
-### Manipulación de Archivos
-
-- **`copy_with_backup <origen> <destino> <usuario>`**: Copia un archivo de forma segura. Si el `<destino>` existe, crea un respaldo `<destino>.bak` antes de sobrescribir. Preserva el respaldo original si el archivo `.bak` ya existe.
+ShellCheck, si lo instalas explícitamente:
 
 ```bash
-copy_with_backup "configs/app.conf" "/etc/app.conf" "$SUDO_USER"
+make lint
 ```
 
-### Utilidades Varias
+## Licencia
 
-- **`command_exists <comando>`**: Devuelve `0` si el comando está presente en `$PATH`, de lo contrario `1`.
-- **`slugify <cadena>`**: Convierte el texto de entrada en un _slug_ en minúsculas y seguro para URLs.
+MIT. Consulta [LICENSE](LICENSE).
+
+
+## Pruebas iniciales y fuentes opcionales
+
+Cada sitio nuevo incluye dos posts Markdown de ejemplo. Entre ambos prueban encabezados, listas, tablas, enlaces, citas y bloques de código en Bash, Python, JavaScript, YAML, JSON, CSS y HTML.
+
+Las fuentes web opcionales se instalan por sitio, no globalmente:
 
 ```bash
-clean_name=$(slugify "¡Mi Proyecto De Prueba 123!") # Salida: "mi-proyecto-de-prueba-123"
+./main.sh fonts mi-blog
 ```
 
----
+El build aplica siempre `templates/common` como base, después el tema seleccionado y finalmente las personalizaciones específicas del sitio.
 
-## 4. Interfaz de Usuario e Interacción
 
-### Confirmaciones de Usuario
+## Temas, renderizado Markdown y resaltado de código
 
-- **`prompt_confirmation <mensaje> [opcion_por_defecto]`**: Solicita confirmación `[y/N]` al usuario. Devuelve `0` para Sí, `1` para No/Cancelado.
+Zeta incluye ahora dos temas:
+
+- `zen`: oscuro e inspirado en terminal.
+- `paper`: claro, editorial y orientado a lectura.
+
+Cambia la apariencia de un sitio y regenera automáticamente `public/`:
 
 ```bash
-if prompt_confirmation "¿Sobrescribir la configuración existente?" "N"; then
-    # Proceder con la escritura
-fi
+./main.sh theme mi-blog
 ```
 
-### Barra de Progreso
-
-- **`show_progress_bar <actual> <total> [ancho]`**: Muestra una barra de progreso ASCII dinámica e interactiva en `STDOUT`.
+También puedes hacerlo directamente:
 
 ```bash
-total=50
-for ((i=1; i<=total; i++)); do
-    show_progress_bar "$i" "$total" 30
-    sleep 0.05
-done
+./main.sh theme mi-blog paper zenburn
 ```
 
----
+El renderizador usa el Markdown extendido de Pandoc para tablas pipe/grid, listas de
+definición, task lists, notas al pie y bloques de código fenced. Las tablas se
+envuelven para responsive mediante el runtime Lua incluido en Pandoc, sin añadir
+ninguna dependencia externa.
 
-## 🤝 Contribución
+El estilo de syntax highlighting seleccionado se incrusta en cada artículo, por lo
+que `zenburn`, `haddock`, `pygments`, `tango`, `espresso`, `kate`, etc. controlan
+realmente los colores de los tokens.
 
-¡Las contribuciones son bienvenidas! Por favor, lee la [Guía de Contribución](CONTRIBUTING.md) antes de enviar una solicitud de extracción (_pull request_).
+## Fuentes open source opcionales
 
-## 🛡️ Seguridad
+Desde el asistente o con:
 
-Si descubres una vulnerabilidad de seguridad, revisa nuestra [Política de Seguridad](SECURITY.md) para reportarla de manera segura.
+```bash
+./main.sh fonts mi-blog
+```
 
-## 📄 Licencia
+puedes seleccionar:
 
-Distribuido bajo la Licencia MIT. Consulta el archivo `LICENSE` para obtener más información.
+- Cascadia Code
+- JetBrains Mono
+- Fira Code
+- IBM Plex Mono
+- Source Code Pro
+
+La fuente se descarga únicamente para ese sitio junto con su licencia upstream y
+se publica en `public/` durante el build. El asistente regenera el sitio
+automáticamente después del cambio.
+
+
+### Cache local de fuentes
+
+Las fuentes se descargan una sola vez por checkout en `.zeta-cache/fonts/`. El
+directorio está ignorado por Git. Si un segundo sitio utiliza la misma fuente,
+Zeta reutiliza el cache sin volver a acceder a la red y sólo copia la fuente
+seleccionada al `assets/fonts/` local del sitio antes de generar `public/`.

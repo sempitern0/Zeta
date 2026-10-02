@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="$site_lang$">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Archive — $site_title$</title>
+    <meta name="description" content="$site_desc$">
+    <meta name="generator" content="Zeta + Pandoc">
+    $for(css)$
+    <link rel="stylesheet" href="$css$">
+    $endfor$
+  </head>
+  <body id="top">
+    <a class="skip-link" href="#content">Skip to content</a>
+
+    <header class="paper-header">
+      <div class="paper-shell paper-header-inner">
+        <a class="paper-brand" href="./index.html">$site_title$</a>
+        <nav class="paper-nav" aria-label="Primary navigation">
+          <a href="./index.html">Home</a>
+          <a href="./posts.html" aria-current="page">Archive</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="content" class="paper-shell paper-archive">
+      <header class="paper-page-heading">
+        <p class="paper-kicker">Archive</p>
+        <h1>All posts</h1>
+        <p>$site_desc$</p>
+      </header>
+
+      <ul class="post-list paper-post-list">
+        $posts_list$
+      </ul>
+    </main>
+
+    <footer class="paper-footer">
+      <div class="paper-shell">
+        <p>&copy; $site_author$ · Built with Zeta.</p>
+      </div>
+    </footer>
+  </body>
+</html>

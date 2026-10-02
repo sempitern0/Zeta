@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="$site_lang$">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>$site_title$</title>
+    <meta name="description" content="$site_desc$">
+    <meta name="generator" content="Zeta + Pandoc">
+    $for(css)$
+    <link rel="stylesheet" href="$css$">
+    $endfor$
+  </head>
+  <body id="top">
+    <a class="skip-link" href="#content">Skip to content</a>
+
+    <header class="paper-header">
+      <div class="paper-shell paper-header-inner">
+        <a class="paper-brand" href="./index.html">$site_title$</a>
+        <nav class="paper-nav" aria-label="Primary navigation">
+          <a href="./index.html" aria-current="page">Home</a>
+          <a href="./posts.html">Archive</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="content" class="paper-shell">
+      <section class="paper-hero" aria-labelledby="paper-title">
+        <p class="paper-kicker">Independent notes &amp; articles</p>
+        <h1 id="paper-title">$site_title$</h1>
+        <p class="paper-lead">$site_desc$</p>
+      </section>
+
+      <section class="paper-latest" aria-labelledby="latest-posts">
+        <div class="paper-section-heading">
+          <h2 id="latest-posts">Latest writing</h2>
+          <a href="./posts.html">View archive</a>
+        </div>
+        <ul class="post-list paper-post-list">
+          $posts_list$
+        </ul>
+      </section>
+    </main>
+
+    <footer class="paper-footer">
+      <div class="paper-shell">
+        <p>&copy; $site_author$ · Built with Zeta.</p>
+      </div>
+    </footer>
+  </body>
+</html>

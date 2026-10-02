@@ -1,230 +1,325 @@
 # shellcheck disable=SC2034,SC2329,SC2155,SC2154
 
-boldWhite="${boldWhite:-\033[1;37m}"
-boldCyan="${boldCyan:-\033[1;36m}"
-boldYellow="${boldYellow:-\033[1;33m}"
-boldGreen="${boldGreen:-\033[1;32m}"
-boldRed="${boldRed:-\033[1;31m}"
-grayColour="${grayColour:-\033[0;90m}"
-endColour="${endColour:-\033[0m}"
+if [[ -n "${NO_COLOR:-}" ]]; then
+    boldWhite=""; boldCyan=""; boldYellow=""; boldGreen=""; boldRed=""; grayColour=""; endColour=""
+fi
 
 show_banner() {
-    local g1="\033[38;5;51m"
-    local g2="\033[38;5;45m"
-    local g3="\033[38;5;39m"
-    local g4="\033[38;5;63m"
-    local g5="\033[38;5;99m"
-    local g6="\033[38;5;135m"
-
-    echo -e "${g1}  ███████╗███████╗████████╗█████╗ ${endColour}"
-    echo -e "${g2}  ╚══███╔╝██╔════╝╚══██╔══╝██╔══██╗${endColour}"
-    echo -e "${g3}    ███╔╝ █████╗     ██║   ███████║${endColour}"
-    echo -e "${g4}   ███╔╝  ██╔══╝     ██║   ██╔══██║${endColour}"
-    echo -e "${g5}  ███████╗███████╗   ██║   ██║  ██║${endColour}"
-    echo -e "${g6}  ╚══════╝╚══════╝   ╚═╝   ╚═╝  ╚═╝${endColour}"
-    
-    echo -e "  ${boldWhite}ZETA${endColour} ${grayColour}— Static Site Generator for Hackers & Devs${endColour} ${g6}(v1.0)${endColour}"
-
+    local g1="[38;5;51m"
+    local g2="[38;5;45m"
+    local g3="[38;5;39m"
+    local g4="[38;5;63m"
+    local g5="[38;5;99m"
+    local g6="[38;5;135m"
     local sites_count=0
-    local target_dir="${SITES_DIR:-sites}"
 
-    if [[ -d "$target_dir" ]]; then
-        for d in "$target_dir"/*/; do
-            [[ -d "$d" ]] && ((++sites_count))
-        done
+    if [[ -d "$SITES_DIR" ]]; then
+        sites_count=$(get_all_sites | wc -l | tr -d ' ')
     fi
 
-    echo -e "  ${grayColour}⚡ Local workspace:${endColour} ${boldCyan}${sites_count} site(s)${endColour} ${grayColour}| Engine: Bash + Pandoc${endColour}"
+    printf '%b
+' "${g1}  ███████╗███████╗████████╗ █████╗ ${endColour}"
+    printf '%b
+' "${g2}  ╚══███╔╝██╔════╝╚══██╔══╝██╔══██╗${endColour}"
+    printf '%b
+' "${g3}    ███╔╝ █████╗     ██║   ███████║${endColour}"
+    printf '%b
+' "${g4}   ███╔╝  ██╔══╝     ██║   ██╔══██║${endColour}"
+    printf '%b
+' "${g5}  ███████╗███████╗   ██║   ██║  ██║${endColour}"
+    printf '%b
+' "${g6}  ╚══════╝╚══════╝   ╚═╝   ╚═╝  ╚═╝${endColour}"
+    printf '%b
+' "  ${boldWhite}ZETA${endColour} ${grayColour}— Markdown-first Static Site Generator${endColour}"
+    printf '%b
+' "  ${grayColour}Workspace:${endColour} ${boldCyan}${sites_count} site(s)${endColour} ${grayColour}| Engine: Bash + Pandoc | Output: public/${endColour}"
     print_separator
 }
 
 show_help() {
     show_banner
-    echo -e "${boldWhite}Usage:${endColour} $0 [options] [command]\n"
-    
-    echo -e "${boldWhite}Options:${endColour}"
-    printf "  %-22s %s\n" "-f, --force" "Force overwrite operations without asking"
-    printf "  %-22s %s\n" "-v, --verbose" "Enable detailed execution logging"
-    printf "  %-22s %s\n\n" "-h, --help" "Show this CLI help interface"
+    cat <<EOF_HELP
+Usage:
+  ./main.sh [global options] <command> [arguments]
+  ./main.sh                         Open the interactive assistant
 
-    echo -e "${boldWhite}Commands:${endColour}"
-    printf "  %-22s %s\n" "new, create" "Launch interactive site creation wizard"
-    printf "  %-22s %s\n" "build [slug]" "Build target site (or all if slug is omitted)"
-    printf "  %-22s %s\n" "build-all" "Batch build all existing sites in workspace"
-    printf "  %-22s %s\n" "index" "Recompile root dashboard (sites/index.html)"
-    printf "  %-22s %s\n\n" "help" "Display usage information"
+Global options:
+  -f, --force                      Skip destructive confirmations
+  -v, --verbose                    Show additional diagnostic output
+      --port PORT                  Preview port (default: ${PREVIEW_PORT})
+  -h, --help                       Show this help
+
+Site commands:
+  create | new                     Create a local site workspace
+  sites | list                     List sites and build status
+  edit <site>                      Edit site metadata and theme
+  theme <site> [theme] [style]     Change theme/highlighting and rebuild
+  delete | rm <site>               Delete a site workspace
+  clean <site>                     Remove only generated public/ output
+
+Content commands:
+  posts <site>                     List Markdown posts
+  new-post <site>                  Create a Markdown post scaffold
+  fonts <site>                     Manage optional open web fonts for a site
+
+Build and preview:
+  build | update <site>            Regenerate <site>/public/
+  build-all                        Regenerate public/ for all sites
+  preview <site> [port]            Build and serve one public/ directory
+  serve [port]                     Build all sites and serve local dashboard
+  dashboard | index                Regenerate sites/index.html only
+
+Examples:
+  ./main.sh create
+  ./main.sh new-post my-blog
+  ./main.sh posts my-blog
+  ./main.sh theme my-blog paper zenburn
+  ./main.sh build my-blog
+  ./main.sh preview my-blog 8000
+EOF_HELP
 }
 
-parse_args() {
-    local OPTIND opt
-
-    while getopts "fvh-:" opt; do
-        case "$opt" in
-            f) FORCE=true ;;
-            v) VERBOSE=true ;;
-            h)
-                show_help
-                exit 0
-                ;;
-            -)
-                case "${OPTARG}" in
-                    force)   FORCE=true ;;
-                    verbose) VERBOSE=true ;;
-                    help)
-                        show_help
-                        exit 0
-                        ;;
-                    output=*) OUTPUT_FILE="${OPTARG#*=}" ;;
-                    config=*) CONFIG_FILE="${OPTARG#*=}" ;;
-                    output)
-                        OUTPUT_FILE="${!OPTIND}"
-                        OPTIND=$((OPTIND + 1))
-                        ;;
-                    config)
-                        CONFIG_FILE="${!OPTIND}"
-                        OPTIND=$((OPTIND + 1))
-                        ;;
-                    *)
-                        msg_error "Unknown option: --${OPTARG}"
-                        show_help
-                        exit 1
-                        ;;
-                esac
-                ;;
-            \?)
-                msg_error "Invalid option: -$OPTARG"
-                show_help
-                exit 1
-                ;;
-        esac
-    done
-
-    shift $((OPTIND - 1))
-
-    if [[ $# -gt 0 ]]; then
-        local command="$1"
-        shift
-
-        case "$command" in
-            new|create)
-                create_new_site
-                exit 0
-                ;;
-            build)
-                if [[ $# -gt 0 && -n "$1" ]]; then
-                    build_site "$1"
-                else
-                    build_all_sites
-                fi
-                exit 0
-                ;;
-            build-all)
-                build_all_sites
-                exit 0
-                ;;
-            index)
-                update_sites_index
-                exit 0
-                ;;
-            help)
-                show_help
-                exit 0
-                ;;
-            *)
-                msg_error "Unknown command: '$command'"
-                show_help
-                exit 1
-                ;;
-        esac
-    fi
-}
-
-
-select_and_build_site() {
-    local available_sites=()
-    readarray -t available_sites < <(get_all_sites)
-
-    if [[ ${#available_sites[@]} -eq 0 ]]; then
-        msg_warn "No sites available to build."
+resolve_site_arg() {
+    local requested="${1:-}"
+    if [[ -n "$requested" ]]; then
+        printf '%s\n' "$requested"
         return 0
     fi
 
-    echo -e "\nSelect site to build:\n"
-    local idx=1
-    for site in "${available_sites[@]}"; do
-        echo -e "  [${idx}] ${site}"
-        ((idx++))
+    if [[ -t 0 && -t 1 ]]; then
+        select_site_interactive
+        return $?
+    fi
+
+    msg_error "A site slug is required in non-interactive mode."
+    return 1
+}
+
+parse_args() {
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            -f|--force)
+                FORCE=true
+                shift
+                ;;
+            -v|--verbose)
+                VERBOSE=true
+                shift
+                ;;
+            --port)
+                [[ $# -ge 2 ]] || { msg_error "--port requires a value."; exit 2; }
+                PREVIEW_PORT="$2"
+                shift 2
+                ;;
+            --port=*)
+                PREVIEW_PORT="${1#*=}"
+                shift
+                ;;
+            -h|--help)
+                show_help
+                exit 0
+                ;;
+            --)
+                shift
+                break
+                ;;
+            -*)
+                msg_error "Unknown option: $1"
+                show_help
+                exit 2
+                ;;
+            *)
+                break
+                ;;
+        esac
     done
 
-    echo ""
-    read -rp "Zeta ▶ Select option [1 - ${#available_sites[@]}]: " choice
-
-    if [[ "$choice" =~ ^[0-9]+$ ]] && (( choice >= 1 && choice <= ${#available_sites[@]} )); then
-        local selected_slug="${available_sites[$((choice - 1))]}"
-        
-        build_site "$selected_slug"
-        update_sites_index
-    else
-        msg_error "Invalid selection."
+    if ! [[ "$PREVIEW_PORT" =~ ^[0-9]+$ ]] ||        ! (( PREVIEW_PORT >= 1 && PREVIEW_PORT <= 65535 )); then
+        msg_error "Invalid preview port: '${PREVIEW_PORT}'."
+        exit 2
     fi
+
+    [[ $# -gt 0 ]] || return 0
+
+    local command="$1"
+    shift
+    local site
+
+    case "$command" in
+        create|new)
+            create_new_site
+            ;;
+        sites|list)
+            list_sites
+            ;;
+        edit)
+            site=$(resolve_site_arg "${1:-}") || exit 1
+            edit_site "$site"
+            ;;
+        theme|appearance)
+            site=$(resolve_site_arg "${1:-}") || exit 1
+            change_site_appearance "$site" "${2:-}" "${3:-}"
+            ;;
+        delete|rm)
+            site=$(resolve_site_arg "${1:-}") || exit 1
+            delete_site "$site"
+            ;;
+        clean)
+            site=$(resolve_site_arg "${1:-}") || exit 1
+            clean_site "$site"
+            ;;
+        posts)
+            site=$(resolve_site_arg "${1:-}") || exit 1
+            list_posts "$site"
+            ;;
+        new-post)
+            site=$(resolve_site_arg "${1:-}") || exit 1
+            create_post "$site"
+            ;;
+        fonts)
+            site=$(resolve_site_arg "${1:-}") || exit 1
+            manage_site_fonts "$site"
+            ;;
+        build|update)
+            if [[ $# -gt 0 ]]; then
+                build_site "$1" && update_sites_index
+            elif [[ -t 0 && -t 1 ]]; then
+                site=$(select_site_interactive) || exit 1
+                build_site "$site" && update_sites_index
+            else
+                build_all_sites
+            fi
+            ;;
+        build-all)
+            build_all_sites
+            ;;
+        preview)
+            site=$(resolve_site_arg "${1:-}") || exit 1
+            preview_site "$site" "${2:-$PREVIEW_PORT}"
+            ;;
+        serve)
+            serve_workspace "${1:-$PREVIEW_PORT}"
+            ;;
+        dashboard|index)
+            update_sites_index
+            msg_success "Local dashboard updated: sites/index.html"
+            ;;
+        help)
+            show_help
+            ;;
+        *)
+            msg_error "Unknown command: '${command}'."
+            show_help
+            exit 2
+            ;;
+    esac
+
+    local command_rc=$?
+    exit "$command_rc"
+}
+
+pause_menu() {
+    read -rp "Press Enter to continue..." _
+}
+
+select_and_build_site() {
+    local site
+    site=$(select_site_interactive) || return 0
+    build_site "$site" && update_sites_index
+}
+
+select_and_preview_site() {
+    local site
+    site=$(select_site_interactive) || return 0
+    preview_site "$site" "$PREVIEW_PORT"
+}
+
+manage_site_menu() {
+    local site
+    site=$(select_site_interactive) || return 0
+
+    while true; do
+        clear 2>/dev/null || true
+        show_banner
+        echo -e "${boldWhite}Manage: ${site}${endColour}"
+        echo ""
+        echo -e "  ${boldGreen}[1]${endColour} Edit site settings"
+        echo -e "  ${boldGreen}[2]${endColour} Appearance: theme + code highlighting"
+        echo -e "  ${boldGreen}[3]${endColour} List Markdown posts"
+        echo -e "  ${boldGreen}[4]${endColour} Create a new post"
+        echo -e "  ${boldGreen}[5]${endColour} Manage open web fonts"
+        echo -e "  ${boldGreen}[6]${endColour} Build / update public/"
+        echo -e "  ${boldGreen}[7]${endColour} Preview site locally"
+        echo -e "  ${boldGreen}[8]${endColour} Clean generated public/"
+        echo -e "  ${boldRed}[9]${endColour} Delete site"
+        echo "  [0] Back"
+        echo ""
+
+        local option
+        read -rp "$(printf '%b' "${boldCyan}Zeta ❯ ${endColour}")" option
+        case "${option,,}" in
+            1) edit_site "$site"; pause_menu ;;
+            2) change_site_appearance "$site"; pause_menu ;;
+            3) list_posts "$site"; pause_menu ;;
+            4) create_post "$site"; pause_menu ;;
+            5) manage_site_fonts "$site"; pause_menu ;;
+            6) build_site "$site" && update_sites_index; pause_menu ;;
+            7) preview_site "$site" "$PREVIEW_PORT"; pause_menu ;;
+            8) clean_site "$site"; pause_menu ;;
+            9)
+                delete_site "$site"
+                [[ -d "${SITES_DIR}/${site}" ]] || return 0
+                pause_menu
+                ;;
+            0|b|back) return 0 ;;
+            *) msg_warn "Invalid option: '${option}'"; sleep 0.5 ;;
+        esac
+    done
 }
 
 show_menu() {
     while true; do
         clear 2>/dev/null || true
         show_banner
-        ensure_pandoc_installed
-        ensure_minify_dependencies_installed
 
-        echo -e "${boldYellow}Workspace Commands:${endColour}\n"
-        echo -e "  ${boldGreen}[1]${endColour} ✨ ${boldWhite}Create new site${endColour}            ${grayColour}(Interactive wizard)${endColour}"
-        echo -e "  ${boldGreen}[2]${endColour} 📦 ${boldWhite}Build specific site${endColour}        ${grayColour}(Select from list)${endColour}"
-        echo -e "  ${boldGreen}[3]${endColour} 🚀 ${boldWhite}Build ALL sites${endColour}            ${grayColour}(Batch build)${endColour}"
-        echo -e "  ${boldGreen}[4]${endColour} 📊 ${boldWhite}Rebuild main Dashboard${endColour}     ${grayColour}(sites/index.html)${endColour}"
-        echo -e "  ${boldGreen}[0]${endColour} 🚪 ${boldWhite}Exit generator${endColour}             ${grayColour}(q, quit, exit)${endColour}\n"
+        if command_exists pandoc; then
+            echo -e "${grayColour}Pandoc: available | Preview: Python 3 optional${endColour}"
+        else
+            echo -e "${boldYellow}Pandoc: missing (required only when building)${endColour}"
+        fi
+        echo ""
+        echo -e "${boldWhite}Workspace${endColour}"
+        echo -e "  ${boldGreen}[1]${endColour} List sites"
+        echo -e "  ${boldGreen}[2]${endColour} Create site"
+        echo -e "  ${boldGreen}[3]${endColour} Manage site"
+        echo ""
+        echo -e "${boldWhite}Build & preview${endColour}"
+        echo -e "  ${boldGreen}[4]${endColour} Build one site"
+        echo -e "  ${boldGreen}[5]${endColour} Build all sites"
+        echo -e "  ${boldGreen}[6]${endColour} Preview one site"
+        echo -e "  ${boldGreen}[7]${endColour} Serve complete local workspace"
+        echo ""
+        echo -e "  ${boldRed}[0]${endColour} Exit"
         print_separator
 
-        read -rp "$(echo -e "${boldCyan}Zeta ❯ ${endColour}")" option
-        
+        local option
+        read -rp "$(printf '%b' "${boldCyan}Zeta ❯ ${endColour}")" option
         case "${option,,}" in
-            1)
-                echo ""
-                create_new_site
-                read -rp "$(echo -e "\n${grayColour}Press Enter to return to main menu...${endColour}")"
-                ;;
-            2)
-                echo ""
-                select_and_build_site
-                read -rp "$(echo -e "\n${grayColour}Press Enter to return to main menu...${endColour}")"
-                ;;
-            3)
-                echo ""
-                build_all_sites
-                read -rp "$(echo -e "\n${grayColour}Press Enter to return to main menu...${endColour}")"
-                ;;
-            4)
-                echo ""
-                update_sites_index
-                read -rp "$(echo -e "\n${grayColour}Press Enter to return to main menu...${endColour}")"
-                ;;
-            0|q|quit|exit|bye)
-                echo ""
-                msg_info "Exiting Zeta. Happy Hacking!"
+            1) list_sites; pause_menu ;;
+            2) create_new_site; pause_menu ;;
+            3) manage_site_menu ;;
+            4) select_and_build_site; pause_menu ;;
+            5) build_all_sites; pause_menu ;;
+            6) select_and_preview_site; pause_menu ;;
+            7) serve_workspace "$PREVIEW_PORT"; pause_menu ;;
+            0|q|quit|exit)
+                msg_info "Goodbye."
                 exit 0
                 ;;
             *)
-                msg_warn "Invalid option: '$option'"
-                sleep 0.8
+                msg_warn "Invalid option: '${option}'."
+                sleep 0.5
                 ;;
         esac
     done
-}
-
-cleanup() {
-    local exit_code=$?
-    if [[ $exit_code -ne 0 ]]; then
-        echo ""
-        msg_error "Execution failed or was interrupted (exit code $exit_code)."
-    fi
-    exit "$exit_code"
 }
