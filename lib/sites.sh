@@ -725,6 +725,313 @@ change_site_appearance() {
 }
 
 
+
+hex_to_rgb() {
+    local hex="${1#\#}"
+    [[ "$hex" =~ ^[0-9A-Fa-f]{6}$ ]] || return 1
+    printf '%d %d %d\n' \
+        "$((16#${hex:0:2}))" \
+        "$((16#${hex:2:2}))" \
+        "$((16#${hex:4:2}))"
+}
+
+print_color_swatch() {
+    local label="$1"
+    local color="$2"
+    local rgb r g b
+
+    if [[ "$color" =~ ^#[0-9A-Fa-f]{6}$ ]] && rgb=$(hex_to_rgb "$color"); then
+        read -r r g b <<< "$rgb"
+        if [[ -z "${NO_COLOR:-}" ]]; then
+            printf '  %-24s \033[48;2;%d;%d;%dm      \033[0m  %s\n' "$label" "$r" "$g" "$b" "$color"
+        else
+            printf '  %-24s %s\n' "$label" "$color"
+        fi
+    else
+        printf '  %-24s %s\n' "$label" "$color"
+    fi
+}
+
+show_theme_palette() {
+    local theme_name="$1"
+    local theme_dir="${TEMPLATES_DIR}/${theme_name}"
+    local css_file line name color found=false
+
+    echo ""
+    echo -e "${boldWhite}Theme palette: ${theme_name}${endColour}"
+
+    while IFS= read -r css_file; do
+        while IFS= read -r line; do
+            name=$(sed -E 's/^[[:space:]]*--([^:]+):[[:space:]]*(#[0-9A-Fa-f]{6}).*/\1/' <<< "$line")
+            color=$(sed -E 's/^[[:space:]]*--[^:]+:[[:space:]]*(#[0-9A-Fa-f]{6}).*/\1/' <<< "$line")
+            [[ "$color" =~ ^#[0-9A-Fa-f]{6}$ ]] || continue
+            print_color_swatch "--${name}" "$color"
+            found=true
+        done < "$css_file"
+    done < <(find "${theme_dir}/styles" -maxdepth 1 -type f -name '*.css' -print 2>/dev/null | sort)
+
+    [[ "$found" == true ]] || echo "  No hexadecimal theme colors detected."
+}
+
+show_pandoc_palette() {
+    local style="$1"
+    local palette tmp label color seen="|"
+
+    echo ""
+    echo -e "${boldWhite}Pandoc palette: ${style}${endColour}"
+
+    if ! command_exists pandoc; then
+        echo "  Pandoc not installed."
+        return 1
+    fi
+
+    palette=$(pandoc "--print-highlight-style=${style}" 2>/dev/null) || {
+        echo "  Unable to read Pandoc highlight style '${style}'."
+        return 1
+    }
+
+    # Show base foreground/background first.
+    color=$(sed -nE 's/^[[:space:]]*"text-color":[[:space:]]*"(#[0-9A-Fa-f]{6})".*/\1/p' <<< "$palette" | head -1)
+    [[ -n "$color" ]] && {
+        print_color_swatch "foreground" "$color"
+        seen+="${color}|"
+    }
+
+    color=$(sed -nE 's/^[[:space:]]*"background-color":[[:space:]]*"(#[0-9A-Fa-f]{6})".*/\1/p' <<< "$palette" | head -1)
+    [[ -n "$color" ]] && {
+        print_color_swatch "background" "$color"
+        seen+="${color}|"
+    }
+
+    # Then expose the unique token colors in the exact style returned by Pandoc.
+    local count=0
+    while IFS= read -r color; do
+        [[ "$seen" == *"|${color}|"* ]] && continue
+        seen+="${color}|"
+        ((count += 1))
+        print_color_swatch "token-${count}" "$color"
+        (( count >= 12 )) && break
+    done < <(grep -Eo '#[0-9A-Fa-f]{6}' <<< "$palette")
+
+    (( count > 0 )) || echo "  No token colors detected."
+}
+
+path_is_safe_relative() {
+    local value="$1"
+    [[ -n "$value" ]] || return 1
+    [[ "$value" != /* ]] || return 1
+    [[ "$value" != "." && "$value" != ".." ]] || return 1
+    [[ "$value" != ../* && "$value" != */../* && "$value" != */.. ]] || return 1
+}
+
+site_public_is_stale() {
+    local source_dir="$1"
+    local output_dir="$2"
+    local newest_source newest_output
+
+    [[ -d "$output_dir" ]] || return 0
+
+    newest_source=$(find "$source_dir" -type f \( -name '*.md' -o -name '*.markdown' \) -printf '%T@\n' 2>/dev/null | sort -nr | head -1)
+    newest_output=$(find "$output_dir" -type f -name '*.html' -printf '%T@\n' 2>/dev/null | sort -nr | head -1)
+
+    [[ -n "$newest_source" ]] || return 1
+    [[ -n "$newest_output" ]] || return 0
+
+    awk -v src="$newest_source" -v out="$newest_output" 'BEGIN { exit !(src > out) }'
+}
+
+diagnose_site() {
+    local site_slug="$1"
+    require_site_slug "$site_slug" || return 2
+
+    local site_dir="${SITES_DIR}/${site_slug}"
+    local config_file
+
+    print_section "Doctor: ${site_slug}"
+
+    if [[ ! -d "$site_dir" ]]; then
+        msg_error "Site directory does not exist: ${site_dir}"
+        return 2
+    fi
+
+    if ! config_file=$(find_site_config "$site_dir"); then
+        msg_error "Missing config.yaml/config.yml."
+        return 2
+    fi
+
+    local errors=0 warnings=0
+    local title desc author lang url theme highlight content_rel output_rel
+    title=$(get_site_yaml_prop "$config_file" site title "")
+    desc=$(get_site_yaml_prop "$config_file" site description "")
+    author=$(get_site_yaml_prop "$config_file" site author "")
+    lang=$(get_site_yaml_prop "$config_file" site language "")
+    url=$(get_site_yaml_prop "$config_file" site url "")
+    theme=$(get_site_yaml_prop "$config_file" theme name "")
+    highlight=$(get_site_yaml_prop "$config_file" theme pandoc_theme "")
+    content_rel=$(get_site_yaml_prop "$config_file" build content_dir "")
+    output_rel=$(get_site_yaml_prop "$config_file" build output_dir "")
+
+    doctor_ok()   { printf '  %b %-20s %s\n' "${boldGreen}[OK]${endColour}" "$1" "$2"; }
+    doctor_warn() { printf '  %b %-20s %s\n' "${boldYellow}[WARN]${endColour}" "$1" "$2"; ((warnings += 1)); }
+    doctor_fail() { printf '  %b %-20s %s\n' "${boldRed}[FAIL]${endColour}" "$1" "$2"; ((errors += 1)); }
+
+    echo -e "${boldWhite}Configuration${endColour}"
+
+    [[ -n "$title" ]] && doctor_ok "site.title" "$title" || doctor_fail "site.title" "missing"
+    [[ -n "$desc" ]] && doctor_ok "site.description" "$desc" || doctor_warn "site.description" "missing"
+    [[ -n "$author" ]] && doctor_ok "site.author" "$author" || doctor_warn "site.author" "missing"
+
+    if [[ "$lang" =~ ^[A-Za-z]{2,3}([_-][A-Za-z0-9]{2,8})*$ ]]; then
+        doctor_ok "site.language" "$lang"
+    else
+        doctor_fail "site.language" "${lang:-missing} (expected e.g. en, es, es-ES)"
+    fi
+
+    if [[ "$url" =~ ^https?://[^[:space:]]+$ ]]; then
+        if [[ "$url" == "https://example.com"* || "$url" == "http://example.com"* ]]; then
+            doctor_warn "site.url" "$url (placeholder)"
+        elif [[ "$url" == http://* ]]; then
+            doctor_warn "site.url" "$url (HTTP; HTTPS recommended for deploy)"
+        else
+            doctor_ok "site.url" "$url"
+        fi
+    else
+        doctor_fail "site.url" "${url:-missing} (absolute http/https URL required)"
+    fi
+
+    if theme_exists "$theme"; then
+        doctor_ok "theme.name" "$theme"
+    else
+        doctor_fail "theme.name" "${theme:-missing} (theme not found)"
+    fi
+
+    if highlight_style_exists "$highlight"; then
+        doctor_ok "pandoc_theme" "$highlight"
+    else
+        doctor_fail "pandoc_theme" "${highlight:-missing} (style not available)"
+    fi
+
+    if path_is_safe_relative "$content_rel"; then
+        doctor_ok "content_dir" "$content_rel"
+    else
+        doctor_fail "content_dir" "${content_rel:-missing} (unsafe/invalid relative path)"
+    fi
+
+    if path_is_safe_relative "$output_rel"; then
+        doctor_ok "output_dir" "$output_rel"
+    else
+        doctor_fail "output_dir" "${output_rel:-missing} (unsafe/invalid relative path)"
+    fi
+
+    echo ""
+    echo -e "${boldWhite}Runtime and content${endColour}"
+
+    if command_exists pandoc; then
+        doctor_ok "Pandoc" "$(pandoc --version | head -1)"
+    else
+        doctor_fail "Pandoc" "not installed"
+    fi
+
+    if command_exists python3; then
+        doctor_ok "Preview runtime" "$(python3 --version 2>&1)"
+    else
+        doctor_warn "Preview runtime" "python3 missing; build works but local preview is unavailable"
+    fi
+
+    local content_dir="${site_dir}/${content_rel:-posts}"
+    local output_dir="${site_dir}/${output_rel:-public}"
+    local post_count=0
+
+    if [[ -d "$content_dir" ]]; then
+        post_count=$(find "$content_dir" -type f \( -name '*.md' -o -name '*.markdown' \) | wc -l | tr -d ' ')
+        if (( post_count > 0 )); then
+            doctor_ok "Posts" "${post_count} Markdown file(s)"
+        else
+            doctor_warn "Posts" "no Markdown posts found"
+        fi
+    else
+        doctor_fail "Posts" "content directory missing: ${content_dir}"
+    fi
+
+    local duplicate_output
+    duplicate_output=$(
+        if [[ -d "$content_dir" ]]; then
+            find "$content_dir" -type f -name '*.md' -print0 |
+            while IFS= read -r -d '' md_file; do
+                declare -A doctor_meta=()
+                get_post_metadata "$md_file" doctor_meta
+                printf '%s/%s.html\n' "${doctor_meta["year"]}" "${doctor_meta["slug"]}"
+            done | sort | uniq -d | head -1
+        fi
+    )
+    if [[ -n "$duplicate_output" ]]; then
+        doctor_fail "Post routes" "duplicate output path: posts/${duplicate_output}"
+    else
+        doctor_ok "Post routes" "no duplicate generated routes"
+    fi
+
+    echo ""
+    echo -e "${boldWhite}Generated deploy artifact${endColour}"
+
+    if [[ -d "$output_dir" ]]; then
+        doctor_ok "public/" "$output_dir"
+
+        [[ -s "${output_dir}/index.html" ]] && doctor_ok "index.html" "present" || doctor_fail "index.html" "missing"
+        [[ -s "${output_dir}/posts.html" ]] && doctor_ok "posts.html" "present" || doctor_warn "posts.html" "missing"
+        [[ -s "${output_dir}/robots.txt" ]] && doctor_ok "robots.txt" "present" || doctor_fail "robots.txt" "missing"
+        [[ -s "${output_dir}/sitemap.xml" ]] && doctor_ok "sitemap.xml" "present" || doctor_fail "sitemap.xml" "missing"
+
+        if find "$output_dir" -type f \( -name '*.md' -o -name '*.markdown' -o -name 'config.yaml' -o -name 'config.yml' \) | grep -q .; then
+            doctor_fail "Artifact hygiene" "Markdown/config files leaked into public/"
+        else
+            doctor_ok "Artifact hygiene" "no Markdown/config files in public/"
+        fi
+
+        if site_public_is_stale "$content_dir" "$output_dir"; then
+            doctor_warn "Freshness" "Markdown is newer than generated HTML; rebuild before deploy"
+        else
+            doctor_ok "Freshness" "generated HTML is current"
+        fi
+
+        if [[ -n "$url" && -s "${output_dir}/robots.txt" ]] &&
+           grep -Fq "Sitemap: ${url%/}/sitemap.xml" "${output_dir}/robots.txt"; then
+            doctor_ok "robots sitemap" "matches site.url"
+        elif [[ -s "${output_dir}/robots.txt" ]]; then
+            doctor_warn "robots sitemap" "does not match current site.url; rebuild recommended"
+        fi
+
+        if [[ -n "$url" && -s "${output_dir}/sitemap.xml" ]] &&
+           grep -Fq "<loc>${url%/}/" "${output_dir}/sitemap.xml"; then
+            doctor_ok "sitemap URLs" "use site.url"
+        elif [[ -s "${output_dir}/sitemap.xml" ]]; then
+            doctor_warn "sitemap URLs" "do not appear to use current site.url"
+        fi
+    else
+        doctor_warn "public/" "not built yet"
+    fi
+
+    if theme_exists "$theme"; then
+        show_theme_palette "$theme"
+    fi
+    if highlight_style_exists "$highlight"; then
+        show_pandoc_palette "$highlight" || true
+    fi
+
+    echo ""
+    print_separator
+    if (( errors > 0 )); then
+        msg_error "Doctor found ${errors} blocking issue(s) and ${warnings} warning(s)."
+        return 1
+    fi
+
+    if (( warnings > 0 )); then
+        msg_warn "Doctor found no blocking issues and ${warnings} warning(s)."
+    else
+        msg_success "Doctor: site is ready for deployment."
+    fi
+    return 0
+}
+
 create_new_site() {
     print_section "Create site"
 

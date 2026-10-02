@@ -379,3 +379,34 @@ Las fuentes se descargan una sola vez por checkout en `.zeta-cache/fonts/`. El
 directorio está ignorado por Git. Si un segundo sitio utiliza la misma fuente,
 Zeta reutiliza el cache sin volver a acceder a la red y sólo copia la fuente
 seleccionada al `assets/fonts/` local del sitio antes de generar `public/`.
+
+
+## Diagnóstico pre-deploy
+
+Ejecuta:
+
+```bash
+./main.sh doctor mi-blog
+```
+
+El diagnóstico valida los campos críticos del `config.yaml`, tema y highlighting,
+rutas de build, disponibilidad de Pandoc, posts, rutas duplicadas, contenido de
+`public/`, `robots.txt`, `sitemap.xml`, fugas de Markdown/configuración y si el
+artefacto parece desactualizado respecto a los Markdown.
+
+Al final muestra visualmente en terminal la paleta hexadecimal del tema Zeta y la
+paleta real que devuelve Pandoc para el syntax highlighting seleccionado. Los
+errores bloqueantes terminan con código distinto de cero, por lo que `doctor`
+también puede utilizarse en CI antes de un deploy.
+
+## Tema `console`
+
+Además de `zen` y `paper`, Zeta incluye `console`: un diseño oscuro dirigido a
+contenido técnico, administración de sistemas, DevOps y programación. Utiliza una
+estética de consola/ops dashboard, tipografía monoespaciada, paneles, prompts y
+estado del sistema sin introducir JavaScript.
+
+```bash
+./main.sh theme mi-blog console zenburn
+./main.sh doctor mi-blog
+```

@@ -380,3 +380,34 @@ Font downloads are cached once per checkout under `.zeta-cache/fonts/`. The
 directory is ignored by Git. A second site using the same font reuses the cached
 files and performs no network download; Zeta only copies the selected font into
 that site's local `assets/fonts/` before building `public/`.
+
+
+## Pre-deploy diagnostics
+
+Run:
+
+```bash
+./main.sh doctor my-blog
+```
+
+The diagnostic validates critical `config.yaml` fields, theme and highlighting,
+build paths, Pandoc availability, posts, duplicate routes, `public/`, `robots.txt`,
+`sitemap.xml`, Markdown/config leakage and whether generated HTML appears older
+than the Markdown sources.
+
+It then renders terminal color swatches for both the Zeta theme palette and the
+actual syntax-highlighting palette reported by the installed Pandoc version.
+Blocking errors return a non-zero exit code, so `doctor` can also be used in CI
+before deployment.
+
+## `console` theme
+
+Alongside `zen` and `paper`, Zeta ships with `console`: a dark design intended for
+technical writing, systems administration, DevOps and programming. It uses a
+console/operations-dashboard aesthetic, monospace typography, panels, prompts and
+status indicators without introducing JavaScript.
+
+```bash
+./main.sh theme my-blog console zenburn
+./main.sh doctor my-blog
+```

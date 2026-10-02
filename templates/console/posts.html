@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="$site_lang$">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Posts :: $site_title$</title>
+  <meta name="description" content="$site_desc$">
+  <meta name="generator" content="Zeta + Pandoc">
+  $for(css)$<link rel="stylesheet" href="$css$">$endfor$
+</head>
+<body id="top">
+  <a class="skip-link" href="#content">Skip to content</a>
+
+  <header class="console-bar">
+    <div class="console-shell console-bar-inner">
+      <a class="console-brand" href="./index.html"><span aria-hidden="true">root@zeta:~&#36;</span> $site_title$</a>
+      <nav class="console-nav" aria-label="Primary navigation">
+        <a href="./index.html">./home</a>
+        <a href="./posts.html" aria-current="page">./posts</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="content" class="console-shell console-page">
+    <p class="console-prompt" aria-hidden="true">&#36; find ./posts -type f | sort -r</p>
+    <h1>Post archive</h1>
+    <p class="console-lead">$site_desc$</p>
+
+    <section class="console-panel" aria-label="All posts">
+      <div class="panel-title"><span>INDEX</span><span>type=markdown</span></div>
+      <ul class="post-list console-post-list">$posts_list$</ul>
+    </section>
+  </main>
+
+  <footer class="console-footer">
+    <div class="console-shell">
+      <span>user=$site_author$</span>
+      <span>generator=zeta</span>
+      <span>status=0</span>
+    </div>
+  </footer>
+</body>
+</html>

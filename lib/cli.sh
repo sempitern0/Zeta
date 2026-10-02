@@ -61,6 +61,7 @@ Content commands:
   posts <site>                     List Markdown posts
   new-post <site>                  Create a Markdown post scaffold
   fonts <site>                     Manage optional open web fonts for a site
+  doctor <site>                    Validate deploy readiness and show palettes
 
 Build and preview:
   build | update <site>            Regenerate <site>/public/
@@ -180,6 +181,10 @@ parse_args() {
             site=$(resolve_site_arg "${1:-}") || exit 1
             manage_site_fonts "$site"
             ;;
+        doctor|diagnose|check-site)
+            site=$(resolve_site_arg "${1:-}") || exit 1
+            diagnose_site "$site"
+            ;;
         build|update)
             if [[ $# -gt 0 ]]; then
                 build_site "$1" && update_sites_index
@@ -248,10 +253,11 @@ manage_site_menu() {
         echo -e "  ${boldGreen}[3]${endColour} List Markdown posts"
         echo -e "  ${boldGreen}[4]${endColour} Create a new post"
         echo -e "  ${boldGreen}[5]${endColour} Manage open web fonts"
-        echo -e "  ${boldGreen}[6]${endColour} Build / update public/"
-        echo -e "  ${boldGreen}[7]${endColour} Preview site locally"
-        echo -e "  ${boldGreen}[8]${endColour} Clean generated public/"
-        echo -e "  ${boldRed}[9]${endColour} Delete site"
+        echo -e "  ${boldGreen}[6]${endColour} Diagnose deploy readiness + palettes"
+        echo -e "  ${boldGreen}[7]${endColour} Build / update public/"
+        echo -e "  ${boldGreen}[8]${endColour} Preview site locally"
+        echo -e "  ${boldGreen}[9]${endColour} Clean generated public/"
+        echo -e "  ${boldRed}[10]${endColour} Delete site"
         echo "  [0] Back"
         echo ""
 
@@ -263,10 +269,11 @@ manage_site_menu() {
             3) list_posts "$site"; pause_menu ;;
             4) create_post "$site"; pause_menu ;;
             5) manage_site_fonts "$site"; pause_menu ;;
-            6) build_site "$site" && update_sites_index; pause_menu ;;
-            7) preview_site "$site" "$PREVIEW_PORT"; pause_menu ;;
-            8) clean_site "$site"; pause_menu ;;
-            9)
+            6) diagnose_site "$site"; pause_menu ;;
+            7) build_site "$site" && update_sites_index; pause_menu ;;
+            8) preview_site "$site" "$PREVIEW_PORT"; pause_menu ;;
+            9) clean_site "$site"; pause_menu ;;
+            10)
                 delete_site "$site"
                 [[ -d "${SITES_DIR}/${site}" ]] || return 0
                 pause_menu
