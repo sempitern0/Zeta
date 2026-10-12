@@ -1,7 +1,7 @@
 .PHONY: help setup chmod init-dirs check syntax lint install-hooks run serve build-all certs docker-up docker-down docker-ps docker-restart
 
 .DEFAULT_GOAL := help
-SCRIPTS := $(wildcard *.sh) $(wildcard lib/*.sh)
+SCRIPTS := $(wildcard *.sh) $(wildcard lib/bash/*.sh)
 
 help: ## Show available targets
 	@echo "Usage: make [target]"
@@ -9,7 +9,7 @@ help: ## Show available targets
 	@grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-18s\033[0m %s\n", $$1, $$2}'
 
 chmod: ## Make Zeta scripts executable
-	@chmod +x main.sh 2>/dev/null || true
+	@chmod +x main.sh zeta.sh 2>/dev/null || true
 	@chmod +x githooks/pre-commit 2>/dev/null || true
 	@echo "✓ Executable permissions ready"
 
@@ -51,16 +51,16 @@ install-hooks: ## Install the repository pre-commit hook when .git exists
 
 setup: chmod init-dirs install-hooks check syntax ## Prepare Zeta without Docker or system changes
 	@echo ""
-	@echo "Zeta is ready. Run: ./main.sh"
+	@echo "Zeta is ready. Run: ./zeta.sh"
 
 run: ## Open the interactive Zeta assistant
-	@./main.sh
+	@./zeta.sh
 
 serve: ## Build every local site and serve the workspace on port 8000
-	@./main.sh serve
+	@./zeta.sh serve
 
 build-all: ## Build every local site into its public/ directory
-	@./main.sh build-all
+	@./zeta.sh build-all
 
 certs: ## Optional: generate local zeta.local TLS certificates for Docker/Nginx
 	@mkdir -p nginx/certs
