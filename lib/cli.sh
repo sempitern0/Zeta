@@ -6,12 +6,28 @@ fi
 
 
 ui_rule() { printf '%*s\n' 70 '' | tr ' ' '-'; }
-ui_heading() { printf '\n%b%s%b\n' "$boldWhite" "$1" "$endColour"; }
-ui_action() { printf '  %b[%s]%b %-25s %b%s%b\n' "$boldGreen" "$1" "$endColour" "$2" "$grayColour" "$3" "$endColour"; }
+ui_heading() { printf '\n%b◆ %s%b\n' "$boldPurple" "$1" "$endColour"; }
+ui_action() { if (( ${COLUMNS:-80} < 76 )); then printf '  %b[%s]%b %s\n' "$boldGreen" "$1" "$endColour" "$2"; else printf '  %b[%s]%b %-25s %b%s%b\n' "$boldGreen" "$1" "$endColour" "$2" "$grayColour" "$3" "$endColour"; fi; }
 
 show_banner() {
     local -a sites=()
     readarray -t sites < <(get_all_sites)
+    local colors=()
+    if [[ -t 1 && -z "${NO_COLOR:-}" && "${TERM:-}" != dumb ]]; then
+        colors=($'\033[38;5;51m' $'\033[38;5;45m' $'\033[38;5;39m' $'\033[38;5;63m' $'\033[38;5;99m' $'\033[38;5;135m')
+    else
+        colors=('' '' '' '' '' '')
+    fi
+    local reset=''
+    [[ -n "${colors[0]}" ]] && reset=$'\033[0m'
+    if (( ${COLUMNS:-80} >= 69 )); then
+        printf '%b\n' "${colors[0]}  ███████╗███████╗████████╗ █████╗ ${reset}"
+        printf '%b\n' "${colors[1]}  ╚══███╔╝██╔════╝╚══██╔══╝██╔══██╗${reset}"
+        printf '%b\n' "${colors[2]}    ███╔╝ █████╗     ██║   ███████║${reset}"
+        printf '%b\n' "${colors[3]}   ███╔╝  ██╔══╝     ██║   ██╔══██║${reset}"
+        printf '%b\n' "${colors[4]}  ███████╗███████╗   ██║   ██║  ██║${reset}"
+        printf '%b\n' "${colors[5]}  ╚══════╝╚══════╝   ╚═╝   ╚═╝  ╚═╝${reset}"
+    fi
     printf '\n%bZETA%b  %b/ create · write · publish%b\n' "$boldCyan" "$endColour" "$grayColour" "$endColour"
     ui_rule
     printf '  Workspace   %b%s sites%b\n' "$boldWhite" "${#sites[@]}" "$endColour"
