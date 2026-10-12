@@ -417,3 +417,19 @@ status indicators without introducing JavaScript.
 The `indie` theme is a video game's promotional landing and devlog. The `organization` theme presents an open-source mission, linked repositories and related documentation. Both use optional `landing.yaml` for CTAs and hero artwork and optional `landing.md` for the intro/mission. A Markdown post's `external_url` can link its card to an external repository or guide.
 
 See [the full landing themes guide](docs/landing-themes.md). Run `bash tests/theme-smoke.sh` to validate both themes.
+
+## Terminal assistant and Windows PowerShell
+
+The Bash terminal assistant has a compact, dependency-free workspace dashboard with status, theme and post counts. See [terminal interface](docs/terminal-assistant.md).
+
+Windows users can run the native [PowerShell 7+ entry point](zeta.ps1) with **Pandoc** installed; Bash or WSL is not required:
+
+```powershell
+./zeta.ps1 help
+./zeta.ps1 sites
+./zeta.ps1 build my-site
+./zeta.ps1 doctor my-site
+./zeta.ps1 preview my-site -Port 8000
+```
+
+The native PowerShell implementation shares site configuration, templates and the deployment directory with Bash. **Feature parity is still evolving**: the core authoring/build workflow is present, but font management and some advanced Bash diagnostics are not available in PowerShell yet. See [Windows guide](docs/powershell.md) and [cross-platform CI checks](.github/workflows/powershell.yml).
