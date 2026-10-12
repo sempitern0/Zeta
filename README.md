@@ -411,3 +411,9 @@ status indicators without introducing JavaScript.
 ./main.sh theme my-blog console zenburn
 ./main.sh doctor my-blog
 ```
+
+## Indie game and GitHub organization landing themes
+
+The `indie` theme is a video game's promotional landing and devlog. The `organization` theme presents an open-source mission, linked repositories and related documentation. Both use optional `landing.yaml` for CTAs and hero artwork and optional `landing.md` for the intro/mission. A Markdown post's `external_url` can link its card to an external repository or guide.
+
+See [the full landing themes guide](docs/landing-themes.md). Run `bash tests/theme-smoke.sh` to validate both themes.

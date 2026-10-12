@@ -410,3 +410,9 @@ estado del sistema sin introducir JavaScript.
 ./main.sh theme mi-blog console zenburn
 ./main.sh doctor mi-blog
 ```
+
+## Landing themes: indie y organization
+
+`indie` permite promocionar un videojuego y publicar un diario de desarrollo. `organization` presenta la misión de una organización de GitHub, sus repositorios y documentación. Se personalizan mediante `landing.yaml` y `landing.md` junto a `config.yaml`; el frontmatter Markdown admite el campo opcional `external_url`.
+
+Consulta la [guía](docs/landing-themes.md) y ejecuta `bash tests/theme-smoke.sh` para validar ambos diseños.
