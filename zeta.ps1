@@ -102,7 +102,7 @@ function ConfigText([hashtable]$c){
  ) -join [Environment]::NewLine
 }
 function SafeDir([string]$s){
- $s -ne '' -and ![IO.Path]::IsPathRooted($s) -and $s -notmatch '(^|[/\\])\.\.([/\\]|$)|[:\r\n]'
+ $s -ne '' -and $s -notin @('.','..') -and ![IO.Path]::IsPathRooted($s) -and $s -notmatch '(^|[/\\])\.\.([/\\]|$)|[:\r\n]'
 }
 function SafeLink([string]$s){
  if(!$s -or $s -match '[\s"<>]'){return $false}
@@ -352,7 +352,9 @@ function ListSites{
 }
 function Clean([string]$name){
  $c=Config $name
- if(!(SafeDir $c.output) -or !(SafeDir $c.content) -or $c.output -eq $c.content){throw 'Unsafe output directory'}
+ if(!(SafeDir $c.output) -or !(SafeDir $c.content)){throw 'Unsafe output directory'}
+ $out=$c.output.Replace('\','/').Trim('/');$input=$c.content.Replace('\','/').Trim('/')
+ if($out -eq $input -or $out.StartsWith("$input/") -or $input.StartsWith("$out/")){throw 'Overlapping output and content directories'}
  $p=Join-Path (SiteDir $name) $c.output
  if(Test-Path $p){Remove-Item $p -Recurse -Force}
 }
