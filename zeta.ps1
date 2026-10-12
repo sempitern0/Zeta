@@ -3,6 +3,7 @@ param(
  [Parameter(Position=0)][string]$Command='',
  [Parameter(Position=1)][string]$Site='',
  [Parameter(Position=2)][string]$Value='',
+ [Parameter(Position=3)][string]$Highlight='',
  [switch]$Force,
  [int]$Port=8000
 )
@@ -46,6 +47,28 @@ function Meta([string]$path,[string]$key){
  }
  return ''
 }
+function Tags([string]$path){
+ $lines=[IO.File]::ReadAllLines($path)
+ if($lines.Length -lt 2 -or $lines[0].Trim() -ne '---'){return @()}
+ $result=@();$list=$false
+ for($i=1;$i -lt $lines.Length;$i++){
+  $line=$lines[$i]
+  if($line.Trim() -eq '---'){break}
+  if($line -match '^\s*tags:\s*(.*)$'){
+   $raw=$Matches[1].Trim()
+   if($raw){
+    $raw=$raw.Trim('[',']')
+    foreach($part in ($raw -split ',')){$v=Scalar $part;if($v){$result+=$v}}
+    break
+   }
+   $list=$true;continue
+  }
+  if($list -and $line -match '^\s+-\s+(.*)$'){$v=Scalar $Matches[1];if($v){$result+=$v}}
+  elseif($list -and $line -match '^\s+\w+:'){break}
+ }
+ return $result
+}
+
 function Slug([string]$s){
  $s=$s.ToLowerInvariant().Normalize([Text.NormalizationForm]::FormD)
  $s=-join ($s.ToCharArray() | Where-Object {[Globalization.CharUnicodeInfo]::GetUnicodeCategory($_) -ne 'NonSpacingMark'})
@@ -125,7 +148,7 @@ function PostInfo([IO.FileInfo]$file,[string]$defaultAuthor){
  $human=Meta $file.FullName human_date
  if(!$human){$human=$date}
  @{title=$title;slug=$slug;date=$date;year=$year;human=$human;author=$author;
-   description=$desc;external_url=(Meta $file.FullName external_url)}
+   description=$desc;external_url=(Meta $file.FullName external_url);tags=@(Tags $file.FullName)}
 }
 function Pandoc([string[]]$options){
  '' | & pandoc @options
@@ -203,6 +226,7 @@ function Build([string]$name){
    $filter=Join-Path $Templates 'common/filters/table-wrapper.lua'
    if(Test-Path $filter){$args+="--lua-filter=$filter"}
    $args+=@(Styles $c.theme $dir '../../')
+   foreach($tag in $p.tags){$args+=@('-V',('tags='+(Escape $tag)))}
    $args+=@('-o',$target)
    Pandoc $args
    $args=@('-f','markdown','--quiet','--template='+ (Join-Path $theme 'post_link.html'),
@@ -279,6 +303,11 @@ function NewSite{
  theme=$theme;highlight='zenburn';content='posts';output='public'}
  [void](New-Item -ItemType Directory -Path (Join-Path $dir 'posts') -Force)
  Save (Join-Path $dir 'config.yaml') (ConfigText $c)
+ $today=Get-Date -Format yyyy-MM-dd
+ $sample=@('---','title: "Welcome to Zeta"','author: '+(Quote $c.author),'date: '+(Quote $today),
+ 'description: "Your first Markdown article"','tags: [zeta, introduction]','---','',
+ '# Hello, world','','This is a Markdown article.','','## Next steps','','Edit this file and rebuild the site.')
+ Save (Join-Path (Join-Path $dir 'posts') "$today-welcome.md") ($sample -join [Environment]::NewLine)
  Dashboard
  Write-Host "Created $dir" -ForegroundColor Green
 }
@@ -287,11 +316,12 @@ function EditSite([string]$name){
  foreach($k in @('title','description','author','language','url')){$c[$k]=Ask $k $c[$k]}
  Save (ConfigPath $name) (ConfigText $c);Dashboard
 }
-function ThemeSite([string]$name,[string]$theme){
+function ThemeSite([string]$name,[string]$theme,[string]$style=''){
  $c=Config $name
  if(!$theme){$theme=SelectItem 'Theme' (Themes) $c.theme}
  if((Themes) -notcontains $theme){throw 'Unknown theme'}
  $c.theme=$theme
+ if($style){$c.highlight=$style}
  Save (ConfigPath $name) (ConfigText $c)
  Build $name;Dashboard
 }
@@ -303,9 +333,13 @@ function NewPost([string]$name){
  $file=Join-Path (Join-Path (SiteDir $name) $c.content) "$date-$slug.md"
  if((Test-Path $file) -and !$Force){throw 'Article exists'}
  $desc=Ask 'Description' $title
+ $tags=Ask 'Tags (comma-separated)' ''
  $body=@('---','title: '+(Quote $title),'author: '+(Quote $c.author),
  'date: '+(Quote $date),'description: '+(Quote $desc),'slug: '+(Quote $slug),
  'tags: []','---','','Write your introduction here.','','## First section','')
+ if($tags){
+  $body=@($body[0..5])+@('tags:')+@(foreach($t in ($tags -split ',')){if($t.Trim()){'  - '+(Quote $t.Trim())}})+@($body[7..($body.Length-1)])
+ }
  Save $file ($body -join [Environment]::NewLine)
  Write-Host "Created $file" -ForegroundColor Green
 }
@@ -493,7 +527,7 @@ try {
   'list'{ListSites}
   'create'{NewSite}
   'edit'{EditSite $Site}
-  'theme'{ThemeSite $Site $Value}
+  'theme'{ThemeSite $Site $Value $Highlight}
   'posts'{foreach($f in (Posts $Site)){Write-Host $f.Name}}
   'new-post'{NewPost $Site}
   'build'{Build $Site;Dashboard}
