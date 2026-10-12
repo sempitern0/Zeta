@@ -1,84 +1,75 @@
 # shellcheck disable=SC2034,SC2329,SC2155,SC2154
 
-if [[ -n "${NO_COLOR:-}" ]]; then
+if [[ -n "${NO_COLOR:-}" || ! -t 1 ]]; then
     boldWhite=""; boldCyan=""; boldYellow=""; boldGreen=""; boldRed=""; grayColour=""; endColour=""
 fi
 
+
+ui_rule() { printf '%*s\n' 70 '' | tr ' ' '-'; }
+ui_heading() { printf '\n%b%s%b\n' "$boldWhite" "$1" "$endColour"; }
+ui_action() { printf '  %b[%s]%b %-25s %b%s%b\n' "$boldGreen" "$1" "$endColour" "$2" "$grayColour" "$3" "$endColour"; }
+
 show_banner() {
-    local g1="[38;5;51m"
-    local g2="[38;5;45m"
-    local g3="[38;5;39m"
-    local g4="[38;5;63m"
-    local g5="[38;5;99m"
-    local g6="[38;5;135m"
-    local sites_count=0
-
-    if [[ -d "$SITES_DIR" ]]; then
-        sites_count=$(get_all_sites | wc -l | tr -d ' ')
+    local -a sites=()
+    readarray -t sites < <(get_all_sites)
+    printf '\n%bZETA%b  %b/ create · write · publish%b\n' "$boldCyan" "$endColour" "$grayColour" "$endColour"
+    ui_rule
+    printf '  Workspace   %b%s sites%b\n' "$boldWhite" "${#sites[@]}" "$endColour"
+    printf '  Pipeline    Markdown > Pandoc > public/\n'
+    if command_exists pandoc; then
+        printf '  Renderer    %bready%b\n' "$boldGreen" "$endColour"
+    else
+        printf '  Renderer    %bPandoc unavailable%b\n' "$boldYellow" "$endColour"
     fi
-
-    printf '%b
-' "${g1}  ███████╗███████╗████████╗ █████╗ ${endColour}"
-    printf '%b
-' "${g2}  ╚══███╔╝██╔════╝╚══██╔══╝██╔══██╗${endColour}"
-    printf '%b
-' "${g3}    ███╔╝ █████╗     ██║   ███████║${endColour}"
-    printf '%b
-' "${g4}   ███╔╝  ██╔══╝     ██║   ██╔══██║${endColour}"
-    printf '%b
-' "${g5}  ███████╗███████╗   ██║   ██║  ██║${endColour}"
-    printf '%b
-' "${g6}  ╚══════╝╚══════╝   ╚═╝   ╚═╝  ╚═╝${endColour}"
-    printf '%b
-' "  ${boldWhite}ZETA${endColour} ${grayColour}— Markdown-first Static Site Generator${endColour}"
-    printf '%b
-' "  ${grayColour}Workspace:${endColour} ${boldCyan}${sites_count} site(s)${endColour} ${grayColour}| Engine: Bash + Pandoc | Output: public/${endColour}"
-    print_separator
+    ui_rule
 }
+
 
 show_help() {
     show_banner
-    cat <<EOF_HELP
-Usage:
-  ./main.sh [global options] <command> [arguments]
-  ./main.sh                         Open the interactive assistant
+    cat <<EOF
+Usage
+  ./main.sh                          Interactive assistant
+  ./main.sh [options] <command> [args]
 
-Global options:
-  -f, --force                      Skip destructive confirmations
-  -v, --verbose                    Show additional diagnostic output
-      --port PORT                  Preview port (default: ${PREVIEW_PORT})
-  -h, --help                       Show this help
+Workspace
+  sites | list                        List local sites and status
+  create | new                        Create a site
+  edit <site>                         Edit metadata and production URL
+  theme <site> [theme] [style]        Theme and code highlighting
+  clean <site>                        Remove generated output only
+  delete <site>                       Delete site with confirmation
 
-Site commands:
-  create | new                     Create a local site workspace
-  sites | list                     List sites and build status
-  edit <site>                      Edit site metadata and theme
-  theme <site> [theme] [style]     Change theme/highlighting and rebuild
-  delete | rm <site>               Delete a site workspace
-  clean <site>                     Remove only generated public/ output
+Content
+  posts <site>                        List Markdown articles
+  new-post <site>                     Create a Markdown article
+  fonts <site>                        Manage optional site-local fonts
+  doctor <site>                       Check deploy readiness
 
-Content commands:
-  posts <site>                     List Markdown posts
-  new-post <site>                  Create a Markdown post scaffold
-  fonts <site>                     Manage optional open web fonts for a site
-  doctor <site>                    Validate deploy readiness and show palettes
+Build / preview
+  build | update <site>               Rebuild a site
+  build-all                           Rebuild every site
+  preview <site> [port]               Build + local browser preview
+  serve [port]                        Build + workspace dashboard
+  dashboard                           Update workspace index
 
-Build and preview:
-  build | update <site>            Regenerate <site>/public/
-  build-all                        Regenerate public/ for all sites
-  preview <site> [port]            Build and serve one public/ directory
-  serve [port]                     Build all sites and serve local dashboard
-  dashboard | index                Regenerate sites/index.html only
+Options
+  -f, --force                         Skip supported confirmations
+  -v, --verbose                       Verbose output
+      --port N                        Preview port (default: ${PREVIEW_PORT})
+  -h, --help                          Display this guide
 
-Examples:
-  ./main.sh create
-  ./main.sh new-post my-blog
-  ./main.sh posts my-blog
-  ./main.sh theme my-blog paper zenburn
-  ./main.sh build my-blog
-  ./main.sh preview my-blog 8000
-EOF_HELP
-}
+Examples
+  ./main.sh new-post my-site
+  ./main.sh theme my-site indie zenburn
+  ./main.sh doctor my-site
+  ./main.sh preview my-site
+
+Windows
+  ./zeta.ps1 help
+  ./zeta.ps1 build my-site
+EOF
+
 
 resolve_site_arg() {
     local requested="${1:-}"
@@ -239,30 +230,39 @@ select_and_preview_site() {
     preview_site "$site" "$PREVIEW_PORT"
 }
 
+
 manage_site_menu() {
     local site
     site=$(select_site_interactive) || return 0
-
     while true; do
-        clear 2>/dev/null || true
+        [[ -t 1 ]] && clear 2>/dev/null || true
         show_banner
-        echo -e "${boldWhite}Manage: ${site}${endColour}"
-        echo ""
-        echo -e "  ${boldGreen}[1]${endColour} Edit site settings"
-        echo -e "  ${boldGreen}[2]${endColour} Appearance: theme + code highlighting"
-        echo -e "  ${boldGreen}[3]${endColour} List Markdown posts"
-        echo -e "  ${boldGreen}[4]${endColour} Create a new post"
-        echo -e "  ${boldGreen}[5]${endColour} Manage open web fonts"
-        echo -e "  ${boldGreen}[6]${endColour} Diagnose deploy readiness + palettes"
-        echo -e "  ${boldGreen}[7]${endColour} Build / update public/"
-        echo -e "  ${boldGreen}[8]${endColour} Preview site locally"
-        echo -e "  ${boldGreen}[9]${endColour} Clean generated public/"
-        echo -e "  ${boldRed}[10]${endColour} Delete site"
-        echo "  [0] Back"
-        echo ""
-
+        local config title theme output_rel status
+        config=$(find_site_config "${SITES_DIR}/${site}") || return 1
+        title=$(get_site_yaml_prop "$config" site title "$site")
+        theme=$(get_site_yaml_prop "$config" theme name zen)
+        output_rel=$(get_site_yaml_prop "$config" build output_dir public)
+        status='draft'
+        [[ -f "${SITES_DIR}/${site}/${output_rel}/index.html" ]] && status='built'
+        ui_heading "Manage / ${title}"
+        printf '  %s · %s posts · %s · %s\n' "$site" "$(site_post_count "$site")" "$theme" "$status"
+        ui_heading "Content & appearance"
+        ui_action 1 'Site settings' 'metadata / URL'
+        ui_action 2 'Switch theme' 'appearance / highlighting'
+        ui_action 3 'List posts' 'Markdown library'
+        ui_action 4 'New post' 'guided scaffold'
+        ui_action 5 'Manage fonts' 'optional fonts'
+        ui_heading "Build & validate"
+        ui_action 6 'Doctor' 'pre-publish checks'
+        ui_action 7 'Build' 'regenerate public/'
+        ui_action 8 'Preview' 'localhost server'
+        ui_heading "Maintenance"
+        ui_action 9 'Clean' 'remove generated files'
+        ui_action 10 'Delete site' 'confirmation required'
+        printf '\n  [0] Back\n'
+        ui_rule
         local option
-        read -rp "$(printf '%b' "${boldCyan}Zeta ❯ ${endColour}")" option
+        read -rp "$(printf '%b' "${boldCyan}zeta / ${site} > ${endColour}")" option
         case "${option,,}" in
             1) edit_site "$site"; pause_menu ;;
             2) change_site_appearance "$site"; pause_menu ;;
@@ -273,44 +273,52 @@ manage_site_menu() {
             7) build_site "$site" && update_sites_index; pause_menu ;;
             8) preview_site "$site" "$PREVIEW_PORT"; pause_menu ;;
             9) clean_site "$site"; pause_menu ;;
-            10)
-                delete_site "$site"
-                [[ -d "${SITES_DIR}/${site}" ]] || return 0
-                pause_menu
-                ;;
+            10) delete_site "$site"; [[ -d "${SITES_DIR}/${site}" ]] || return 0; pause_menu ;;
             0|b|back) return 0 ;;
-            *) msg_warn "Invalid option: '${option}'"; sleep 0.5 ;;
+            *) msg_warn "Unknown option: '$option'"; sleep 0.4 ;;
         esac
     done
 }
 
+
 show_menu() {
     while true; do
-        clear 2>/dev/null || true
+        [[ -t 1 ]] && clear 2>/dev/null || true
         show_banner
-
-        if command_exists pandoc; then
-            echo -e "${grayColour}Pandoc: available | Preview: Python 3 optional${endColour}"
+        local -a projects=()
+        readarray -t projects < <(get_all_sites)
+        ui_heading "Your sites"
+        if (( ${#projects[@]} == 0 )); then
+            printf '  %bNo sites yet. Choose [2] to create one.%b\n' "$grayColour" "$endColour"
         else
-            echo -e "${boldYellow}Pandoc: missing (required only when building)${endColour}"
+            local site config theme output_rel status shown=0
+            for site in "${projects[@]}"; do
+                (( shown >= 4 )) && break
+                config=$(find_site_config "${SITES_DIR}/${site}") || continue
+                theme=$(get_site_yaml_prop "$config" theme name zen)
+                output_rel=$(get_site_yaml_prop "$config" build output_dir public)
+                status='draft'
+                [[ -f "${SITES_DIR}/${site}/${output_rel}/index.html" ]] && status='built'
+                printf '  %-24.24s %3s posts   %-13s %s\n' "$site" "$(site_post_count "$site")" "$theme" "$status"
+                ((shown+=1))
+            done
+            if (( ${#projects[@]} > 4 )); then
+                printf '  + %s more (see [1])\n' "$((${#projects[@]} - 4))"
+            fi
         fi
-        echo ""
-        echo -e "${boldWhite}Workspace${endColour}"
-        echo -e "  ${boldGreen}[1]${endColour} List sites"
-        echo -e "  ${boldGreen}[2]${endColour} Create site"
-        echo -e "  ${boldGreen}[3]${endColour} Manage site"
-        echo ""
-        echo -e "${boldWhite}Build & preview${endColour}"
-        echo -e "  ${boldGreen}[4]${endColour} Build one site"
-        echo -e "  ${boldGreen}[5]${endColour} Build all sites"
-        echo -e "  ${boldGreen}[6]${endColour} Preview one site"
-        echo -e "  ${boldGreen}[7]${endColour} Serve complete local workspace"
-        echo ""
-        echo -e "  ${boldRed}[0]${endColour} Exit"
-        print_separator
-
+        ui_heading "Workspace"
+        ui_action 1 'List sites' 'status / content'
+        ui_action 2 'Create site' 'new workspace'
+        ui_action 3 'Manage site' 'content / appearance'
+        ui_heading "Build & preview"
+        ui_action 4 'Build one' 'generate public/'
+        ui_action 5 'Build all' 'all workspaces'
+        ui_action 6 'Preview one' 'local browser'
+        ui_action 7 'Serve workspace' 'local dashboard'
+        printf '\n  [?] Help     [0] Exit\n'
+        ui_rule
         local option
-        read -rp "$(printf '%b' "${boldCyan}Zeta ❯ ${endColour}")" option
+        read -rp "$(printf '%b' "${boldCyan}zeta > ${endColour}")" option
         case "${option,,}" in
             1) list_sites; pause_menu ;;
             2) create_new_site; pause_menu ;;
@@ -319,14 +327,9 @@ show_menu() {
             5) build_all_sites; pause_menu ;;
             6) select_and_preview_site; pause_menu ;;
             7) serve_workspace "$PREVIEW_PORT"; pause_menu ;;
-            0|q|quit|exit)
-                msg_info "Goodbye."
-                exit 0
-                ;;
-            *)
-                msg_warn "Invalid option: '${option}'."
-                sleep 0.5
-                ;;
+            '?'|h|help) show_help; pause_menu ;;
+            0|q|quit|exit) msg_info "Goodbye."; exit 0 ;;
+            *) msg_warn "Unknown option: '$option'"; sleep 0.4 ;;
         esac
     done
 }
