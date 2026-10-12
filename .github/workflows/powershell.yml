@@ -1,0 +1,65 @@
+name: PowerShell parity
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install Pandoc (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          choco install pandoc -y --no-progress
+          $env:GITHUB_PATH | Out-Null
+          Add-Content $env:GITHUB_PATH 'C:\Program Files\Pandoc'
+      - name: Install Pandoc (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y pandoc
+      - name: PowerShell static checks and smoke build
+        shell: pwsh
+        run: |
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path ./zeta.ps1), [ref]$null, [ref]$errors) | Out-Null
+          if ($errors.Count) { $errors | Out-String | Write-Error; exit 1 }
+          ./zeta.ps1 help
+          ./zeta.ps1 sites
+          $root = 'sites/ps-ci-sample'
+          New-Item -ItemType Directory -Force "$root/posts" | Out-Null
+          @'
+          site:
+            title: "PowerShell CI"
+            description: "Parity smoke test"
+            author: "Zeta"
+            language: "en"
+            url: "https://example.org"
+          theme:
+            name: "organization"
+            pandoc_theme: "zenburn"
+          build:
+            content_dir: "posts"
+            output_dir: "public"
+          '@ | Set-Content "$root/config.yaml"
+          @'
+          ---
+          title: "A Markdown post"
+          date: "2026-10-12"
+          description: "PowerShell smoke check"
+          ---
+          # Hello
+          Markdown from Windows.
+          '@ | Set-Content "$root/posts/2026-10-12-test.md"
+          ./zeta.ps1 build ps-ci-sample
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+          ./zeta.ps1 doctor ps-ci-sample
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+          if (!(Test-Path "$root/public/posts/2026/test.html")) { throw 'Missing article' }
+          if (!(Test-Path "$root/public/sitemap.xml")) { throw 'Missing sitemap' }
+          ./zeta.ps1 clean ps-ci-sample
+          if (Test-Path "$root/public") { throw 'Clean failed' }
