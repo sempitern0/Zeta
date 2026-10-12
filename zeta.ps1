@@ -150,7 +150,7 @@ function PostInfo([IO.FileInfo]$file,[string]$defaultAuthor){
  @{title=$title;slug=$slug;date=$date;year=$year;human=$human;author=$author;
    description=$desc;external_url=(Meta $file.FullName external_url);tags=@(Tags $file.FullName)}
 }
-function Pandoc([string[]]$options){
+function Invoke-ZetaPandoc([string[]]$options){
  '' | & pandoc @options
  if($LASTEXITCODE -ne 0){throw 'Pandoc generation failed'}
 }
@@ -228,7 +228,7 @@ function Build([string]$name){
    $args+=@(Styles $c.theme $dir '../../')
    foreach($tag in $p.tags){$args+=@('-V',('tags='+(Escape $tag)))}
    $args+=@('-o',$target)
-   Pandoc $args
+   Invoke-ZetaPandoc $args
    $args=@('-f','markdown','--quiet','--template='+ (Join-Path $theme 'post_link.html'),
       '-V',"title=$(Escape $p.title)",'-V',"date=$(Escape $p.human)",'-V',"iso_date=$(Escape $p.date)",
       '-V',"path=$rel",'-V',"description=$(Escape $p.description)",'-V',"external_url=$(Escape $p.external_url)")
@@ -245,7 +245,7 @@ function Build([string]$name){
    foreach($k in $vars.Keys){$args+=@('-V',('{0}={1}' -f $k,$vars[$k]))}
    $args+=@(Styles $c.theme $dir '')
    $args+=@('-o',(Join-Path $stage $tpl.Name))
-   Pandoc $args
+   Invoke-ZetaPandoc $args
   }
   if(!(Test-Path (Join-Path $stage 'index.html'))){throw 'Theme did not generate index'}
   $base=$c.url.TrimEnd('/')
