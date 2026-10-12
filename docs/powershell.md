@@ -41,8 +41,10 @@ If the machine's execution policy prevents running the script, consult your orga
 | `./zeta.ps1 dashboard` | Generate the local index |
 | `./zeta.ps1 doctor SITE` | Minimal readiness checks |
 | `./zeta.ps1 clean SITE` | Remove output without deleting sources |
+| `./zeta.ps1 delete SITE` | Delete a site after typing its name (or with `-Force`) |
+| `./zeta.ps1 fonts SITE KEY` | Install optional open fonts or restore theme defaults with `remove` |
 
-The native Windows implementation currently focuses on the core publishing workflow. Some advanced Bash-specific helpers—especially interactive font downloads, detailed diagnostic color swatches, and the fully featured Bash post listing—are not yet implemented at identical depth. Cross-platform smoke tests run on Windows and Ubuntu. The two engines operate on the same authoring format, but generated HTML should still be compared before switching production builds.
+The native Windows implementation currently focuses on the core publishing workflow. Advanced Bash-specific helpers—including detailed doctor color swatches, richer post listings and the interactive site-management submenu—are not yet implemented at identical depth. PowerShell fonts use its built-in HTTP client to download optional assets and licenses; no additional module is required. Cross-platform smoke tests run on Windows and Ubuntu. The two engines operate on the same authoring format, but generated HTML should still be compared before switching production builds.
 
 ## Data safety
 
