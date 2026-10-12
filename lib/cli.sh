@@ -69,7 +69,7 @@ Windows
   ./zeta.ps1 help
   ./zeta.ps1 build my-site
 EOF
-
+}
 
 resolve_site_arg() {
     local requested="${1:-}"
