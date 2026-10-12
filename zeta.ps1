@@ -362,6 +362,74 @@ function Serve([string]$dir,[int]$serverPort){
   }
  } finally{$listener.Close()}
 }
+
+function RemoveSite([string]$name){
+ $path=SiteDir $name
+ [void](ConfigPath $name)
+ if(!$Force){
+  $confirmation=Read-Host "Type '$name' to delete the entire site"
+  if($confirmation -cne $name){Write-Host 'Cancelled';return}
+ }
+ Remove-Item -LiteralPath $path -Recurse -Force
+ Dashboard
+ Write-Host "Deleted $name" -ForegroundColor Yellow
+}
+function FontSite([string]$name,[string]$choice=''){
+ $dir=SiteDir $name
+ [void](ConfigPath $name)
+ $sources=@{
+  'cascadia'=@{id='CascadiaCode';family='Cascadia Code';license='https://raw.githubusercontent.com/microsoft/cascadia-code/main/LICENSE';files=@(
+   @('CascadiaCode.woff2','normal','200 700','https://raw.githubusercontent.com/sempitern0/Zeta/main/templates/common/assets/fonts/CascadiaCode/CascadiaCode.woff2'))}
+  'jetbrains'=@{id='JetBrainsMono';family='JetBrains Mono';license='https://raw.githubusercontent.com/JetBrains/JetBrainsMono/master/OFL.txt';files=@(
+   @('JetBrainsMono-Regular.woff2','normal','400','https://raw.githubusercontent.com/JetBrains/JetBrainsMono/master/fonts/webfonts/JetBrainsMono-Regular.woff2'),
+   @('JetBrainsMono-Bold.woff2','normal','700','https://raw.githubusercontent.com/JetBrains/JetBrainsMono/master/fonts/webfonts/JetBrainsMono-Bold.woff2'))}
+  'fira'=@{id='FiraCode';family='Fira Code';license='https://raw.githubusercontent.com/tonsky/FiraCode/master/LICENSE';files=@(
+   @('FiraCode-Regular.woff2','normal','400','https://raw.githubusercontent.com/sempitern0/Zeta/main/templates/common/assets/fonts/FiraCode/FiraCode-Regular.woff2'))}
+  'ibm-plex'=@{id='IBMPlexMono';family='IBM Plex Mono';license='https://raw.githubusercontent.com/IBM/plex/master/LICENSE.txt';files=@(
+   @('IBMPlexMono-Regular.woff2','normal','400','https://raw.githubusercontent.com/IBM/plex/master/packages/plex-mono/fonts/complete/woff2/IBMPlexMono-Regular.woff2'))}
+  'source-code'=@{id='SourceCodePro';family='Source Code Pro';license='https://raw.githubusercontent.com/adobe-fonts/source-code-pro/release/LICENSE.md';files=@(
+   @('SourceCodePro-Regular.woff2','normal','400','https://raw.githubusercontent.com/adobe-fonts/source-code-pro/release/WOFF2/TTF/SourceCodePro-Regular.ttf.woff2'))}
+ }
+ if(!$choice){$choice=SelectItem 'Font' @('cascadia','jetbrains','fira','ibm-plex','source-code','remove') 'remove'}
+ $assets=Join-Path $dir 'assets/fonts';$styles=Join-Path $dir 'styles'
+ if($choice -eq 'remove'){
+  if(Test-Path $assets){Remove-Item -LiteralPath $assets -Recurse -Force}
+  $css=Join-Path $styles '90-font.css'
+  if(Test-Path $css){Remove-Item -LiteralPath $css -Force}
+  Write-Host 'Theme default fonts restored'
+  Build $name;Dashboard;return
+ }
+ if(!$sources.ContainsKey($choice)){throw "Unknown font: $choice"}
+ $spec=$sources[$choice]
+ $cache=Join-Path $Root ".zeta-cache/fonts/$($spec.id)"
+ $fontdir=Join-Path $assets $spec.id
+ $stage=Join-Path $dir ('.zeta-font-ps-'+[guid]::NewGuid().ToString('N'))
+ try{
+  [void](New-Item -ItemType Directory -Path $cache,$stage -Force)
+  $downloads=@($spec.files)
+  $downloads+=,@('LICENSE.txt','','',$spec.license)
+  foreach($entry in $downloads){
+   $dest=Join-Path $cache $entry[0]
+   if(!(Test-Path $dest)){Invoke-WebRequest -Uri $entry[3] -OutFile $dest -ErrorAction Stop}
+   if((Get-Item $dest).Length -le 0){throw 'Empty font download'}
+   Copy-Item -LiteralPath $dest -Destination $stage -Force
+  }
+  $cssParts=[Collections.Generic.List[string]]::new()
+  foreach($entry in $spec.files){
+   $cssParts.Add(('@font-face { font-family: "{0}"; src: url("../assets/fonts/{1}/{2}") format("woff2"); font-style: {3}; font-weight: {4}; font-display: swap; }' -f $spec.family,$spec.id,$entry[0],$entry[1],$entry[2]))
+  }
+  $cssParts.Add((':root { --font-mono: "{0}", ui-monospace, Consolas, monospace; --font-sans: "{0}", system-ui, sans-serif; }' -f $spec.family))
+  [void](New-Item -ItemType Directory -Path $assets,$styles -Force)
+  if(Test-Path $assets){Remove-Item -LiteralPath $assets -Recurse -Force}
+  [void](New-Item -ItemType Directory -Path $assets -Force)
+  Copy-Item -LiteralPath $stage -Destination $fontdir -Recurse -Force
+  Save (Join-Path $styles '90-font.css') ($cssParts -join [Environment]::NewLine)
+  Build $name;Dashboard
+ } finally{
+  if(Test-Path $stage){Remove-Item -LiteralPath $stage -Recurse -Force}
+ }
+}
+
 function Help{
  Write-Host @'
 ZETA — Markdown-first publishing
@@ -378,6 +446,8 @@ ZETA — Markdown-first publishing
   ./zeta.ps1 preview SITE       Preview on localhost
   ./zeta.ps1 serve              Serve workspace
   ./zeta.ps1 clean SITE         Clean public/
+  ./zeta.ps1 delete SITE        Delete local site (confirmation)
+  ./zeta.ps1 fonts SITE KEY     Optional self-hosted open fonts
   ./zeta.ps1 dashboard          Generate workspace index
 Requires PowerShell 7+ and Pandoc for builds. No Bash/WSL/Node.
 '@
@@ -394,7 +464,7 @@ function Menu{
   ListSites
   Write-Host '[1] List sites       [2] Create      [3] New post'
   Write-Host '[4] Build one        [5] Build all   [6] Preview'
-  Write-Host '[7] Theme            [8] Doctor      [?] Help   [0] Exit'
+  Write-Host '[7] Theme            [8] Doctor      [9] Fonts   [?] Help   [0] Exit'
   $a=Read-Host 'zeta >'
   try{
    switch($a){
@@ -406,6 +476,7 @@ function Menu{
     '6'{Preview (SelectItem 'Site' (SiteNames)) $Port}
     '7'{ThemeSite (SelectItem 'Site' (SiteNames)) ''}
     '8'{Doctor (SelectItem 'Site' (SiteNames))}
+    '9'{FontSite (SelectItem 'Site' (SiteNames)) ''}
     '?'{Help}
     '0'{return}
     default{Write-Host 'Invalid selection' -ForegroundColor Yellow}
@@ -433,6 +504,8 @@ try {
   'serve'{foreach($n in (SiteNames)){Build $n};Dashboard;Serve $Sites $Port}
   'dashboard'{Dashboard}
   'clean'{Clean $Site}
+  'delete'{RemoveSite $Site}
+  'fonts'{FontSite $Site $Value}
   default{throw "Unknown command: $Command"}
  }
 }catch{Write-Host "[ERROR] $($_.Exception.Message)" -ForegroundColor Red;exit 1}
