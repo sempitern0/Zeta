@@ -39,6 +39,7 @@ function Yaml([string]$path,[string]$section,[string]$key,[string]$fallback=''){
 function Meta([string]$path,[string]$key){
  $lines=[IO.File]::ReadAllLines($path)
  if(!$lines.Length -or $lines[0].Trim() -ne '---'){return ''}
+ if($lines.Length -lt 2){return ''}
  foreach($line in $lines[1..($lines.Length-1)]){
   if($line.Trim() -eq '---'){break}
   if($line -match ('^\s*'+[regex]::Escape($key)+':\s*(.*?)\s*$')){return Scalar $Matches[1]}
@@ -114,7 +115,7 @@ function PostInfo([IO.FileInfo]$file,[string]$defaultAuthor){
  if(!$date -and $raw -match '^(\d{4}-\d{2}-\d{2})-'){$date=$Matches[1]}
  if(!$date){$date=(Get-Date -Format yyyy-MM-dd)}
  $year=Meta $file.FullName year
- if($year -notmatch '^\d{4}$'){$year=$date.Substring(0,4)}
+ if($year -notmatch '^\d{4}$'){$year=if($date.Length -ge 4){$date.Substring(0,4)}else{(Get-Date -Format yyyy)}}
  $title=Meta $file.FullName title
  if(!$title){$title=$slug}
  $author=Meta $file.FullName author
@@ -126,8 +127,8 @@ function PostInfo([IO.FileInfo]$file,[string]$defaultAuthor){
  @{title=$title;slug=$slug;date=$date;year=$year;human=$human;author=$author;
    description=$desc;external_url=(Meta $file.FullName external_url)}
 }
-function Pandoc([string[]]$args){
- & pandoc @args
+function Pandoc([string[]]$options){
+ '' | & pandoc @options
  if($LASTEXITCODE -ne 0){throw 'Pandoc generation failed'}
 }
 function Layer([string]$from,[string]$to){
@@ -145,7 +146,7 @@ function Styles([string]$theme,[string]$dir,[string]$prefix){
  }
  $args=@()
  foreach($n in $names){$args+=@('-V',"css=$prefix"+"styles/$n")}
- return ,$args
+ return $args
 }
 function Build([string]$name){
  if(!(Get-Command pandoc -ErrorAction SilentlyContinue)){throw 'Pandoc required: https://pandoc.org/installing.html'}
@@ -201,13 +202,13 @@ function Build([string]$name){
       "$hflag=$($c.highlight)")
    $filter=Join-Path $Templates 'common/filters/table-wrapper.lua'
    if(Test-Path $filter){$args+="--lua-filter=$filter"}
-   $args+=Styles $c.theme $dir '../../'
+   $args+=@(Styles $c.theme $dir '../../')
    $args+=@('-o',$target)
    Pandoc $args
    $args=@('-f','markdown','--quiet','--template='+ (Join-Path $theme 'post_link.html'),
       '-V',"title=$(Escape $p.title)",'-V',"date=$(Escape $p.human)",'-V',"iso_date=$(Escape $p.date)",
       '-V',"path=$rel",'-V',"description=$(Escape $p.description)",'-V',"external_url=$(Escape $p.external_url)")
-   $item=(& pandoc @args) -join [Environment]::NewLine
+   $item=('' | & pandoc @args) -join [Environment]::NewLine
    if($LASTEXITCODE -ne 0){throw 'Post card rendering failed'}
    $links.Add($item)
   }
@@ -218,7 +219,7 @@ function Build([string]$name){
    if($tpl.Name -in @('article.html','post_link.html')){continue}
    $args=@('-f','markdown','-t','html5','--quiet',"--template=$($tpl.FullName)")
    foreach($k in $vars.Keys){$args+=@('-V',('{0}={1}' -f $k,$vars[$k]))}
-   $args+=Styles $c.theme $dir ''
+   $args+=@(Styles $c.theme $dir '')
    $args+=@('-o',(Join-Path $stage $tpl.Name))
    Pandoc $args
   }
