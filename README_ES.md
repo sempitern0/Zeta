@@ -416,3 +416,18 @@ estado del sistema sin introducir JavaScript.
 `indie` permite promocionar un videojuego y publicar un diario de desarrollo. `organization` presenta la misión de una organización de GitHub, sus repositorios y documentación. Se personalizan mediante `landing.yaml` y `landing.md` junto a `config.yaml`; el frontmatter Markdown admite el campo opcional `external_url`.
 
 Consulta la [guía](docs/landing-themes.md) y ejecuta `bash tests/theme-smoke.sh` para validar ambos diseños.
+
+## Asistente de terminal y Windows (PowerShell)
+
+El asistente Bash presenta ahora un dashboard compacto con resumen de los sitios, temas, número de artículos y estado de generación. No utiliza dependencias de interfaz externas. Más detalles en [la guía del asistente](docs/terminal-assistant.md).
+
+La implementación nativa [PowerShell 7+](zeta.ps1) permite generar webs desde Windows con Pandoc, sin WSL, Bash ni Node.js:
+
+```powershell
+./zeta.ps1 help
+./zeta.ps1 sites
+./zeta.ps1 build mi-sitio
+./zeta.ps1 preview mi-sitio -Port 8000
+```
+
+**La paridad aún no es absoluta**: están disponibles los flujos principales de contenido, plantillas, generación y previsualización, pero las fuentes opcionales y algunos diagnósticos avanzados siguen siendo exclusivos de Bash. Consulta [la documentación de Windows](docs/powershell.md).
