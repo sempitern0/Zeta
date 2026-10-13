@@ -68,6 +68,12 @@ Run the **same command** after `./zeta.sh` in Bash or `.\zeta.ps1` in PowerShell
 
 The console assistants offer a colorful ZETA dashboard and numbered menus. Port flags are shell-native: `./zeta.sh --port 8080 preview my-site` versus `.\zeta.ps1 preview my-site -Port 8080`. Use `help` to inspect all options.
 
+## Markdown pages and optional blog
+
+The site-creation assistant asks whether to include **Blog**, **About** and **Contact**. Every new site gets a Markdown homepage in `pages/index.md`; other pages generate clean static URLs such as `/about/`, with accessible navigation. A site without a blog publishes no article archive or blog URLs.
+
+Create additional pages with `./zeta.sh new-page SITE "Privacy policy" privacy` in Bash or `.\zeta.ps1 new-page SITE "Privacy policy" privacy` in PowerShell; use `pages SITE` to list them. Page metadata controls navigation order and drafts. See the [Markdown pages guide](docs/pages.md).
+
 ## Shared visual workspace and starter content
 
 Both assistants now build the **same responsive and keyboard-accessible workspace index** at `sites/index.html`, with a shared stylesheet, site status, description, theme, article count and a preview link when a build exists. An empty workspace remains usable, and a broken site's configuration cannot hide healthy sites.
