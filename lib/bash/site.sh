@@ -461,11 +461,17 @@ build_site() {
             return 1
         fi
     fi
+    local pages_mode=false blog_enabled=true
+    if [[ -f "${site_dir}/pages/index.md" ]]; then
+        pages_mode=true
+        [[ "$(get_site_yaml_prop "$config_file" build blog true)" == false ]] && blog_enabled=false
+    fi
     local posts_list_html=""
     local md_file
     local built_count=0
     declare -A generated_paths=()
 
+    if [[ "$blog_enabled" == false ]]; then md_files=(); fi
     for md_file in "${md_files[@]}"; do
         declare -A post=()
         get_post_metadata "$md_file" post "$site_author"
@@ -580,6 +586,8 @@ build_site() {
         base_html=$(basename "$html_file")
         case "$base_html" in
             article.html|post_link.html) continue ;;
+            index.html) [[ "$pages_mode" == true ]] && continue ;;
+            posts.html) [[ "$pages_mode" == true && "$blog_enabled" == false ]] && continue ;;
         esac
 
         local page_opts=(
@@ -609,6 +617,12 @@ build_site() {
         fi
     done < <(find "$theme_dir" -maxdepth 1 -type f -name '*.html' -print | sort)
 
+    if [[ "$pages_mode" == true ]]; then
+        if ! zeta_render_markdown_pages "$site_dir" "$output_dir" "$site_url" "$theme_dir" "$site_title" "$site_desc" "$site_author" "$site_lang" "$blog_enabled" "$site_theme"; then
+            rm -rf -- "$staging_dir"
+            return 1
+        fi
+    fi
     [[ -f "${output_dir}/index.html" ]] || {
         msg_error "Theme '${site_theme}' did not generate index.html."
         rm -rf -- "$staging_dir"
@@ -620,6 +634,31 @@ build_site() {
         msg_error "Failed to generate robots.txt or sitemap.xml."
         rm -rf -- "$staging_dir"
         return 1
+    fi
+
+    if [[ "$pages_mode" == true ]]; then
+        # Append page URLs inside the generated sitemap, before closing urlset.
+        local page_md page_slug page_xml="${output_dir}/.pages-sitemap"
+        : > "$page_xml"
+        for page_md in "${site_dir}/pages/"*.md; do
+            [[ -f "$page_md" ]] || continue
+            page_slug=$(basename "$page_md" .md)
+            [[ "$page_slug" == index ]] && continue
+            [[ "$(extract_frontmatter_property "$page_md" draft 2>/dev/null || true)" == true ]] && continue
+            printf '  <url><loc>%s/%s/</loc></url>\n' "$(xml_escape "$site_url")" "$page_slug" >> "$page_xml"
+        done
+        if [[ -s "$page_xml" ]]; then
+            local smap="${output_dir}/sitemap.xml"
+            sed '/<\/urlset>/d' "$smap" > "${smap}.new"
+            cat "$page_xml" >> "${smap}.new"
+            printf '</urlset>\n' >> "${smap}.new"
+            mv -- "${smap}.new" "$smap"
+        fi
+        rm -f "$page_xml"
+        if [[ "$blog_enabled" == false ]]; then
+            # Blog-free mode excludes article URLs and archives from publication.
+            rm -rf -- "${output_dir}/posts"
+        fi
     fi
 
     local previous_output="${final_output_dir}.zeta-previous"
