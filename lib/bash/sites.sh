@@ -1294,3 +1294,46 @@ serve_workspace() {
     update_sites_index
     run_static_server "$SITES_DIR" "$port"
 }
+
+
+# Manage standalone Markdown pages; blog articles remain a separate collection.
+list_site_pages() {
+    local site="$1" dir="${SITES_DIR}/${site}/pages" path
+    require_site_slug "$site" || return 1
+    [[ -d "$dir" ]] || { msg_info "No pages in $site"; return 0; }
+    printf 'Markdown pages in %s:\n' "$site"
+    for path in "$dir"/*.md; do
+        [[ -f "$path" && ! -L "$path" ]] || continue
+        printf '  %-20s %s\n' "$(basename "$path" .md)" "$(extract_frontmatter_property "$path" title 2>/dev/null || basename "$path" .md)"
+    done
+}
+create_site_page() {
+    local site="$1" title="${2:-}" slug="${3:-}" desc confirm target
+    require_site_slug "$site" || return 1
+    [[ -f "${SITES_DIR}/${site}/config.yaml" || -f "${SITES_DIR}/${site}/config.yml" ]] || { msg_error "Unknown site: $site"; return 1; }
+    [[ -n "$title" ]] || read -rp "Page title: " title
+    [[ -n "$title" ]] || { msg_error "Page title is required."; return 1; }
+    [[ -n "$slug" ]] || slug=$(slugify "$title")
+    [[ "$slug" =~ ^[a-z0-9]+(-[a-z0-9]+)*$ && "$slug" != posts && "$slug" != blog ]] || { msg_error "Invalid page slug: $slug"; return 1; }
+    target="${SITES_DIR}/${site}/pages/${slug}.md"
+    [[ ! -e "$target" ]] || { msg_error "Page already exists: $target"; return 1; }
+    mkdir -p "$(dirname "$target")"
+    desc="Information about $title"
+    cat > "$target" <<EOF_ZETA_PAGE
+---
+title: $(yaml_quote "$title")
+description: $(yaml_quote "$desc")
+nav: true
+nav_order: 50
+draft: false
+---
+
+## $title
+
+Write your page here in Markdown.
+EOF_ZETA_PAGE
+    msg_success "Created Markdown page: $target"
+    if command -v pandoc >/dev/null 2>&1; then
+        build_site "$site" && update_sites_index
+    fi
+}
