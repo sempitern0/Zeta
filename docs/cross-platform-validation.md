@@ -20,6 +20,7 @@ Both read the same `config.yaml`, Markdown articles and `templates/` and generat
 ~~~bash
 make syntax
 bash tests/theme-smoke.sh
+bash tests/catalog-smoke.sh   # All eight themes
 ./zeta.sh help
 ./main.sh help    # Legacy entry point
 ~~~
