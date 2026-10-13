@@ -210,6 +210,8 @@ function Build([string]$name){
  $stage=Join-Path $dir ('.zeta-ps-'+[guid]::NewGuid().ToString('N'))
  $final=Join-Path $dir $c.output;$previous="$final.zeta-previous"
  $files=@(Posts $name)
+ if((Test-Path -LiteralPath (Join-Path $dir 'pages/index.md') -PathType Leaf) -and
+    ((Yaml (ConfigPath $name) build blog 'true') -eq 'false')){$files=@()}
  try{
   [void](New-Item -ItemType Directory -Force -Path (Join-Path $stage 'styles'),(Join-Path $stage 'posts'))
   foreach($kind in @('styles','assets')){
