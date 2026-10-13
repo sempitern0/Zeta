@@ -1341,7 +1341,7 @@ create_site_page() {
     [[ -n "$title" ]] || read -rp "Page title: " title
     [[ -n "$title" ]] || { msg_error "Page title is required."; return 1; }
     [[ -n "$slug" ]] || slug=$(slugify "$title")
-    [[ "$slug" =~ ^[a-z0-9]+(-[a-z0-9]+)*$ && "$slug" != posts && "$slug" != blog ]] || { msg_error "Invalid page slug: $slug"; return 1; }
+    [[ "$slug" =~ ^[a-z0-9]+(-[a-z0-9]+)*$ && "$slug" != posts && "$slug" != blog && "$slug" != index ]] || { msg_error "Invalid page slug: $slug"; return 1; }
     target="${SITES_DIR}/${site}/pages/${slug}.md"
     [[ ! -e "$target" ]] || { msg_error "Page already exists: $target"; return 1; }
     mkdir -p "$(dirname "$target")"
