@@ -21,6 +21,9 @@ function Doctor([string]$name){
  $highlight=Yaml $configPath theme pandoc_theme ''
  $content=Yaml $configPath build content_dir ''
  $output=Yaml $configPath build output_dir ''
+ $pageDir=Join-Path $siteDir 'pages'
+ $pageMode=Test-Path -LiteralPath (Join-Path $pageDir 'index.md') -PathType Leaf
+ $blogEnabled=(-not $pageMode) -or ((Yaml $configPath build blog 'true') -ne 'false')
  Write-Host 'Configuration' -ForegroundColor White
  if($title){DoctorStatus $state OK 'site.title' $title}
  else{DoctorStatus $state FAIL 'site.title' 'missing'}
@@ -73,7 +76,9 @@ function Doctor([string]$name){
   $contentDir=Join-Path $siteDir $content
   if(Test-Path -LiteralPath $contentDir -PathType Container){
    $posts=@(Get-ChildItem -LiteralPath $contentDir -File -Recurse -Filter '*.md')
-   if($posts.Count){DoctorStatus $state OK 'Posts' ("{0} Markdown file(s)" -f $posts.Count)}
+   if(-not $blogEnabled){
+    DoctorStatus $state OK 'Blog' 'disabled by site configuration'
+   }elseif($posts.Count){DoctorStatus $state OK 'Posts' ("{0} Markdown file(s)" -f $posts.Count)}
    else{DoctorStatus $state WARN 'Posts' 'no Markdown posts found'}
    $routes=[Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
    $duplicate=$null
@@ -92,13 +97,26 @@ function Doctor([string]$name){
   $outputDir=Join-Path $siteDir $output
   if(Test-Path -LiteralPath $outputDir -PathType Container){
    DoctorStatus $state OK 'public/' $outputDir
-   foreach($file in @('index.html','posts.html','robots.txt','sitemap.xml')){
+   $required=@('index.html','robots.txt','sitemap.xml')
+   if($blogEnabled){$required+= 'posts.html'}
+   foreach($file in $required){
     $target=Join-Path $outputDir $file
     $present=(Test-Path -LiteralPath $target -PathType Leaf)
     if($present){$present=(Get-Item -LiteralPath $target).Length -gt 0}
     if($present){DoctorStatus $state OK $file 'present'}
     elseif($file -eq 'posts.html'){DoctorStatus $state WARN $file 'missing or empty'}
     else{DoctorStatus $state FAIL $file 'missing or empty'}
+   }
+   if($pageMode){
+    foreach($page in @(Get-ChildItem -LiteralPath $pageDir -Filter '*.md' -File)){
+     if((Meta $page.FullName draft) -eq 'true'){continue}
+     $route=if($page.BaseName -eq 'index'){'index.html'}else{$page.BaseName+'/index.html'}
+     if(Test-Path -LiteralPath (Join-Path $outputDir $route) -PathType Leaf){
+      DoctorStatus $state OK "Page $($page.BaseName)" 'published'
+     }else{
+      DoctorStatus $state FAIL "Page $($page.BaseName)" 'missing from public/'
+     }
+    }
    }
    $leaks=@(Get-ChildItem -LiteralPath $outputDir -Recurse -File | Where-Object {
     $_.Extension -in @('.md','.markdown') -or $_.Name -in @('config.yaml','config.yml')
