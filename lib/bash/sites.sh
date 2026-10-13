@@ -1345,6 +1345,9 @@ create_site_page() {
     target="${SITES_DIR}/${site}/pages/${slug}.md"
     [[ ! -e "$target" ]] || { msg_error "Page already exists: $target"; return 1; }
     mkdir -p "$(dirname "$target")"
+    local site_config
+    site_config=$(find_site_config "${SITES_DIR}/${site}") || return 1
+    ensure_zeta_page_home "${SITES_DIR}/${site}" "$site_config" || return 1
     desc="Information about $title"
     cat > "$target" <<EOF_ZETA_PAGE
 ---
