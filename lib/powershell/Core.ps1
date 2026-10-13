@@ -110,7 +110,7 @@ function SiteNames {
 }
 function Posts([string]$name){
  $c=Config $name
- if(!(SafeDir $c.content)){throw 'Unsafe content directory'}
+ if(!(SafeDir $c.content)){throw "Invalid build.content_dir '$($c.content)' in $(ConfigPath $name). Use a relative path such as posts; check the YAML file."}
  $path=Join-Path (SiteDir $name) $c.content
  if(!(Test-Path $path)){return @()}
  @(Get-ChildItem $path -File -Recurse -Filter '*.md' | Sort-Object FullName -Descending)
