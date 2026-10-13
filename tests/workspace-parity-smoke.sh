@@ -6,7 +6,7 @@ command -v pandoc >/dev/null || { echo "Pandoc required" >&2; exit 2; }
 site="zeta-visual-smoke-$$"
 site_dir="${ROOT}/sites/${site}"
 trap 'rm -rf -- "$site_dir"; bash "$ROOT/zeta.sh" dashboard >/dev/null 2>&1 || true' EXIT
-printf 'Visual smoke\nAccessibility and HTML\nQA\nen\n%s\nhttps://example.org\nzen\nzenburn\n' "$site" | bash "$ROOT/zeta.sh" create >/dev/null
+printf 'Visual smoke\nAccessibility and HTML\nQA\nen\n%s\nhttps://example.org\nzen\nzenburn\nY\nY\nN\n' "$site" | bash "$ROOT/zeta.sh" create >/dev/null
 for sample in markdown-showcase code-showcase; do
  file="$site_dir/posts/$(date +%Y-%m-%d)-zeta-$sample.md"
  test -s "$file" || { echo "Missing example: $sample" >&2; exit 1; }
@@ -15,6 +15,8 @@ done
 bash "$ROOT/zeta.sh" build "$site" >/dev/null
 bash "$ROOT/zeta.sh" dashboard >/dev/null
 test -s "$site_dir/public/index.html"
+test -s "$site_dir/public/about/index.html"
+grep -Fq "About" "$site_dir/public/index.html"
 test -s "$ROOT/sites/workspace.css"
 grep -Fq 'Zeta local workspace' "$ROOT/sites/index.html"
 grep -Fq 'Visual smoke' "$ROOT/sites/index.html"
