@@ -919,12 +919,28 @@ create_new_site() {
     selected_theme=$(choose_theme_interactive "zen")
     selected_pandoc_theme=$(choose_highlight_interactive "zenburn")
 
-    mkdir -p "${site_path}/posts"
+    local enable_blog=true enable_about=true enable_contact=false reply
+    read -rp "Include a blog with Markdown posts? [Y/n]: " reply
+    [[ "$reply" =~ ^[Nn] ]] && enable_blog=false
+    read -rp "Include an About page? [Y/n]: " reply
+    [[ "$reply" =~ ^[Nn] ]] && enable_about=false
+    read -rp "Include a Contact page? [y/N]: " reply
+    [[ "$reply" =~ ^[Yy] ]] && enable_contact=true
+
+    mkdir -p "${site_path}/pages" "${site_path}/posts"
     write_site_config "${site_path}/config.yaml" \
         "$site_title" "$site_desc" "$site_author" "$site_lang" "$site_url" \
         "$selected_theme" "$selected_pandoc_theme" "posts" "public"
-
-    create_example_posts "$site_slug" || return 1
+    printf '\n  blog: %s\n' "$enable_blog" >> "${site_path}/config.yaml"
+    local page_template page_body
+    for page_template in index about contact; do
+        if [[ "$page_template" == about && "$enable_about" != true || "$page_template" == contact && "$enable_contact" != true ]]; then continue; fi
+        page_body=$(<"${TEMPLATES_DIR}/common/pages/${page_template}.md")
+        page_body="${page_body//__ZETA_SITE_TITLE__/$(yaml_quote "$site_title")}"
+        page_body="${page_body//__ZETA_SITE_DESCRIPTION__/$(yaml_quote "$site_desc")}"
+        printf '%s\n' "$page_body" > "${site_path}/pages/${page_template}.md"
+    done
+    if [[ "$enable_blog" == true ]]; then create_example_posts "$site_slug" || return 1; fi
 
     msg_success "Site '${site_slug}' created."
     msg_info "Markdown source: ${site_path}/posts/"
