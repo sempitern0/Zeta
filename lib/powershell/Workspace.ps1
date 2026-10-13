@@ -191,9 +191,15 @@ function NewPost([string]$name){
 }
 function ListSites{
  foreach($name in (SiteNames)){
-  $c=Config $name;$status='draft'
-  if(Test-Path (Join-Path (SiteDir $name) "$($c.output)/index.html")){$status='built'}
-  Write-Host ("{0,-24} {1,3} posts  {2,-15} {3}" -f $name,(Posts $name).Count,$c.theme,$status)
+  try{
+   $c=Config $name
+   if(-not (SafeDir $c.content)){throw "Invalid content_dir '$($c.content)' in $(ConfigPath $name)"}
+   if(-not (SafeDir $c.output)){throw "Invalid output_dir '$($c.output)' in $(ConfigPath $name)"}
+   $status=if(Test-Path (Join-Path (SiteDir $name) "$($c.output)/index.html")){'built'}else{'draft'}
+   Write-Host ("{0,-24} {1,3} posts  {2,-15} {3}" -f $name,@(Posts $name).Count,$c.theme,$status)
+  }catch{
+   Write-Host ("{0,-24} CONFIG ERROR: {1}" -f $name,$_.Exception.Message) -ForegroundColor Yellow
+  }
  }
 }
 function Clean([string]$name){
