@@ -100,17 +100,76 @@ function EditSite([string]$name){
  Dashboard
  Write-Host "[OK] Configuration updated for $name" -ForegroundColor Green
 }
+# Only modify the two theme keys: never serialize away custom YAML or build paths.
+function Set-ZetaThemeFields([string]$yaml,[string]$theme,[string]$style) {
+ $newline=if($yaml.Contains("`r`n")){"`r`n"}else{"`n"}
+ $lines=$yaml -split '\r?\n'
+ $result=[Collections.Generic.List[string]]::new()
+ $inside=$false;$sectionFound=$false
+ $nameFound=$false;$styleFound=$false
+ foreach($line in $lines){
+  if($line -match '^theme:\s*(?:#.*)?$'){
+   if($sectionFound){throw 'Duplicate theme sections in site configuration'}
+   $inside=$true;$sectionFound=$true
+   $result.Add($line)
+   continue
+  }
+  if($inside -and $line -match '^[^\s#]'){
+   if(-not $nameFound){$result.Add('  name: '+(Quote $theme))}
+   if(-not $styleFound){$result.Add('  pandoc_theme: '+(Quote $style))}
+   $inside=$false
+  }
+  if($inside -and $line -match '^\s+name:\s*'){
+   $result.Add('  name: '+(Quote $theme))
+   $nameFound=$true
+   continue
+  }
+  if($inside -and $line -match '^\s+pandoc_theme:\s*'){
+   $result.Add('  pandoc_theme: '+(Quote $style))
+   $styleFound=$true
+   continue
+  }
+  $result.Add($line)
+ }
+ if($inside){
+  if(-not $nameFound){$result.Add('  name: '+(Quote $theme))}
+  if(-not $styleFound){$result.Add('  pandoc_theme: '+(Quote $style))}
+ }
+ if(-not $sectionFound){
+  $result.Add('theme:')
+  $result.Add('  name: '+(Quote $theme))
+  $result.Add('  pandoc_theme: '+(Quote $style))
+ }
+ $result.ToArray() -join $newline
+}
 function ThemeSite([string]$name,[string]$theme,[string]$style=''){
  $c=Config $name
+ $configPath=ConfigPath $name
+ if(-not (SafeDir $c.content)){
+  throw "Unsafe build.content_dir '$($c.content)' in $configPath. Use a relative directory, e.g. posts."
+ }
+ if(-not (SafeDir $c.output)){
+  throw "Unsafe build.output_dir '$($c.output)' in $configPath. Use a relative directory, e.g. public."
+ }
  if(!$theme){$theme=SelectItem 'Theme' @(Themes) $c.theme}
  if(@(Themes) -notcontains $theme){throw "Unknown theme '$theme'."}
  if(!$style){$style=SelectItem 'Pandoc highlight style' @(Get-ZetaHighlightStyles) $c.highlight}
  if(@(Get-ZetaHighlightStyles) -notcontains $style){throw "Unknown highlight style '$style'."}
- $c.theme=$theme
- $c.highlight=$style
- Save (ConfigPath $name) (ConfigText $c)
- Build $name
+ $originalBytes=[IO.File]::ReadAllBytes($configPath)
+ try{
+  $newYaml=Set-ZetaThemeFields ([IO.File]::ReadAllText($configPath)) $theme $style
+  Save $configPath $newYaml
+  $check=Config $name
+  if($check.theme -ne $theme -or $check.highlight -ne $style){
+   throw 'Theme selection was not saved correctly.'
+  }
+  Build $name
+ }catch{
+  [IO.File]::WriteAllBytes($configPath,$originalBytes)
+  throw
+ }
  Dashboard
+ Write-Host "[OK] Theme changed to '$theme' with '$style' highlighting." -ForegroundColor Green
 }
 function NewPost([string]$name){
  $c=Config $name
