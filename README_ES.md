@@ -108,7 +108,7 @@ build:
 
 Los artículos son archivos `.md` con frontmatter YAML opcional: `title`, `date`, `description`, `slug`, `tags`, etc. Antes de publicar, configura `site.url` con la dirección pública: Zeta la utiliza para generar `sitemap.xml` y `robots.txt`.
 
-## Cinco themes incluidos
+## Ocho themes incluidos
 
 | Theme | Uso recomendado |
 | :-- | :-- |
@@ -117,8 +117,11 @@ Los artículos son archivos `.md` con frontmatter YAML opcional: `title`, `date`
 | `console` | Administración de sistemas y documentación técnica |
 | `indie` | Portada de videojuego y devlog |
 | `organization` | Organización open source y directorio de proyectos |
+| `brutalist` | Diseño gráfico de alto contraste y creativo |
+| `folio` | Portafolio editorial de tipografía serif |
+| `aurora` | Producto tecnológico con gradientes oscuros |
 
-Todos funcionan en Bash y PowerShell. `indie` y `organization` admiten imágenes de portada, botones y enlaces externos; consulta [landings](docs/landing-themes.md). Hay fuentes locales opcionales: Cascadia Code, JetBrains Mono, Fira Code, IBM Plex Mono y Source Code Pro.
+Todos funcionan en Bash y PowerShell. `indie` y `organization` admiten imágenes de portada, botones y enlaces externos; consulta el [catálogo de temas](docs/theme-catalog.md) y [landings](docs/landing-themes.md). Hay fuentes locales opcionales: Cascadia Code, JetBrains Mono, Fira Code, IBM Plex Mono y Source Code Pro.
 
 ## Generar y publicar
 
@@ -139,6 +142,7 @@ Puedes desplegarlo en GitHub Pages, Cloudflare Pages, Netlify o cualquier servid
 ~~~bash
 make syntax
 bash tests/theme-smoke.sh
+bash tests/catalog-smoke.sh
 ~~~
 
 ~~~powershell

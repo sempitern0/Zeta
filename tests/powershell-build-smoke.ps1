@@ -15,7 +15,7 @@ try{
  [void](New-Item -ItemType Directory -Path $Sites -Force)
  . (Join-Path $Root 'lib/powershell/Dependencies.ps1')
  . (Join-Path $Root 'lib/powershell/Core.ps1')
- $themes=@('zen','paper','console','indie','organization')
+ $themes=@('zen','paper','console','indie','organization','brutalist','folio','aurora')
  foreach($theme in $themes){
   if(@(Themes) -notcontains $theme){throw "Expected theme missing: $theme"}
   $site='zeta-pandoc-'+$theme
@@ -61,7 +61,7 @@ This is an **article**.
   if($article -notmatch 'Hello Zeta'){throw "$theme article has no Markdown content"}
   Write-Host "[OK] $theme rendered with absolute templates" -ForegroundColor Green
  }
- Write-Host '[OK] All five themes generated on PowerShell.' -ForegroundColor Green
+ Write-Host '[OK] All eight themes generated on PowerShell.' -ForegroundColor Green
 }
 finally{
  if(Test-Path $temp){Remove-Item -LiteralPath $temp -Recurse -Force}

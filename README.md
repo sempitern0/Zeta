@@ -108,7 +108,7 @@ build:
 
 Posts are `.md` files with optional YAML frontmatter such as `title`, `date`, `description`, `slug` and `tags`. Set `site.url` to the real public URL before deployment: Zeta uses it for `sitemap.xml` and `robots.txt`.
 
-## Five built-in themes
+## Eight built-in themes
 
 | Theme | Best for |
 | :-- | :-- |
@@ -117,6 +117,9 @@ Posts are `.md` files with optional YAML frontmatter such as `title`, `date`, `d
 | `console` | Systems administration and technical notes |
 | `indie` | Indie game landing page and devlog |
 | `organization` | Open-source organization and project directory |
+| `brutalist` | High-contrast graphic studio and manifesto |
+| `folio` | Elegant portfolio and editorial writing |
+| `aurora` | Digital product and atmospheric technology landing |
 
 All five themes run with either shell. The `indie` and `organization` layouts support hero images, CTAs and external project links; see [landing themes](docs/landing-themes.md). Optional self-hosted fonts include Cascadia Code, JetBrains Mono, Fira Code, IBM Plex Mono and Source Code Pro.
 
@@ -139,6 +142,7 @@ Publish to any static host, including GitHub Pages, Cloudflare Pages or Netlify.
 ~~~bash
 make syntax
 bash tests/theme-smoke.sh
+bash tests/catalog-smoke.sh
 ~~~
 
 ~~~powershell
