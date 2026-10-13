@@ -35,6 +35,16 @@ try{
    throw "YAML writer failed to emit a complete key/value line: $expectedLine"
   }
  }
+ $postFiles=@(Get-ChildItem (Join-Path $site 'posts') -Filter '*.md' -File)
+ if($postFiles.Count -ne 1){throw "Expected one welcome post, got $($postFiles.Count)"}
+ $postText=[IO.File]::ReadAllText($postFiles[0].FullName)
+ foreach($expectedLine in @('title: "Welcome to Zeta"','author: "QA"','description: "Your first Markdown article"')){
+  if(-not (($postText -split '\r?\n') -ccontains $expectedLine)){throw "Malformed post frontmatter: $expectedLine"}
+ }
+ if(Get-Command pandoc -ErrorAction SilentlyContinue){
+  $null=& pandoc --from markdown --to html $postFiles[0].FullName
+  if($LASTEXITCODE -ne 0){throw 'Pandoc cannot parse created welcome post'}
+ }
  $c=Config 'zeta-test'
  if($c.title -ne 'Zeta Test' -or $c.language -ne 'es-ES' -or
    $c.highlight -ne 'tango' -or $c.theme -ne 'organization' -or
