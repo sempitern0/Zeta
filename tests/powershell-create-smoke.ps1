@@ -1,5 +1,5 @@
 #Requires -Version 7.0
-# Local regression: creates a site in a temporary workspace, without GitHub CI or Pandoc.
+# Offline parity test; does not require Pandoc or GitHub Actions.
 Set-StrictMode -Version Latest
 $ErrorActionPreference='Stop'
 $repository=Split-Path -Parent $PSScriptRoot
@@ -14,33 +14,33 @@ try{
  . (Join-Path $Root 'lib/powershell/Dependencies.ps1')
  . (Join-Path $Root 'lib/powershell/Core.ps1')
  . (Join-Path $Root 'lib/powershell/Workspace.ps1')
- # The test is independent of system Pandoc and never runs winget.
- function Test-ZetaPandoc { return $false }
- function Install-ZetaPandoc { return $false }
+ function Test-ZetaPandoc {return $false}
+ function Install-ZetaPandoc {return $false}
+ function Get-ZetaHighlightStyles {return @('zenburn','tango')}
  $script:replies=[Collections.Generic.Queue[string]]::new()
- foreach($value in @('Zeta Test','','organization','Test description','QA','https://example.org')){
-  $script:replies.Enqueue($value)
+ foreach($v in @('Zeta Test','Test description','QA','es-ES','','https://example.org','organization','tango')){
+  $script:replies.Enqueue($v)
  }
  function Read-Host {
   param([string]$Prompt)
-  if($script:replies.Count -eq 0){throw "Unexpected prompt: $Prompt"}
+  if(!$script:replies.Count){throw "Unexpected prompt: $Prompt"}
   return $script:replies.Dequeue()
  }
  NewSite
+ if($script:replies.Count -ne 0){throw 'Wizard did not ask all eight fields'}
  $site=Join-Path $Sites 'zeta-test'
- if(!(Test-Path (Join-Path $site 'config.yaml'))){throw 'Site config missing'}
- $config=Config 'zeta-test'
- if($config.theme -ne 'organization'){throw 'Theme selection failed'}
- if(@(Get-ChildItem (Join-Path $site 'posts') -Filter '*.md').Count -ne 1){throw 'Welcome post missing'}
- if(@(SiteNames) -notcontains 'zeta-test'){throw 'Site not discoverable'}
+ $c=Config 'zeta-test'
+ if($c.title -ne 'Zeta Test' -or $c.language -ne 'es-ES' -or
+   $c.highlight -ne 'tango' -or $c.theme -ne 'organization' -or
+   $c.description -ne 'Test description' -or $c.author -ne 'QA'){
+  throw 'Creation fields were not saved'
+ }
+ if(@(SiteNames) -notcontains 'zeta-test'){throw 'Created site not discovered'}
  $script:replies.Clear()
- foreach($value in @('Zeta Test','','organization')){$script:replies.Enqueue($value)}
+ foreach($v in @('Zeta Test','','','en','')){$script:replies.Enqueue($v)}
  $failed=$false
  try{NewSite}catch{$failed=$true}
  if(!$failed){throw 'Duplicate site must be rejected'}
- if(!(Test-Path (Join-Path $site 'config.yaml'))){throw 'Duplicate removed original config'}
- Write-Host '[OK] Site creation, theme choice, source files and duplicate protection.' -ForegroundColor Green
-}finally{
- Remove-Item -LiteralPath $folder -Recurse -Force -ErrorAction SilentlyContinue
-}
-
+ if(!(Test-Path (Join-Path $site 'config.yaml'))){throw 'Duplicate attempt modified original'}
+ Write-Host '[OK] Eight creation prompts, language, theme, highlight and duplicate protection.' -ForegroundColor Green
+}finally{Remove-Item -LiteralPath $folder -Recurse -Force -ErrorAction SilentlyContinue}

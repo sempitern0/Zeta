@@ -27,25 +27,43 @@ function Ask([string]$title,[string]$fallback=''){
  $v=Read-Host ("$title [$fallback]")
  if(!$v){return $fallback};return $v
 }
+function Get-ZetaHighlightStyles {
+ $fallback=@('zenburn','pygments','kate','monochrome','breezedark','espresso','haddock','tango')
+ if(-not (Get-Command pandoc -ErrorAction SilentlyContinue)){return $fallback}
+ try{
+  $available=@(& pandoc --list-highlight-styles 2>$null)
+  if($LASTEXITCODE -eq 0 -and $available.Count -gt 0){
+   return @($available | Where-Object {-not [string]::IsNullOrWhiteSpace($_)} | ForEach-Object {$_.Trim()})
+  }
+ }catch{
+  # Missing or faulty Pandoc must not prevent writing site sources.
+ }
+ return $fallback
+}
 function NewSite{
- $title=Ask 'Site title' 'My New Blog'
+ $title=Ask 'Title' 'My New Blog'
+ if([string]::IsNullOrWhiteSpace($title)){throw 'Site title is required'}
+ $description=Ask 'Description' 'A static blog built with Zeta'
+ $author=Ask 'Author' [Environment]::UserName
+ $language=Ask 'Language' 'en'
+ if($language -notmatch '^[A-Za-z]{2,3}([_-][A-Za-z0-9]{2,8})*$'){
+  throw "Invalid language '$language' (e.g. en, es, es-ES)."
+ }
  $defaultSlug=Slug $title
- if(-not $defaultSlug){throw 'Invalid site title: cannot create a slug'}
+ if(-not $defaultSlug){throw 'Cannot derive a safe slug from the site title'}
  $slug=Ask 'Site slug' $defaultSlug
  $dir=SiteDir $slug
  if(Test-Path -LiteralPath $dir){throw "Site '$slug' already exists. Nothing was overwritten."}
+ $url=Ask 'Production URL for sitemap' 'https://example.com'
+ if($url -notmatch '^https?://[^\s?#]+$'){throw "Invalid production URL '$url'."}
  $themes=@(Themes)
- if($themes.Count -eq 0){throw 'No compatible themes were found in templates/'}
- $defaultTheme=if($themes -contains 'zen'){'zen'}else{$themes[0]}
- $theme=SelectItem 'Theme' $themes $defaultTheme
- if($themes -notcontains $theme){throw "Invalid theme '$theme'."}
+ if($themes.Count -eq 0){throw 'No compatible themes available in templates/'}
+ $theme=SelectItem 'Theme' $themes $(if($themes -contains 'zen'){'zen'}else{$themes[0]})
+ $highlight=SelectItem 'Pandoc highlight style' @(Get-ZetaHighlightStyles) 'zenburn'
  $c=@{
-  title=$title;description=(Ask 'Description' 'Built with Zeta');
-  author=(Ask 'Author' [Environment]::UserName);
-  language='en';url=(Ask 'Production URL' 'https://example.com');
-  theme=$theme;highlight='zenburn';content='posts';output='public'
+  title=$title;description=$description;author=$author;language=$language;
+  url=$url.TrimEnd('/');theme=$theme;highlight=$highlight;content='posts';output='public'
  }
- if($c.url -notmatch '^https?://[^\s?#]+$'){throw "Invalid URL '$($c.url)'."}
  $created=$false
  try{
   [void](New-Item -ItemType Directory -Path (Join-Path $dir 'posts') -Force)
@@ -56,35 +74,43 @@ function NewSite{
     'date: '+(Quote $today),'description: "Your first Markdown article"',
     'tags: [zeta, introduction]','---','',
     '# Hello, world','','This is a Markdown article.','','## Next steps','','Edit this file and rebuild the site.')
-  Save (Join-Path (Join-Path $dir 'posts') "$today-welcome.md") ($sample -join [Environment]::NewLine)
+  Save (Join-Path (Join-Path $dir 'posts') ("{0}-welcome.md" -f $today)) ($sample -join [Environment]::NewLine)
  }catch{
-  if($created -and (Test-Path -LiteralPath $dir)){
-   Remove-Item -LiteralPath $dir -Recurse -Force -ErrorAction SilentlyContinue
-  }
+  if($created -and (Test-Path -LiteralPath $dir)){Remove-Item -LiteralPath $dir -Recurse -Force -ErrorAction SilentlyContinue}
   throw
  }
  Write-Host "[OK] Site created: $dir" -ForegroundColor Green
  try{Dashboard}catch{Write-Warning "Workspace index update failed: $($_.Exception.Message)"}
  if(-not (Test-ZetaPandoc)){
-  Write-Host 'Site sources are ready; Pandoc is only needed for building HTML.' -ForegroundColor Yellow
+  Write-Host 'Site sources are ready; Pandoc is only needed to build HTML.' -ForegroundColor Yellow
   if($IsWindows){[void](Install-ZetaPandoc)}
- }else{
-  Write-Host "Next: .\zeta.ps1 build $slug" -ForegroundColor Cyan
- }
+ }else{Write-Host "Next: .\zeta.ps1 build $slug" -ForegroundColor Cyan}
 }
 function EditSite([string]$name){
  $c=Config $name
- foreach($k in @('title','description','author','language','url')){$c[$k]=Ask $k $c[$k]}
- Save (ConfigPath $name) (ConfigText $c);Dashboard
+ foreach($key in @('title','description','author','language','url')){$c[$key]=Ask $key $c[$key]}
+ if($c.language -notmatch '^[A-Za-z]{2,3}([_-][A-Za-z0-9]{2,8})*$'){
+  throw "Invalid language '$($c.language)'."
+ }
+ if($c.url -notmatch '^https?://[^\s?#]+$'){throw "Invalid production URL '$($c.url)'."}
+ $c.url=$c.url.TrimEnd('/')
+ $c.theme=SelectItem 'Theme' @(Themes) $c.theme
+ $c.highlight=SelectItem 'Pandoc highlight style' @(Get-ZetaHighlightStyles) $c.highlight
+ Save (ConfigPath $name) (ConfigText $c)
+ Dashboard
+ Write-Host "[OK] Configuration updated for $name" -ForegroundColor Green
 }
 function ThemeSite([string]$name,[string]$theme,[string]$style=''){
  $c=Config $name
- if(!$theme){$theme=SelectItem 'Theme' (Themes) $c.theme}
- if((Themes) -notcontains $theme){throw 'Unknown theme'}
+ if(!$theme){$theme=SelectItem 'Theme' @(Themes) $c.theme}
+ if(@(Themes) -notcontains $theme){throw "Unknown theme '$theme'."}
+ if(!$style){$style=SelectItem 'Pandoc highlight style' @(Get-ZetaHighlightStyles) $c.highlight}
+ if(@(Get-ZetaHighlightStyles) -notcontains $style){throw "Unknown highlight style '$style'."}
  $c.theme=$theme
- if($style){$c.highlight=$style}
+ $c.highlight=$style
  Save (ConfigPath $name) (ConfigText $c)
- Build $name;Dashboard
+ Build $name
+ Dashboard
 }
 function NewPost([string]$name){
  $c=Config $name

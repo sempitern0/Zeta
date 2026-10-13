@@ -67,3 +67,7 @@ PowerShell resolves each theme template to a verified absolute path before passi
 When `./zeta.ps1 preview SITE` or `./zeta.ps1 serve` is running in PowerShell 7, press **Ctrl+C** to interrupt it. Zeta now uses a cancellable, nonblocking HTTP accept loop (100 ms polling intervals) instead of waiting indefinitely inside `HttpListener.GetContext()`. In Windows Terminal / ConsoleHost you can also press **Q** (without Enter) to return to the Zeta assistant without terminating PowerShell. The listener is stopped and closed in a `finally` block, releasing the localhost port. Other terminal hosts may not offer the Q shortcut; Ctrl+C remains the standard mechanism.
 
 Run the local server regression test using `pwsh -NoProfile -File tests/powershell-server-smoke.ps1`. It starts an isolated test server, requests a page, and stops its job without running GitHub Actions. For a manual Ctrl+C test, run `./zeta.ps1 serve -Port 8099`, open the page and press Ctrl+C while the server is idle.
+
+## Create and edit wizard parity with Bash
+
+Both wizards request site title, description, author, language, slug, production URL, theme and Pandoc syntax highlighting style. The highlight choices are queried from Pandoc, with the same Bash fallback list before installation. Theme and highlighting can be selected by number or name. `edit` also exposes theme and highlight, as in Bash. Run `pwsh -NoProfile -File tests/powershell-create-smoke.ps1` locally; no GitHub Actions are needed.

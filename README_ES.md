@@ -439,3 +439,7 @@ Puedes crear un sitio mediante `.\zeta.ps1 create` sin tener Pandoc. El comando 
 ### Solución al error de plantillas Pandoc en PowerShell
 
 La versión Windows ahora comprueba que cada plantilla existe y proporciona una ruta absoluta a Pandoc. Después de `git pull origin main`, ejecuta `.\zeta.ps1 build NOMBRE_DEL_SITIO` y `.\zeta.ps1 serve`. Para verificar los cinco themes sin modificar tus sitios: `pwsh -NoProfile -File tests/powershell-build-smoke.ps1`. Consulta [docs/powershell.md](docs/powershell.md).
+
+### Paridad de campos entre Bash y PowerShell
+
+El asistente PowerShell ahora solicita los mismos ocho campos que Bash: título, descripción, autor, idioma, slug, URL, theme y resaltado de sintaxis. La edición permite cambiar también theme y resaltado. Prueba local sin Pandoc: `pwsh -NoProfile -File tests/powershell-create-smoke.ps1`.
