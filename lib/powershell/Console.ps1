@@ -42,6 +42,8 @@ function Help{
 Usage
   ./zeta.ps1                        Interactive assistant
   ./zeta.ps1 <command> [site] [value] [highlight]
+  ./zeta.ps1 deps                  Check renderer/installer
+  ./zeta.ps1 install-pandoc        Confirmed official winget setup
 
 Workspace
   sites | list                     List sites and status
@@ -124,7 +126,7 @@ function Menu{
   if($names.Count -gt 4){Write-Host ("    + {0} more (see [1])" -f ($names.Count-4))}
   Show-Actions 'Workspace' @('[1] List sites','[2] Create site','[3] Manage site')
   Show-Actions 'Build & preview' @(
-   '[4] Build one','[5] Build all','[6] Preview one','[7] Serve workspace')
+   '[4] Build one','[5] Build all','[6] Preview one','[7] Serve workspace','[8] Install Pandoc')
   Write-Host ''
   Write-ZetaLine '    [?] Help     [0] Exit' 'Gray'
   Write-ZetaLine ('─'*60) 'DarkGray'
@@ -139,6 +141,7 @@ function Menu{
     '5'{foreach($name in (SiteNames)){Build $name};Dashboard}
     '6'{Preview (SelectItem 'Site' @(SiteNames)) $Port}
     '7'{foreach($name in (SiteNames)){Build $name};Dashboard;Serve $Sites $Port}
+    '8'{[void](Install-ZetaPandoc)}
     '?'{Help}
     'h'{Help}
     'help'{Help}

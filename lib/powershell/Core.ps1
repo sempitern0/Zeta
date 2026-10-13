@@ -158,7 +158,7 @@ function Styles([string]$theme,[string]$dir,[string]$prefix){
  return $args
 }
 function Build([string]$name){
- if(!(Get-Command pandoc -ErrorAction SilentlyContinue)){throw 'Pandoc required: https://pandoc.org/installing.html'}
+ Assert-ZetaPandoc
  $dir=SiteDir $name;$c=Config $name
  if($c.url -notmatch '^https?://[^\s?#]+$'){throw 'Invalid production URL'}
  if(!(SafeDir $c.content) -or !(SafeDir $c.output)){throw 'Unsafe path'}

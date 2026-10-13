@@ -5,6 +5,7 @@ param(
  [Parameter(Position=2)][string]$Value='',
  [Parameter(Position=3)][string]$Highlight='',
  [switch]$Force,
+ [switch]$Yes,
  [int]$Port=8000
 )
 Set-StrictMode -Version Latest
@@ -14,6 +15,7 @@ $Sites=Join-Path $Root 'sites'
 $Templates=Join-Path $Root 'templates'
 $Utf8=[Text.UTF8Encoding]::new($false)
 
+. (Join-Path $Root 'lib/powershell/Dependencies.ps1')
 . (Join-Path $Root 'lib/powershell/Core.ps1')
 . (Join-Path $Root 'lib/powershell/Workspace.ps1')
 . (Join-Path $Root 'lib/powershell/Console.ps1')
@@ -29,6 +31,9 @@ try {
   'list'{ListSites}
   'create'{NewSite}
   'new'{NewSite}
+  'deps'{Show-ZetaDependencies}
+  'dependencies'{Show-ZetaDependencies}
+  'install-pandoc'{[void](Install-ZetaPandoc -AssumeYes:$Yes)}
   'edit'{EditSite $Site}
   'theme'{ThemeSite $Site $Value $Highlight}
   'appearance'{ThemeSite $Site $Value $Highlight}
