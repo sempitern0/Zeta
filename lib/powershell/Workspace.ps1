@@ -82,9 +82,19 @@ function NewSite{
  Write-Host "[OK] Site created: $dir" -ForegroundColor Green
  try{Dashboard}catch{Write-Warning "Workspace index update failed: $($_.Exception.Message)"}
  if(-not (Test-ZetaPandoc)){
-  Write-Host 'Site sources are ready; Pandoc is only needed to build HTML.' -ForegroundColor Yellow
+  Write-Host 'Site sources are ready; Pandoc is needed for HTML generation.' -ForegroundColor Yellow
   if($IsWindows){[void](Install-ZetaPandoc)}
- }else{Write-Host "Next: .\zeta.ps1 build $slug" -ForegroundColor Cyan}
+ }
+ if(Test-ZetaPandoc){
+  try{
+   Build $slug
+   Dashboard
+   Write-Host "[OK] Generated static files in $(Join-Path $dir 'public')" -ForegroundColor Green
+  }catch{
+   Write-Warning "Site sources are saved, but the HTML build failed: $($_.Exception.Message)"
+   Write-Host "Retry with: .\zeta.ps1 build $slug" -ForegroundColor Yellow
+  }
+ }
 }
 function EditSite([string]$name){
  $c=Config $name
