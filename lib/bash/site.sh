@@ -462,6 +462,10 @@ build_site() {
         fi
     fi
     local pages_mode=false blog_enabled=true
+    if [[ -d "${site_dir}/pages" && ! -f "${site_dir}/pages/index.md" ]]; then
+        msg_error "Markdown pages directory exists without pages/index.md."
+        return 1
+    fi
     if [[ -f "${site_dir}/pages/index.md" ]]; then
         pages_mode=true
         [[ "$(get_site_yaml_prop "$config_file" build blog true)" == false ]] && blog_enabled=false
