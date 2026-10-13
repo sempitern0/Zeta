@@ -50,6 +50,16 @@ This is an **article**.
 '@
   Save (Join-Path $siteDir 'posts/2026-10-12-smoke.md') $post
   Build $site
+  # Regression: organization hero must compile with and without an image.
+  if($theme -eq 'organization'){
+   $tpl=Join-Path $Templates 'organization/index.html'
+   foreach($variant in @('without','with')){
+    $args=@('-f','markdown','-t','html5','--standalone','--template',$tpl,'-V','site_lang=en')
+    if($variant -eq 'with'){$args+=@('-V','hero_image=assets/example.webp')}
+    $rendered=('' | & pandoc @args) -join [Environment]::NewLine
+    if($LASTEXITCODE -ne 0 -or $rendered -notmatch 'hero-grid'){throw "Organization hero failed: $variant image"}
+   }
+  }
   $public=Join-Path $siteDir 'public'
   foreach($file in @('index.html','posts.html','posts/2026/smoke.html','styles/normalize.css','styles/markdown.css','sitemap.xml','robots.txt')){
    $path=Join-Path $public $file
