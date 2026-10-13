@@ -44,7 +44,7 @@ function NewSite{
  $title=Ask 'Title' 'My New Blog'
  if([string]::IsNullOrWhiteSpace($title)){throw 'Site title is required'}
  $description=Ask 'Description' 'A static blog built with Zeta'
- $author=Ask 'Author' [Environment]::UserName
+ $author=Ask 'Author' ([Environment]::UserName)
  $language=Ask 'Language' 'en'
  if($language -notmatch '^[A-Za-z]{2,3}([_-][A-Za-z0-9]{2,8})*$'){
   throw "Invalid language '$language' (e.g. en, es, es-ES)."
@@ -70,10 +70,25 @@ function NewSite{
   $created=$true
   Save (Join-Path $dir 'config.yaml') (ConfigText $c)
   $today=Get-Date -Format yyyy-MM-dd
-  $sample=@('---','title: "Welcome to Zeta"','author: '+(Quote $c.author),
-    'date: '+(Quote $today),'description: "Your first Markdown article"',
-    'tags: [zeta, introduction]','---','',
-    '# Hello, world','','This is a Markdown article.','','## Next steps','','Edit this file and rebuild the site.')
+  # Keep each frontmatter field on ONE line. Avoid PowerShell's array
+  # expression precedence around comma-separated string concatenation.
+  $sample=@(
+   '---'
+   'title: "Welcome to Zeta"'
+   ('author: {0}' -f (Quote $c.author))
+   ('date: {0}' -f (Quote $today))
+   'description: "Your first Markdown article"'
+   'tags: [zeta, introduction]'
+   '---'
+   ''
+   '# Hello, world'
+   ''
+   'This is a Markdown article.'
+   ''
+   '## Next steps'
+   ''
+   'Edit this file and rebuild the site.'
+  )
   Save (Join-Path (Join-Path $dir 'posts') ("{0}-welcome.md" -f $today)) ($sample -join [Environment]::NewLine)
  }catch{
   if($created -and (Test-Path -LiteralPath $dir)){Remove-Item -LiteralPath $dir -Recurse -Force -ErrorAction SilentlyContinue}
@@ -190,9 +205,21 @@ function NewPost([string]$name){
  if((Test-Path $file) -and !$Force){throw 'Article exists'}
  $desc=Ask 'Description' $title
  $tags=Ask 'Tags (comma-separated)' ''
- $body=@('---','title: '+(Quote $title),'author: '+(Quote $c.author),
- 'date: '+(Quote $date),'description: '+(Quote $desc),'slug: '+(Quote $slug),
- 'tags: []','---','','Write your introduction here.','','## First section','')
+ $body=@(
+  '---'
+  ('title: {0}' -f (Quote $title))
+  ('author: {0}' -f (Quote $c.author))
+  ('date: {0}' -f (Quote $date))
+  ('description: {0}' -f (Quote $desc))
+  ('slug: {0}' -f (Quote $slug))
+  'tags: []'
+  '---'
+  ''
+  'Write your introduction here.'
+  ''
+  '## First section'
+  ''
+ )
  if($tags){
   $body=@($body[0..5])+@('tags:')+@(foreach($t in ($tags -split ',')){if($t.Trim()){'  - '+(Quote $t.Trim())}})+@($body[7..($body.Length-1)])
  }
