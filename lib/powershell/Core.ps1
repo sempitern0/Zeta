@@ -368,6 +368,7 @@ function Render-ZetaPages([string]$name,[string]$stage,[hashtable]$c,[bool]$blog
     '-V',('page_slug='+(Escape $slug)),'-V',('canonical='+(Escape $canonical)),
     '-V',('rel_root='+$root),'-V',('page_navigation='+($items -join ' ')),
     '-V',('css='+$root+'styles/zeta-pages.css'),'-o',$dest)
+  if($opts -contains '--lua-filter=' -or $opts -contains ''){throw "Pandoc received an empty argument for page: $slug"}
   Invoke-ZetaPandoc $opts
  }
 }
