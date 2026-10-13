@@ -1189,6 +1189,9 @@ update_sites_index() {
         title=$(get_site_yaml_prop "$config_file" site title "$site")
         desc=$(get_site_yaml_prop "$config_file" site description "")
         theme=$(get_site_yaml_prop "$config_file" theme name zen)
+        local author lang
+        author=$(get_site_yaml_prop "$config_file" site author "Author")
+        lang=$(get_site_yaml_prop "$config_file" site language "en")
         content_rel=$(get_site_yaml_prop "$config_file" build content_dir posts)
         output_rel=$(get_site_yaml_prop "$config_file" build output_dir public)
         count=0 status="Draft" status_class="" card_class="" link="" error_message=""
@@ -1214,7 +1217,7 @@ update_sites_index() {
             action="<a class=\"preview\" href=\"$link\">Open preview →</a>"
         fi
         if [[ -n "$error_message" ]]; then action="<p class=\"error\">$(html_escape "$error_message")</p>"; fi
-        cards+="$(printf '<article class="card %s"><div class="card-header"><span class="eyebrow">SITE / %s</span><span class="status %s">%s</span></div><h3>%s</h3><p class="desc">%s</p><dl class="details"><div><dt>Theme</dt><dd>%s</dd></div><div><dt>Articles</dt><dd>%s</dd></div></dl>%s</article>' "$card_class" "$(html_escape "$site")" "$status_class" "$status" "$title_content" "$desc_html" "$theme_html" "$count" "$action")"
+        cards+="$(printf '<article class="card %s"><div class="card-header"><span class="eyebrow">SITE / %s</span><span class="status %s">%s</span></div><h3>%s</h3><p class="desc">%s</p><dl class="details"><div><dt>Theme</dt><dd>%s</dd></div><div><dt>Articles</dt><dd>%s</dd></div><div><dt>Author</dt><dd>%s</dd></div><div><dt>Language</dt><dd>%s</dd></div><div><dt>Output</dt><dd>%s</dd></div></dl>%s</article>' "$card_class" "$(html_escape "$site")" "$status_class" "$status" "$title_content" "$desc_html" "$theme_html" "$count" "$(html_escape "$author")" "$(html_escape "$lang")" "$(html_escape "$output_rel")" "$action")"
     done
     [[ -n "$cards" ]] || cards='<p class="empty">No sites yet. Run zeta.sh create or zeta.ps1 create to begin.</p>'
     html=$(<"$template")
