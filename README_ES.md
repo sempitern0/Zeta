@@ -68,6 +68,12 @@ Utiliza **el mismo comando** después de `./zeta.sh` desde Bash o `.\zeta.ps1` d
 
 Los dos asistentes muestran el logotipo ZETA a color, el estado de los sitios y menús numerados. La sintaxis del puerto depende de la shell: `./zeta.sh --port 8080 preview mi-sitio` frente a `.\zeta.ps1 preview mi-sitio -Port 8080`. Consulta `help` para ver todas las opciones.
 
+## Índice visual y contenido inicial compartidos
+
+Bash y PowerShell generan **el mismo índice de sitios**, adaptable y navegable con teclado, en `sites/index.html`, con CSS compartido, estados de compilación, descripciones, temas, cantidad de artículos y acceso a las vistas previas.
+
+Al crear un sitio, ambos generan **dos artículos Markdown completos**: uno con tablas, listas, notas a pie de página y otros formatos, y otro con varios lenguajes de programación para comprobar el resaltado. Los recursos comunes se mantienen en `templates/common/`. PowerShell compila `public/` automáticamente cuando Pandoc está instalado.
+
 ## Estructura de los sitios
 
 ~~~text
@@ -142,11 +148,13 @@ Puedes desplegarlo en GitHub Pages, Cloudflare Pages, Netlify o cualquier servid
 ~~~bash
 make syntax
 bash tests/theme-smoke.sh
+bash tests/workspace-parity-smoke.sh
 bash tests/catalog-smoke.sh
 ~~~
 
 ~~~powershell
 .\tests\powershell-create-smoke.ps1
+.\tests\powershell-workspace-smoke.ps1
 .\tests\powershell-build-smoke.ps1
 .\tests\powershell-server-smoke.ps1
 ~~~
