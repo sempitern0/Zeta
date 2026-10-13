@@ -68,6 +68,12 @@ Run the **same command** after `./zeta.sh` in Bash or `.\zeta.ps1` in PowerShell
 
 The console assistants offer a colorful ZETA dashboard and numbered menus. Port flags are shell-native: `./zeta.sh --port 8080 preview my-site` versus `.\zeta.ps1 preview my-site -Port 8080`. Use `help` to inspect all options.
 
+## Shared visual workspace and starter content
+
+Both assistants now build the **same responsive and keyboard-accessible workspace index** at `sites/index.html`, with a shared stylesheet, site status, description, theme, article count and a preview link when a build exists. An empty workspace remains usable, and a broken site's configuration cannot hide healthy sites.
+
+Creating a site in either shell produces **two complete Markdown demonstrations**: `zeta-markdown-showcase.md` (formatting, tables, footnotes, lists) and `zeta-code-showcase.md` (syntax-highlighted code across languages). The examples and dashboard assets are maintained once under `templates/common/`. PowerShell builds `public/` automatically when Pandoc is present; Bash builds on demand.
+
 ## Site layout
 
 ~~~text
@@ -143,11 +149,13 @@ Publish to any static host, including GitHub Pages, Cloudflare Pages or Netlify.
 ~~~bash
 make syntax
 bash tests/theme-smoke.sh
+bash tests/workspace-parity-smoke.sh
 bash tests/catalog-smoke.sh
 ~~~
 
 ~~~powershell
 .\tests\powershell-create-smoke.ps1
+.\tests\powershell-workspace-smoke.ps1
 .\tests\powershell-build-smoke.ps1
 .\tests\powershell-server-smoke.ps1
 ~~~
