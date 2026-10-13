@@ -720,6 +720,12 @@ diagnose_site() {
     highlight=$(get_site_yaml_prop "$config_file" theme pandoc_theme "")
     content_rel=$(get_site_yaml_prop "$config_file" build content_dir "")
     output_rel=$(get_site_yaml_prop "$config_file" build output_dir "")
+    local pages_mode=false blog_enabled=true
+    if [[ -f "${site_dir}/pages/index.md" ]]; then
+        pages_mode=true
+        [[ "$(get_site_yaml_prop "$config_file" build blog true)" == false ]] && blog_enabled=false
+        doctor_ok "Pages" "Markdown homepage present"
+    fi
 
     doctor_ok()   { printf '  %b %-20s %s\n' "${boldGreen}[OK]${endColour}" "$1" "$2"; }
     doctor_warn() { printf '  %b %-20s %s\n' "${boldYellow}[WARN]${endColour}" "$1" "$2"; ((warnings += 1)); }
@@ -794,7 +800,9 @@ diagnose_site() {
 
     if [[ -d "$content_dir" ]]; then
         post_count=$(find "$content_dir" -type f \( -name '*.md' -o -name '*.markdown' \) | wc -l | tr -d ' ')
-        if (( post_count > 0 )); then
+        if [[ "$blog_enabled" == false ]]; then
+            doctor_ok "Blog" "disabled by configuration"
+        elif (( post_count > 0 )); then
             doctor_ok "Posts" "${post_count} Markdown file(s)"
         else
             doctor_warn "Posts" "no Markdown posts found"
@@ -827,9 +835,25 @@ diagnose_site() {
         doctor_ok "public/" "$output_dir"
 
         [[ -s "${output_dir}/index.html" ]] && doctor_ok "index.html" "present" || doctor_fail "index.html" "missing"
-        [[ -s "${output_dir}/posts.html" ]] && doctor_ok "posts.html" "present" || doctor_warn "posts.html" "missing"
+        if [[ "$blog_enabled" == true ]]; then
+            [[ -s "${output_dir}/posts.html" ]] && doctor_ok "posts.html" "present" || doctor_warn "posts.html" "missing"
+        fi
         [[ -s "${output_dir}/robots.txt" ]] && doctor_ok "robots.txt" "present" || doctor_fail "robots.txt" "missing"
         [[ -s "${output_dir}/sitemap.xml" ]] && doctor_ok "sitemap.xml" "present" || doctor_fail "sitemap.xml" "missing"
+
+        if [[ "$pages_mode" == true ]]; then
+            local page_file page_slug
+            for page_file in "${site_dir}/pages/"*.md; do
+                [[ -f "$page_file" ]] || continue
+                page_slug=$(basename "$page_file" .md)
+                [[ "$(extract_frontmatter_property "$page_file" draft 2>/dev/null || true)" == true ]] && continue
+                if [[ "$page_slug" == index ]]; then
+                    [[ -s "${output_dir}/index.html" ]] || doctor_fail "Page index" "missing"
+                else
+                    [[ -s "${output_dir}/${page_slug}/index.html" ]] && doctor_ok "Page $page_slug" "published" || doctor_fail "Page $page_slug" "missing"
+                fi
+            done
+        fi
 
         if find "$output_dir" -type f \( -name '*.md' -o -name '*.markdown' -o -name 'config.yaml' -o -name 'config.yml' \) | grep -q .; then
             doctor_fail "Artifact hygiene" "Markdown/config files leaked into public/"
