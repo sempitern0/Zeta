@@ -643,3 +643,97 @@ build_site() {
 
     msg_success "Site '${site_slug}' built: ${built_count} post(s) -> ${final_output_dir}"
 }
+
+# Flat Markdown pages are opt-in: no pages/index.md means legacy behavior.
+zeta_pages_navigation() {
+    local site_dir="$1" prefix="$2" active="$3" blog_enabled="$4"
+    local pages_dir="${site_dir}/pages" source slug nav title order rows=""
+    for source in "$pages_dir"/*.md; do
+        [[ -f "$source" && ! -L "$source" ]] || continue
+        slug=$(basename "$source" .md)
+        [[ "$slug" =~ ^[a-z0-9]+(-[a-z0-9]+)*$ ]] || continue
+        [[ "$(extract_frontmatter_property "$source" draft 2>/dev/null || true)" == "true" ]] && continue
+        nav=$(extract_frontmatter_property "$source" nav 2>/dev/null || true)
+        [[ "$nav" == "false" ]] && continue
+        title=$(extract_frontmatter_property "$source" menu_title 2>/dev/null || true)
+        [[ -n "$title" ]] || title=$(extract_frontmatter_property "$source" title 2>/dev/null || true)
+        [[ -n "$title" ]] || title="$slug"
+        title="${title//|/ }"
+        order=$(extract_frontmatter_property "$source" nav_order 2>/dev/null || true)
+        [[ "$order" =~ ^[0-9]{1,3}$ ]] || order=50
+        [[ "$slug" == "index" ]] && order=0
+        rows+="$(printf '%04d|%s|%s\n' "$order" "$slug" "$title")"$'\n'
+    done
+    local rendered="" href marker
+    while IFS='|' read -r order slug title; do
+        [[ -n "$slug" ]] || continue
+        if [[ "$slug" == "index" ]]; then href="${prefix}index.html"
+        else href="${prefix}${slug}/"; fi
+        marker=""
+        [[ "$active" == "$slug" ]] && marker=' aria-current="page"'
+        rendered+="<a href=\"$(html_escape "$href")\"${marker}>$(html_escape "$title")</a> "
+    done < <(printf '%s' "$rows" | LC_ALL=C sort -t '|' -k1,1n -k2,2)
+    if [[ "$blog_enabled" == "true" ]]; then
+        marker=""
+        [[ "$active" == "blog" ]] && marker=' aria-current="page"'
+        rendered+="<a href=\"$(html_escape "${prefix}posts.html")\"${marker}>Blog</a>"
+    fi
+    printf '%s' "$rendered"
+}
+zeta_render_markdown_pages() {
+    local site_dir="$1" output_dir="$2" site_url="$3" theme_dir="$4"
+    local site_title="$5" site_desc="$6" site_author="$7" site_lang="$8" blog_enabled="$9"
+    local theme_name="${10}"
+    local pages_dir="${site_dir}/pages" source slug draft title desc destination prefix canonical depth nav
+    [[ -f "${pages_dir}/index.md" && ! -L "${pages_dir}/index.md" ]] || {
+        msg_error "pages/index.md is required for a Markdown-driven site."; return 1
+    }
+    for source in "$pages_dir"/*.md; do
+        [[ -f "$source" ]] || continue
+        [[ ! -L "$source" ]] || { msg_error "Symlink pages are not allowed: $source"; return 1; }
+        slug=$(basename "$source" .md)
+        [[ "$slug" =~ ^[a-z0-9]+(-[a-z0-9]+)*$ ]] || {
+            msg_error "Invalid page filename: $source"; return 1
+        }
+        if [[ "$slug" == "posts" || "$slug" == "blog" ]]; then
+            msg_error "Reserved page slug: $slug"; return 1
+        fi
+        draft=$(extract_frontmatter_property "$source" draft 2>/dev/null || true)
+        if [[ "$draft" == "true" ]]; then
+            [[ "$slug" != "index" ]] || { msg_error "The homepage cannot be a draft."; return 1; }
+            continue
+        fi
+        title=$(extract_frontmatter_property "$source" title 2>/dev/null || true)
+        [[ -n "$title" ]] || title="$slug"
+        desc=$(extract_frontmatter_property "$source" description 2>/dev/null || true)
+        [[ -n "$desc" ]] || desc="$site_desc"
+        if [[ "$slug" == "index" ]]; then
+            destination="${output_dir}/index.html"; prefix=""; depth=0; canonical="${site_url}/"
+        else
+            destination="${output_dir}/${slug}/index.html"; prefix="../"; depth=1
+            canonical="${site_url}/${slug}/"
+        fi
+        mkdir -p "$(dirname "$destination")"
+        nav=$(zeta_pages_navigation "$site_dir" "$prefix" "$slug" "$blog_enabled")
+        local options=(
+            --from=markdown --to=html5 --standalone --wrap=none
+            "--template=${TEMPLATES_DIR}/common/pages/page.html"
+            "--lua-filter=${TEMPLATES_DIR}/common/filters/page-links.lua"
+            -M "zeta_page_depth=${depth}"
+            -V "title=$(html_escape "$title")"
+            -V "description=$(html_escape "$desc")"
+            -V "site_title=$(html_escape "$site_title")"
+            -V "site_author=$(html_escape "$site_author")"
+            -V "site_lang=$(html_escape "$site_lang")"
+            -V "site_theme=$(html_escape "$theme_name")"
+            -V "rel_root=${prefix}"
+            -V "page_slug=${slug}"
+            -V "canonical=$(html_escape "$canonical")"
+            -V "page_navigation=${nav}"
+        )
+        append_css_vars options "$prefix" "${theme_dir}/styles" "${site_dir}/styles"
+        if ! pandoc "$source" "${options[@]}" -o "$destination"; then
+            msg_error "Failed to render Markdown page: $source"; return 1
+        fi
+    done
+}
