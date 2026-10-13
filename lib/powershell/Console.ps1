@@ -78,11 +78,17 @@ function Manage-Menu([string]$name){
  while($true){
   Clear-Host
   Show-Brand
-  $c=Config $name
-  $status='draft'
-  if(Test-Path (Join-Path (SiteDir $name) "$($c.output)/index.html")){$status='built'}
-  Write-ZetaLine ("  Manage / {0}" -f $c.title) 'Cyan'
-  Write-Host ('  {0} | {1} posts | {2} | {3}' -f $name,@(Posts $name).Count,$c.theme,$status)
+  Write-ZetaLine ("  Manage / {0}" -f $name) 'Cyan'
+  try {
+   $c=Config $name
+   if(-not (SafeDir $c.content)){throw "Invalid content_dir '$($c.content)' in $(ConfigPath $name)"}
+   if(-not (SafeDir $c.output)){throw "Invalid output_dir '$($c.output)' in $(ConfigPath $name)"}
+   $status=if(Test-Path (Join-Path (SiteDir $name) "$($c.output)/index.html")){'built'}else{'draft'}
+   Write-Host ('  {0} | {1} posts | {2} | {3}' -f $name,@(Posts $name).Count,$c.theme,$status)
+  }catch{
+   Write-ZetaLine ("  CONFIG ERROR: {0}" -f $_.Exception.Message) 'Yellow'
+   Write-ZetaLine '  Doctor [6] and Delete site [10] remain available.' 'Yellow'
+  }
   Show-Actions 'Content & appearance' @(
    '[1] Site settings','[2] Switch theme','[3] List posts','[4] New post','[5] Manage fonts')
   Show-Actions 'Build & validate' @(
