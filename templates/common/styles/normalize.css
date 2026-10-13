@@ -15,3 +15,10 @@ button, input { overflow: visible; }
 button, select { text-transform: none; }
 textarea { overflow: auto; }
 [hidden] { display: none; }
+
+/* Progressive fallbacks: keyboard focus and intrinsic media on older engines. */
+img, svg, video, canvas { max-width: 100%; height: auto; }
+a:focus, button:focus, input:focus, select:focus, textarea:focus { outline: 2px solid currentColor; outline-offset: 3px; }
+@supports selector(:focus-visible) {
+  a:focus:not(:focus-visible), button:focus:not(:focus-visible), input:focus:not(:focus-visible), select:focus:not(:focus-visible), textarea:focus:not(:focus-visible) { outline: none; }
+}
