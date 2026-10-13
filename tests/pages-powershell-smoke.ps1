@@ -85,6 +85,34 @@ Should not publish.
  $target=Join-Path $Sites 'pages-zen'
  Remove-Item -LiteralPath (Join-Path $target 'pages/index.md') -Force
  NewPage 'pages-zen' 'Privacy Policy' 'privacy'
+ $recovered=[IO.File]::ReadAllText((Join-Path $target 'pages/index.md'))
+ if($recovered -notmatch '(?m)^title: "Page smoke"
+ if(-not (Test-Path -LiteralPath (Join-Path $target 'pages/index.md'))){throw 'Missing homepage was not bootstrapped'}
+ if(-not (Test-Path -LiteralPath (Join-Path $target 'public/privacy/index.html'))){throw 'New page was not built'}
+ $homepage=[IO.File]::ReadAllText((Join-Path $target 'pages/index.md'))
+ Build 'pages-zen'
+ if([IO.File]::ReadAllText((Join-Path $target 'pages/index.md')) -cne $homepage){throw 'Existing homepage was overwritten'}
+ Write-Host '[OK] NewPage bootstraps missing homepage without overwriting it.' -ForegroundColor Green
+}
+finally {
+ if(Test-Path $Sites){Remove-Item -LiteralPath $Sites -Recurse -Force}
+}
+ -or $recovered -match '(?m)^title: ""'){throw 'Invalid generated YAML title'}
+ if($recovered -notmatch '(?m)^description: "Test site"
+ if(-not (Test-Path -LiteralPath (Join-Path $target 'pages/index.md'))){throw 'Missing homepage was not bootstrapped'}
+ if(-not (Test-Path -LiteralPath (Join-Path $target 'public/privacy/index.html'))){throw 'New page was not built'}
+ $homepage=[IO.File]::ReadAllText((Join-Path $target 'pages/index.md'))
+ Build 'pages-zen'
+ if([IO.File]::ReadAllText((Join-Path $target 'pages/index.md')) -cne $homepage){throw 'Existing homepage was overwritten'}
+ Write-Host '[OK] NewPage bootstraps missing homepage without overwriting it.' -ForegroundColor Green
+}
+finally {
+ if(Test-Path $Sites){Remove-Item -LiteralPath $Sites -Recurse -Force}
+}
+){throw 'Invalid generated YAML description'}
+ $null=& pandoc --from markdown --to html (Join-Path $target 'pages/index.md')
+ if($LASTEXITCODE -ne 0){throw 'Pandoc rejected recovered homepage frontmatter'}
+
  if(-not (Test-Path -LiteralPath (Join-Path $target 'pages/index.md'))){throw 'Missing homepage was not bootstrapped'}
  if(-not (Test-Path -LiteralPath (Join-Path $target 'public/privacy/index.html'))){throw 'New page was not built'}
  $homepage=[IO.File]::ReadAllText((Join-Path $target 'pages/index.md'))
