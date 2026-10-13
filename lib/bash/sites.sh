@@ -936,8 +936,11 @@ create_new_site() {
     for page_template in index about contact; do
         if [[ "$page_template" == about && "$enable_about" != true || "$page_template" == contact && "$enable_contact" != true ]]; then continue; fi
         page_body=$(<"${TEMPLATES_DIR}/common/pages/${page_template}.md")
-        page_body="${page_body//__ZETA_SITE_TITLE__/$(yaml_quote "$site_title")}"
-        page_body="${page_body//__ZETA_SITE_DESCRIPTION__/$(yaml_quote "$site_desc")}"
+        local title_yaml desc_yaml
+        title_yaml=$(yaml_quote "$site_title")
+        desc_yaml=$(yaml_quote "$site_desc")
+        page_body="${page_body%%__ZETA_SITE_TITLE__*}${title_yaml}${page_body#*__ZETA_SITE_TITLE__}"
+        page_body="${page_body%%__ZETA_SITE_DESCRIPTION__*}${desc_yaml}${page_body#*__ZETA_SITE_DESCRIPTION__}"
         printf '%s\n' "$page_body" > "${site_path}/pages/${page_template}.md"
     done
     if [[ "$enable_blog" == true ]]; then create_example_posts "$site_slug" || return 1; fi
