@@ -59,6 +59,8 @@ Workspace
 Content
   posts <site>                        List Markdown articles
   new-post <site>                     Create a Markdown article
+  pages <site>                        List standalone Markdown pages
+  new-page <site> [title] [slug]      Create and build a new page
   fonts <site>                        Manage optional site-local fonts
   doctor <site>                       Check deploy readiness
 
@@ -184,6 +186,14 @@ parse_args() {
             site=$(resolve_site_arg "${1:-}") || exit 1
             create_post "$site"
             ;;
+        pages)
+            site=$(resolve_site_arg "${1:-}") || exit 1
+            list_site_pages "$site"
+            ;;
+        new-page)
+            site=$(resolve_site_arg "${1:-}") || exit 1
+            create_site_page "$site" "${2:-}" "${3:-}"
+            ;;
         fonts)
             site=$(resolve_site_arg "${1:-}") || exit 1
             manage_site_fonts "$site"
@@ -268,6 +278,8 @@ manage_site_menu() {
         ui_action 3 'List posts' 'Markdown library'
         ui_action 4 'New post' 'guided scaffold'
         ui_action 5 'Manage fonts' 'optional fonts'
+        ui_action 11 'List pages' 'standalone Markdown pages'
+        ui_action 12 'New page' 'create an About, project or other page'
         ui_heading "Build & validate"
         ui_action 6 'Doctor' 'pre-publish checks'
         ui_action 7 'Build' 'regenerate public/'
@@ -285,6 +297,8 @@ manage_site_menu() {
             3) list_posts "$site"; pause_menu ;;
             4) create_post "$site"; pause_menu ;;
             5) manage_site_fonts "$site"; pause_menu ;;
+            11) list_site_pages "$site"; pause_menu ;;
+            12) create_site_page "$site"; pause_menu ;;
             6) diagnose_site "$site"; pause_menu ;;
             7) build_site "$site" && update_sites_index; pause_menu ;;
             8) preview_site "$site" "$PREVIEW_PORT"; pause_menu ;;
