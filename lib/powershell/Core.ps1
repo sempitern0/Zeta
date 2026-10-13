@@ -351,9 +351,16 @@ function Render-ZetaPages([string]$name,[string]$stage,[hashtable]$c,[bool]$blog
   $canonical=if($slug -eq 'index'){$c.url.TrimEnd('/')+'/'}else{$c.url.TrimEnd('/')+'/'+$slug+'/'}
   [void](New-Item -ItemType Directory -Path (Split-Path $dest -Parent) -Force)
   $depth=if($slug -eq 'index'){'0'}else{'1'}
+  $pageTemplate=Join-Path $Templates 'common/pages/page.html'
+  $pageFilter=Join-Path $Templates 'common/filters/page-links.lua'
+  if(-not (Test-Path -LiteralPath $pageTemplate -PathType Leaf)){throw "Page template missing: $pageTemplate"}
+  if(-not (Test-Path -LiteralPath $pageFilter -PathType Leaf)){throw "Page Lua filter missing: $pageFilter"}
+  # Construct each Pandoc argument as a *complete* string. Concatenating
+  # an expression directly inside @() can produce a bare --lua-filter=.
+  $filterArgument="--lua-filter=$pageFilter"
   $opts=@($file.FullName,'-f','markdown-raw_html','-t','html5','--standalone','--wrap=none',
-    '--template',(Join-Path $Templates 'common/pages/page.html'),
-    '--lua-filter='+(Join-Path $Templates 'common/filters/page-links.lua'),
+    '--template',$pageTemplate,
+    $filterArgument,
     '-M',('zeta_page_depth='+$depth),
     '-V',('title='+(Escape $heading)),'-V',('description='+(Escape $desc)),
     '-V',('site_title='+(Escape $c.title)),'-V',('site_author='+(Escape $c.author)),
