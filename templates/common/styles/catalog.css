@@ -1,0 +1,49 @@
+/* Shared foundation for brutalist, folio and aurora.
+   Scoped to .zeta-catalog: no CSS nesting, :has or scripting required. */
+.zeta-catalog *, .zeta-catalog *::before, .zeta-catalog *::after{box-sizing:border-box}
+body.zeta-catalog{margin:0;min-height:100vh;display:flex;flex-direction:column;background:var(--bg);color:var(--ink);font:1rem/1.65 var(--font-ui,system-ui,sans-serif)}
+.zeta-catalog img,.zeta-catalog svg{max-width:100%;height:auto}
+.zeta-catalog a{color:var(--link);text-underline-offset:.2em}
+.zeta-catalog a:hover{color:var(--accent)}
+.zeta-catalog a:focus,.zeta-catalog button:focus{outline:3px solid var(--focus);outline-offset:4px}
+.zeta-catalog .skip-link{position:absolute;z-index:10;top:.6rem;left:.6rem;padding:.5rem .8rem;background:var(--ink);color:var(--bg);transform:translateY(-240%)}
+.zeta-catalog .skip-link:focus{transform:translateY(0)}
+.zeta-catalog .shell{width:calc(100% - 2.5rem);max-width:var(--width,76rem);margin-left:auto;margin-right:auto}
+.zeta-catalog .site-header{border-bottom:1px solid var(--rule)}
+.zeta-catalog .header-inner{min-height:4.75rem;display:flex;justify-content:space-between;align-items:center;gap:1rem}
+.zeta-catalog .site-brand{font-weight:900;color:var(--ink);text-decoration:none;overflow-wrap:break-word}
+.zeta-catalog .site-header nav{display:flex;flex-wrap:wrap;gap:1.25rem}
+.zeta-catalog .site-header nav a{color:var(--ink);text-decoration:none}
+.zeta-catalog .site-header nav a:hover,.zeta-catalog .site-header nav a[aria-current]{color:var(--accent);text-decoration:underline}
+.zeta-catalog .hero{padding:5rem 0;border-bottom:1px solid var(--rule)}
+.zeta-catalog .hero-inner{position:relative}
+.zeta-catalog .eyebrow{color:var(--accent);font-size:.78rem;font-weight:800;letter-spacing:.13em;text-transform:uppercase}
+.zeta-catalog .hero h1,.zeta-catalog .archive h1{max-width:15ch;margin:1rem 0;font-size:3.2rem;font-size:clamp(3rem,7vw,7rem);line-height:1.04;letter-spacing:-.06em;overflow-wrap:break-word}
+.zeta-catalog .hero-lead,.zeta-catalog .archive-description{max-width:60ch;font-size:1.22rem}
+.zeta-catalog .hero-actions{margin-top:2.4rem}
+.zeta-catalog .button{display:inline-block;padding:.85rem 1.4rem;color:var(--button-ink);background:var(--accent);font-weight:750;text-decoration:none;border:2px solid var(--accent)}
+.zeta-catalog .button:hover{color:var(--button-ink);filter:brightness(1.08)}
+.zeta-catalog .intro,.zeta-catalog .latest{padding-top:4rem;padding-bottom:4rem}
+.zeta-catalog .intro h2,.zeta-catalog .section-heading h2{margin:.5rem 0 1.3rem;font-size:2.15rem;font-size:clamp(2rem,4vw,3.8rem);line-height:1.12}
+.zeta-catalog .intro-text,.zeta-catalog .landing-copy{max-width:70ch}
+.zeta-catalog .section-heading{display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:2rem}
+.zeta-catalog .cards{list-style:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.15rem;padding:0;margin:0}
+.zeta-catalog .card{min-width:0;padding:1.7rem;border:1px solid var(--rule);background:var(--card)}
+.zeta-catalog .card-date{font-size:.82rem;color:var(--muted)}
+.zeta-catalog .card h3{margin:.8rem 0;font-size:1.45rem;line-height:1.2}
+.zeta-catalog .card h3 a{color:var(--ink);text-decoration:none;overflow-wrap:break-word}
+.zeta-catalog .card h3 a:hover{color:var(--accent);text-decoration:underline}
+.zeta-catalog .card>p:last-child{color:var(--muted)}
+.zeta-catalog .archive{flex:1;padding-top:4.5rem;padding-bottom:5rem}
+.zeta-catalog .archive .cards{margin-top:2.5rem}
+.zeta-catalog .article-shell{flex:1;max-width:72ch;padding-top:4rem;padding-bottom:5rem}
+.zeta-catalog .article-heading{padding-bottom:1.5rem;margin-bottom:2rem;border-bottom:1px solid var(--rule)}
+.zeta-catalog .article-heading h1{font-size:clamp(2.4rem,5vw,4.5rem);line-height:1.12;overflow-wrap:break-word}
+.zeta-catalog .byline,.zeta-catalog .article-tags{color:var(--muted)}
+.zeta-catalog .article-tags{display:flex;flex-wrap:wrap;gap:.75rem}
+.zeta-catalog .tag{color:var(--accent)}
+.zeta-catalog .back-link{margin-top:4rem}
+.zeta-catalog .site-footer{margin-top:auto;padding:1.5rem 0;border-top:1px solid var(--rule);color:var(--muted)}
+.zeta-catalog .footer-inner{display:flex;justify-content:space-between;flex-wrap:wrap;gap:1rem}
+@media(max-width:48rem){.zeta-catalog .header-inner{flex-direction:column;align-items:flex-start;padding:1rem 0}.zeta-catalog .cards{grid-template-columns:1fr}.zeta-catalog .hero{padding:3.5rem 0}}
+@media(prefers-reduced-motion:reduce){.zeta-catalog *, .zeta-catalog *::before,.zeta-catalog *::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}

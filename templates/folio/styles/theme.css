@@ -1,0 +1,17 @@
+body.theme-folio{--bg:#f7f6f2;--ink:#26352f;--muted:#5c6760;--rule:#b9c2b9;--card:#fffefa;--accent:#9b5f46;--link:#6e4435;--button-ink:#fff;--focus:#194a7e;--width:82rem;--font-ui:Georgia,"Times New Roman",serif}
+.theme-folio .site-header{background:#f7f6f2}
+.theme-folio .site-brand{font-size:1.45rem;font-style:italic;font-weight:500}
+.theme-folio .site-header nav{font-family:Arial,sans-serif;font-size:.85rem;letter-spacing:.06em;text-transform:uppercase}
+.theme-folio .hero{background:#e9ede6}
+.theme-folio .hero-inner{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.5fr);gap:3rem;align-items:center}
+.theme-folio .hero-inner::after{content:"F";font-size:15rem;line-height:.85;font-style:italic;color:#9ba99b;justify-self:center}
+.theme-folio .hero h1{font-size:clamp(3.1rem,7vw,7rem);font-weight:400;letter-spacing:-.035em}
+.theme-folio .hero-lead{color:#506053}
+.theme-folio .button{border:0}
+.theme-folio .cards{grid-template-columns:repeat(3,minmax(0,1fr))}
+.theme-folio .card{border:0;border-top:2px solid #26352f;padding:1.2rem 0 2.5rem;background:transparent}
+.theme-folio .card h3{font-size:1.7rem;font-weight:400}
+.theme-folio .section-heading{border-bottom:1px solid #26352f}
+.theme-folio .article-heading h1{font-weight:400;font-style:italic}
+.theme-folio .article-body{font-size:1.12rem;line-height:1.9}
+@media(max-width:48rem){.theme-folio .hero-inner{grid-template-columns:1fr}.theme-folio .hero-inner::after{display:none}.theme-folio .cards{grid-template-columns:1fr}}

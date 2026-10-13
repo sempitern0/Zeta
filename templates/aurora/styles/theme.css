@@ -1,0 +1,17 @@
+body.theme-aurora{color-scheme:dark;--bg:#090e29;--ink:#f8f8ff;--muted:#b8c4e2;--rule:#3b4674;--card:#151e48;--accent:#75eece;--link:#96b9ff;--button-ink:#101735;--focus:#ffcc70;--width:79rem;--font-ui:system-ui,-apple-system,"Segoe UI",sans-serif}
+.theme-aurora .site-header{background:#090e29}
+.theme-aurora .hero{position:relative;overflow:hidden;background:#131c51;background:radial-gradient(circle at 80% 20%,#543d8e 0%,transparent 46%),radial-gradient(circle at 30% 70%,#164d75 0%,transparent 55%),linear-gradient(135deg,#0e123a,#141f46)}
+.theme-aurora .hero-inner{padding:3rem 0}
+.theme-aurora .hero h1{max-width:13ch;font-weight:850;letter-spacing:-.055em}
+.theme-aurora .hero h1::after{content:"✦";display:inline-block;margin-left:.25em;color:#ffce90}
+.theme-aurora .hero-lead{color:#dce4ff}
+.theme-aurora .button{border-radius:999px;box-shadow:0 10px 28px rgba(0,0,0,.28)}
+.theme-aurora .site-brand{font-size:1.25rem;letter-spacing:.07em}
+.theme-aurora .cards{grid-template-columns:repeat(3,minmax(0,1fr))}
+.theme-aurora .card{border-radius:1.2rem;background:#151e48}
+.theme-aurora .card:nth-child(3n+2){background:#1d2254}
+.theme-aurora .card h3 a:hover{color:#a8b6ff}
+.theme-aurora .section-heading{border-bottom:1px solid #3b4674}
+.theme-aurora .article-shell{max-width:76ch}
+.theme-aurora .article-body blockquote{border-left-color:#75eece}
+@media(max-width:48rem){.theme-aurora .cards{grid-template-columns:1fr}}

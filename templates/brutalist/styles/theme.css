@@ -1,0 +1,15 @@
+body.theme-brutalist{--bg:#f7f450;--ink:#111;--muted:#313131;--rule:#111;--card:#fff;--accent:#da3917;--link:#161616;--button-ink:#fff;--focus:#004de8;--width:80rem;--font-ui:Arial,Helvetica,sans-serif}
+.theme-brutalist .site-header{background:#111;border-bottom:4px solid #111}
+.theme-brutalist .site-brand,.theme-brutalist .site-header nav a{color:#fff}
+.theme-brutalist .site-header nav a:hover,.theme-brutalist .site-header nav a[aria-current]{color:#f7f450}
+.theme-brutalist .hero{background:#f7f450;border-bottom:5px solid #111}
+.theme-brutalist .hero h1{font-weight:900;text-transform:uppercase;letter-spacing:-.07em;max-width:13ch}
+.theme-brutalist .eyebrow{color:#111;background:#fff;padding:.2rem .55rem;display:inline-block;border:2px solid #111}
+.theme-brutalist .button,.theme-brutalist .card{box-shadow:7px 7px 0 #111;border:3px solid #111}
+.theme-brutalist .card:nth-child(odd){background:#f5ccfd}
+.theme-brutalist .card:nth-child(even){background:#9ef6eb}
+.theme-brutalist .card h3{font-weight:900;text-transform:uppercase}
+.theme-brutalist .section-heading{border-bottom:4px solid #111}
+.theme-brutalist .article-shell{background:#fff;padding-left:1.5rem;padding-right:1.5rem}
+.theme-brutalist .site-footer{background:#111;color:#fff;border:0}
+.theme-brutalist .site-footer a{color:#fff}
