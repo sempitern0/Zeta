@@ -93,6 +93,12 @@ function NewSite{
  if($themes.Count -eq 0){throw 'No compatible themes available in templates/'}
  $theme=SelectItem 'Theme' $themes $(if($themes -contains 'zen'){'zen'}else{$themes[0]})
  $highlight=SelectItem 'Pandoc highlight style' @(Get-ZetaHighlightStyles) 'zenburn'
+ $blogReply=Ask 'Include a blog? (Y/n)' 'Y'
+ $aboutReply=Ask 'Include an About page? (Y/n)' 'Y'
+ $contactReply=Ask 'Include a Contact page? (y/N)' 'N'
+ $withBlog=($blogReply -notmatch '^[Nn]')
+ $withAbout=($aboutReply -notmatch '^[Nn]')
+ $withContact=($contactReply -match '^[Yy]')
  $c=@{
   title=$title;description=$description;author=$author;language=$language;
   url=$url.TrimEnd('/');theme=$theme;highlight=$highlight;content='posts';output='public'
@@ -101,22 +107,32 @@ function NewSite{
  try{
   [void](New-Item -ItemType Directory -Path (Join-Path $dir 'posts') -Force)
   $created=$true
-  Save (Join-Path $dir 'config.yaml') (ConfigText $c)
-  $today=Get-Date -Format yyyy-MM-dd
-  $authorYaml=Quote $c.author
-  $dateYaml=Quote $today
-  foreach($example in @('markdown-showcase','code-showcase')){
-   $source=Join-Path $Templates "common/examples/$example.md"
-   if(!(Test-Path -LiteralPath $source)){throw "Missing shared example: $source"}
-   $body=[IO.File]::ReadAllText($source)
-   $body=$body.Replace('__ZETA_AUTHOR_YAML__',$authorYaml).Replace('__ZETA_DATE_YAML__',$dateYaml)
-   Save (Join-Path (Join-Path $dir 'posts') "$today-zeta-$example.md") $body
+  Save (Join-Path $dir 'config.yaml') ((ConfigText $c)+"  blog: $($withBlog.ToString().ToLowerInvariant())"+[Environment]::NewLine)
+  foreach($page in @('index','about','contact')){
+   if($page -eq 'about' -and -not $withAbout){continue}
+   if($page -eq 'contact' -and -not $withContact){continue}
+   $template=Join-Path $Templates "common/pages/$page.md"
+   $body=[IO.File]::ReadAllText($template)
+   $body=$body.Replace('__ZETA_SITE_TITLE__',(Quote $c.title)).Replace('__ZETA_SITE_DESCRIPTION__',(Quote $c.description))
+   Save (Join-Path $dir "pages/$page.md") $body
+  }
+  if($withBlog){
+   $today=Get-Date -Format yyyy-MM-dd
+   $authorYaml=Quote $c.author
+   $dateYaml=Quote $today
+   foreach($example in @('markdown-showcase','code-showcase')){
+    $source=Join-Path $Templates "common/examples/$example.md"
+    if(!(Test-Path -LiteralPath $source)){throw "Missing shared example: $source"}
+    $body=[IO.File]::ReadAllText($source)
+    $body=$body.Replace('__ZETA_AUTHOR_YAML__',$authorYaml).Replace('__ZETA_DATE_YAML__',$dateYaml)
+    Save (Join-Path (Join-Path $dir 'posts') "$today-zeta-$example.md") $body
+   }
   }
  }catch{
   if($created -and (Test-Path -LiteralPath $dir)){Remove-Item -LiteralPath $dir -Recurse -Force -ErrorAction SilentlyContinue}
   throw
  }
- Write-Host "[OK] Site created: $dir (2 Markdown example articles)" -ForegroundColor Green
+ Write-Host "[OK] Site created: $dir ($($withBlog ? 2 : 0) sample posts, Markdown pages)" -ForegroundColor Green
  try{Dashboard}catch{Write-Warning "Workspace index update failed: $($_.Exception.Message)"}
  if(-not (Test-ZetaPandoc)){
   Write-Host 'Site sources are ready; Pandoc is needed for HTML generation.' -ForegroundColor Yellow
