@@ -1,0 +1,12 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark"><title>Zeta · Local workspace</title><link rel="stylesheet" href="workspace.css">
+</head><body><a class="skip" href="#sites">Skip to sites</a>
+<header class="masthead"><div class="container topbar"><span class="logo" aria-label="Zeta">ZETA <span class="spark" aria-hidden="true">◆</span></span><span class="local-label">LOCAL WORKSPACE</span></div></header>
+<main class="container"><div class="intro"><p class="eyebrow">STATIC PUBLISHING / LOCAL PREVIEW</p><h1>Your sites<span class="accent">.</span></h1><p class="lead">Built with Markdown, Pandoc and Zeta. Preview the generated files and check which sites still need a build.</p>
+<p class="warning"><strong>Local development only.</strong> Deploy each site's generated output directory, not this workspace index or its source Markdown.</p></div>
+<section class="overview" aria-label="Workspace overview"><div><span class="stat">__ZETA_SITE_COUNT__</span><span class="stat-name">Sites</span></div><div><span class="stat">__ZETA_BUILT_COUNT__</span><span class="stat-name">Built</span></div><div><span class="stat">__ZETA_POST_COUNT__</span><span class="stat-name">Articles</span></div></section>
+<section id="sites" aria-labelledby="sites-heading"><div class="section-head"><div><p class="eyebrow">YOUR PROJECTS</p><h2 id="sites-heading">Workspace catalog</h2></div><p class="hint">Select a ready site to preview it locally.</p></div>
+<div class="grid">__ZETA_CARDS__</div></section>
+<section class="help" aria-labelledby="next-heading"><h2 id="next-heading">Next steps</h2><p>Use <code>zeta.sh</code> on Bash or <code>zeta.ps1</code> on PowerShell to create, edit and rebuild sites. Sites marked <strong>Draft</strong> have no generated index yet; sites marked <strong>Configuration issue</strong> need their YAML checked.</p></section>
+</main><footer class="container footer"><span>ZETA / Markdown-first static site generator</span><span>Runs on Bash and PowerShell · No client-side JavaScript</span></footer></body></html>
