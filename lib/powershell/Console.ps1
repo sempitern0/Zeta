@@ -118,10 +118,16 @@ function Menu{
   $names=@(SiteNames)
   if(!$names.Count){Write-Host '    No sites yet. Choose [2] to create one.'}
   foreach($name in ($names | Select-Object -First 4)){
-   $c=Config $name
-   $status='draft'
-   if(Test-Path (Join-Path (SiteDir $name) "$($c.output)/index.html")){$status='built'}
-   Write-Host ('    {0,-23} {1,3} posts   {2,-13} {3}' -f $name,@(Posts $name).Count,$c.theme,$status)
+   try {
+    $c=Config $name
+    $status='draft'
+    if(-not (SafeDir $c.output)){throw "Invalid build.output_dir '$($c.output)'."}
+    if(Test-Path (Join-Path (SiteDir $name) "$($c.output)/index.html")){$status='built'}
+    $count=@(Posts $name).Count
+    Write-Host ('    {0,-23} {1,3} posts   {2,-13} {3}' -f $name,$count,$c.theme,$status)
+   }catch{
+    Write-ZetaLine ("    {0,-23} CONFIG ERROR: {1}" -f $name,$_.Exception.Message) 'Yellow'
+   }
   }
   if($names.Count -gt 4){Write-Host ("    + {0} more (see [1])" -f ($names.Count-4))}
   Show-Actions 'Workspace' @('[1] List sites','[2] Create site','[3] Manage site')
