@@ -465,6 +465,10 @@ function NewPage([string]$name,[string]$title='', [string]$slug='') {
  }
  $target=Join-Path $site "pages/$slug.md"
  if(Test-Path -LiteralPath $target){throw "Page already exists: $target"}
+ if(-not (Test-Path -LiteralPath (Join-Path $site 'pages') -PathType Container)){
+  [void](New-Item -ItemType Directory -Path (Join-Path $site 'pages') -Force)
+ }
+ Ensure-ZetaPageHome $name
  $desc="Information about $title"
  $text=@(
   '---'
