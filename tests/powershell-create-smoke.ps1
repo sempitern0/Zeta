@@ -36,14 +36,24 @@ try{
   }
  }
  $postFiles=@(Get-ChildItem (Join-Path $site 'posts') -Filter '*.md' -File)
- if($postFiles.Count -ne 1){throw "Expected one welcome post, got $($postFiles.Count)"}
- $postText=[IO.File]::ReadAllText($postFiles[0].FullName)
- foreach($expectedLine in @('title: "Welcome to Zeta"','author: "QA"','description: "Your first Markdown article"')){
-  if(-not (($postText -split '\r?\n') -ccontains $expectedLine)){throw "Malformed post frontmatter: $expectedLine"}
- }
- if(Get-Command pandoc -ErrorAction SilentlyContinue){
-  $null=& pandoc --from markdown --to html $postFiles[0].FullName
-  if($LASTEXITCODE -ne 0){throw 'Pandoc cannot parse created welcome post'}
+ if($postFiles.Count -ne 2){throw "Expected two Markdown showcases, got $($postFiles.Count)"}
+ foreach($example in @('markdown-showcase','code-showcase')){
+  $path=Join-Path (Join-Path $site 'posts') "$(Get-Date -Format yyyy-MM-dd)-zeta-$example.md"
+  if(-not (Test-Path -LiteralPath $path)){throw "Missing shared example: $example"}
+  $text=[IO.File]::ReadAllText($path)
+  foreach($line in @('author: "QA"',('date: "'+(Get-Date -Format yyyy-MM-dd)+'"'))){
+   if(-not (($text -split '\r?\n') -ccontains $line)){throw "Malformed $example metadata: $line"}
+  }
+  if($example -eq 'markdown-showcase' -and ($text -notmatch '## Grid table' -or $text -notmatch '\[\^zeta\]')){
+   throw 'Markdown showcase lost tables or footnotes'
+  }
+  if($example -eq 'code-showcase' -and ($text -notmatch '```bash' -or $text -notmatch '```python')){
+   throw 'Code showcase lost syntax highlighting examples'
+  }
+  if(Get-Command pandoc -ErrorAction SilentlyContinue){
+   $null=& pandoc --from markdown --to html $path
+   if($LASTEXITCODE -ne 0){throw "Pandoc cannot parse $example"}
+  }
  }
  $c=Config 'zeta-test'
  if($c.title -ne 'Zeta Test' -or $c.language -ne 'es-ES' -or
