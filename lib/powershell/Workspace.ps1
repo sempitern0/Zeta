@@ -70,31 +70,20 @@ function NewSite{
   $created=$true
   Save (Join-Path $dir 'config.yaml') (ConfigText $c)
   $today=Get-Date -Format yyyy-MM-dd
-  # Keep each frontmatter field on ONE line. Avoid PowerShell's array
-  # expression precedence around comma-separated string concatenation.
-  $sample=@(
-   '---'
-   'title: "Welcome to Zeta"'
-   ('author: {0}' -f (Quote $c.author))
-   ('date: {0}' -f (Quote $today))
-   'description: "Your first Markdown article"'
-   'tags: [zeta, introduction]'
-   '---'
-   ''
-   '# Hello, world'
-   ''
-   'This is a Markdown article.'
-   ''
-   '## Next steps'
-   ''
-   'Edit this file and rebuild the site.'
-  )
-  Save (Join-Path (Join-Path $dir 'posts') ("{0}-welcome.md" -f $today)) ($sample -join [Environment]::NewLine)
+  $authorYaml=Quote $c.author
+  $dateYaml=Quote $today
+  foreach($example in @('markdown-showcase','code-showcase')){
+   $source=Join-Path $Templates "common/examples/$example.md"
+   if(!(Test-Path -LiteralPath $source)){throw "Missing shared example: $source"}
+   $body=[IO.File]::ReadAllText($source)
+   $body=$body.Replace('__ZETA_AUTHOR_YAML__',$authorYaml).Replace('__ZETA_DATE_YAML__',$dateYaml)
+   Save (Join-Path (Join-Path $dir 'posts') "$today-zeta-$example.md") $body
+  }
  }catch{
   if($created -and (Test-Path -LiteralPath $dir)){Remove-Item -LiteralPath $dir -Recurse -Force -ErrorAction SilentlyContinue}
   throw
  }
- Write-Host "[OK] Site created: $dir" -ForegroundColor Green
+ Write-Host "[OK] Site created: $dir (2 Markdown example articles)" -ForegroundColor Green
  try{Dashboard}catch{Write-Warning "Workspace index update failed: $($_.Exception.Message)"}
  if(-not (Test-ZetaPandoc)){
   Write-Host 'Site sources are ready; Pandoc is needed for HTML generation.' -ForegroundColor Yellow
