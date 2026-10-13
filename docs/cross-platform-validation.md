@@ -58,3 +58,7 @@ tests/              Local regression scripts
 ~~~
 
 See also [Windows setup](powershell.md) and [deployment](deployment.md).
+
+## Markdown multipage regressions
+
+Run `bash tests/pages-bash-smoke.sh` or `.\tests\pages-powershell-smoke.ps1` for blog-free static site builds in each of the eight themes. The smoke tests assert clean URLs, relative Markdown links, draft exclusion and sitemap entries. These are local tests; GitHub Actions are not needed.
