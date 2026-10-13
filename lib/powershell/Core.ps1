@@ -347,7 +347,7 @@ function Render-ZetaPages([string]$name,[string]$stage,[hashtable]$c,[bool]$blog
   $canonical=if($slug -eq 'index'){$c.url.TrimEnd('/')+'/'}else{$c.url.TrimEnd('/')+'/'+$slug+'/'}
   [void](New-Item -ItemType Directory -Path (Split-Path $dest -Parent) -Force)
   $depth=if($slug -eq 'index'){'0'}else{'1'}
-  $opts=@($file.FullName,'-f','markdown','-t','html5','--standalone','--wrap=none',
+  $opts=@($file.FullName,'-f','markdown-raw_html','-t','html5','--standalone','--wrap=none',
     '--template',(Join-Path $Templates 'common/pages/page.html'),
     '--lua-filter='+(Join-Path $Templates 'common/filters/page-links.lua'),
     '-M',('zeta_page_depth='+$depth),
