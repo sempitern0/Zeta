@@ -13,13 +13,14 @@ Zeta shares a **publishing format and command surface** across two engines:
 
 Both read the same `config.yaml`, Markdown articles and `templates/` and generate `sites/<site>/public/`. Arguments use each shell's conventions (e.g. `--port` and `-Port`).
 
-**Parity is not a promise of byte-identical HTML.** Pandoc versions, timestamps and some diagnostics can differ. Bash currently creates two Markdown demonstration posts, whereas PowerShell creates one welcome post. Compare generated artifacts before changing production build environments.
+**Parity is not a promise of byte-identical HTML.** Pandoc versions, timestamps and some diagnostics can differ. Both engines now create the same two Markdown showcase posts from shared source templates and render the same workspace index layout. Compare generated artifacts before changing production build environments.
 
 ## Check Bash locally
 
 ~~~bash
 make syntax
 bash tests/theme-smoke.sh
+bash tests/workspace-parity-smoke.sh
 bash tests/catalog-smoke.sh   # All eight themes
 ./zeta.sh help
 ./main.sh help    # Legacy entry point
@@ -34,6 +35,7 @@ bash tests/catalog-smoke.sh   # All eight themes
 .\zeta.ps1 help
 .\zeta.ps1 sites
 .\tests\powershell-create-smoke.ps1
+.\tests\powershell-workspace-smoke.ps1
 .\tests\powershell-build-smoke.ps1
 .\tests\powershell-server-smoke.ps1
 ~~~
