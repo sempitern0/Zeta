@@ -121,7 +121,7 @@ Posts are `.md` files with optional YAML frontmatter such as `title`, `date`, `d
 | `folio` | Elegant portfolio and editorial writing |
 | `aurora` | Digital product and atmospheric technology landing |
 
-All five themes run with either shell. The `indie` and `organization` layouts support hero images, CTAs and external project links; see [landing themes](docs/landing-themes.md). Optional self-hosted fonts include Cascadia Code, JetBrains Mono, Fira Code, IBM Plex Mono and Source Code Pro.
+All eight themes work with either shell. See the [full theme catalog](docs/theme-catalog.md). The `indie` and `organization` layouts additionally support hero images, CTAs and external project links; see [landing themes](docs/landing-themes.md). Optional self-hosted fonts include Cascadia Code, JetBrains Mono, Fira Code, IBM Plex Mono and Source Code Pro.
 
 ## Build and publish
 
@@ -135,6 +135,7 @@ Publish to any static host, including GitHub Pages, Cloudflare Pages or Netlify.
 
 - [Windows / PowerShell](docs/powershell.md) — setup, Pandoc and preview.
 - [Terminal assistant](docs/terminal-assistant.md) — navigation on both platforms.
+- [Theme catalog](docs/theme-catalog.md) — all eight designs and their uses.
 - [Landing themes](docs/landing-themes.md) — hero images and project cards.
 - [Deployment](docs/deployment.md) — static hosting and public URLs.
 - [Cross-platform validation](docs/cross-platform-validation.md) — local smoke tests and limitations.
