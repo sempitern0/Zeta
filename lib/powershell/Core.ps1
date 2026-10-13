@@ -105,7 +105,7 @@ function Themes {
 function SiteNames {
  if(!(Test-Path $Sites)){return @()}
  @(Get-ChildItem $Sites -Directory | Where-Object {
-  Test-Path (Join-Path $_.FullName 'config.yaml')
+  (Test-Path (Join-Path $_.FullName 'config.yaml')) -or (Test-Path (Join-Path $_.FullName 'config.yml'))
  } | ForEach-Object Name | Sort-Object)
 }
 function Posts([string]$name){
