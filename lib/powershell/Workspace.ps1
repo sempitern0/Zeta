@@ -460,7 +460,7 @@ function NewPage([string]$name,[string]$title='', [string]$slug='') {
  if(!$title){$title=Read-Host 'Page title'}
  if([string]::IsNullOrWhiteSpace($title)){throw 'Page title cannot be empty'}
  if(!$slug){$slug=Slug $title}
- if($slug -notmatch '^[a-z0-9]+(-[a-z0-9]+)*$' -or $slug -in @('posts','blog')){
+ if($slug -notmatch '^[a-z0-9]+(-[a-z0-9]+)*$' -or $slug -in @('posts','blog','index')){
   throw "Invalid page slug: $slug"
  }
  $target=Join-Path $site "pages/$slug.md"
