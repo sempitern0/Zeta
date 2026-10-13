@@ -87,14 +87,6 @@ function Clean([string]$name){
  $p=Join-Path (SiteDir $name) $c.output
  if(Test-Path $p){Remove-Item $p -Recurse -Force}
 }
-function Doctor([string]$name){
- $c=Config $name;$errors=@()
- if((Themes) -notcontains $c.theme){$errors+='Invalid theme'}
- if(!(Get-Command pandoc -ErrorAction SilentlyContinue)){$errors+='Pandoc missing'}
- if(!(Test-Path (Join-Path (SiteDir $name) "$($c.output)/index.html"))){$errors+='Not built'}
- if($errors.Count){throw ($errors -join '; ')}
- Write-Host "[OK] $name" -ForegroundColor Green
-}
 function Preview([string]$name,[int]$serverPort){
  Build $name
  $c=Config $name
@@ -192,5 +184,13 @@ function FontSite([string]$name,[string]$choice=''){
   Build $name;Dashboard
  } finally{
   if(Test-Path $stage){Remove-Item -LiteralPath $stage -Recurse -Force}
+ }
+}
+
+function ListPosts([string]$name){
+ $c=Config $name
+ foreach($file in @(Posts $name)){
+  $p=PostInfo $file $c.author
+  Write-Host ('{0,-12} {1,-40} {2}' -f $p.date,$p.title,$file.Name)
  }
 }

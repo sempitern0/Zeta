@@ -45,8 +45,8 @@ show_help() {
     show_banner
     cat <<EOF
 Usage
-  ./main.sh                          Interactive assistant
-  ./main.sh [options] <command> [args]
+  ./zeta.sh                          Interactive assistant
+  ./zeta.sh [options] <command> [args]
 
 Workspace
   sites | list                        List local sites and status
@@ -76,10 +76,10 @@ Options
   -h, --help                          Display this guide
 
 Examples
-  ./main.sh new-post my-site
-  ./main.sh theme my-site indie zenburn
-  ./main.sh doctor my-site
-  ./main.sh preview my-site
+  ./zeta.sh new-post my-site
+  ./zeta.sh theme my-site indie zenburn
+  ./zeta.sh doctor my-site
+  ./zeta.sh preview my-site
 
 Windows
   ./zeta.ps1 help

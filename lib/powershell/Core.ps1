@@ -25,7 +25,7 @@ function Yaml([string]$path,[string]$section,[string]$key,[string]$fallback=''){
 }
 function Meta([string]$path,[string]$key){
  $lines=[IO.File]::ReadAllLines($path)
- if(!$lines.Length -or $lines[0].Trim() -ne '---'){return ''}
+ if($lines.Length -lt 2 -or $lines[0].Trim() -ne '---'){return ''}
  if($lines.Length -lt 2){return ''}
  foreach($line in $lines[1..($lines.Length-1)]){
   if($line.Trim() -eq '---'){break}
