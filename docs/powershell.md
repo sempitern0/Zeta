@@ -53,10 +53,17 @@ The common command list is maintained in the [README](../README.md#shared-comman
 
 Only the generated site's `public/` directory should be deployed.
 
+## Shared workspace and starter articles
+
+PowerShell and Bash use the same `templates/common/workspace/` HTML and CSS to generate `sites/index.html`. Cards show status, description, theme and article counts, with a preview link for built sites and clear diagnostics for invalid configurations.
+
+Site creation on either shell copies two Markdown demonstrations from `templates/common/examples/`; the articles exercise rich Markdown formatting and multi-language fenced code blocks. Updating those shared files updates both assistants.
+
 ## Local checks
 
 ~~~powershell
-.\tests\powershell-create-smoke.ps1   # Wizard, no Pandoc required
+.\tests\powershell-create-smoke.ps1
+.\tests\powershell-workspace-smoke.ps1   # Wizard, no Pandoc required
 .\tests\powershell-build-smoke.ps1    # All eight themes; Pandoc required
 .\tests\powershell-server-smoke.ps1   # Local HTTP server
 ~~~
