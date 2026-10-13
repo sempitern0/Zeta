@@ -433,3 +433,7 @@ Windows users can run the native [PowerShell 7+ entry point](zeta.ps1) with **Pa
 ```
 
 The native PowerShell implementation shares site configuration, templates and the deployment directory with Bash. **Feature parity is still evolving**: the core authoring/build workflow is present, but font management and some advanced Bash diagnostics are not available in PowerShell yet. See [Windows guide](docs/powershell.md) and [cross-platform CI checks](.github/workflows/powershell.yml).
+
+### Pandoc setup on Windows
+
+The native PowerShell CLI provides `./zeta.ps1 deps` and a guided `./zeta.ps1 install-pandoc` command (Windows `winget`, package `JohnMacFarlane.Pandoc`). Creating site source files no longer requires Pandoc; the renderer is needed only when you build the static HTML. See [Windows setup](docs/powershell.md). Test locally using `pwsh -NoProfile -File tests/powershell-create-smoke.ps1`.

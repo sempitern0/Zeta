@@ -49,3 +49,11 @@ The native Windows implementation currently focuses on the core publishing workf
 ## Data safety
 
 Builds use a staging directory and replace `public/` after Pandoc succeeds. Keep backups of `config.yaml`, `landing.yaml`, `landing.md`, `posts/` and `assets/`. Do not deploy these source files: deploy only `public/`.
+
+## Guided Pandoc setup on Windows
+
+Creating a site (`.\zeta.ps1 create`) only writes its configuration and Markdown sources; **Pandoc is not required for creation**. To build HTML, use `.\zeta.ps1 deps` to check runtime requirements. Run `.\zeta.ps1 install-pandoc` for an explicit, opt-in installation of the official `JohnMacFarlane.Pandoc` package via Windows Package Manager (`winget`). If `winget` is not installed, use [Pandoc's official installer](https://pandoc.org/installing.html) and reopen the terminal.
+
+During site creation, Zeta offers Pandoc installation if it is missing. It asks before invoking `winget`. The `-Yes` switch on the explicit `install-pandoc` command bypasses that question when automation is intended. Neither create nor the editor downloads Pandoc silently.
+
+Run `pwsh -NoProfile -File tests/powershell-create-smoke.ps1` to verify source creation without Pandoc. This local test uses an isolated temporary workspace and does not access the network or GitHub Actions.
