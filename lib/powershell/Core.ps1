@@ -379,9 +379,9 @@ function Ensure-ZetaPageHome([string]$name){
  if(-not (Test-Path -LiteralPath $pages -PathType Container)){return}
  $pageInfo=Get-Item -LiteralPath $pages -Force
  if($pageInfo.Attributes -band [IO.FileAttributes]::ReparsePoint){throw "Unsafe pages directory: $pages"}
- $home=Join-Path $pages 'index.md'
- if(Test-Path -LiteralPath $home){
-  if((Get-Item -LiteralPath $home -Force).Attributes -band [IO.FileAttributes]::ReparsePoint){throw "Unsafe homepage: $home"}
+ $homepagePath=Join-Path $pages 'index.md'
+ if(Test-Path -LiteralPath $homepagePath){
+  if((Get-Item -LiteralPath $homepagePath -Force).Attributes -band [IO.FileAttributes]::ReparsePoint){throw "Unsafe homepage: $homepagePath"}
   return
  }
  $template=Join-Path $Templates 'common/pages/index.md'
@@ -391,10 +391,10 @@ function Ensure-ZetaPageHome([string]$name){
  if(-not $body.Contains('__ZETA_SITE_TITLE__') -or -not $body.Contains('__ZETA_SITE_DESCRIPTION__')){throw 'Homepage template has invalid placeholders'}
  $body=$body.Replace('__ZETA_SITE_TITLE__',(Quote $c.title)).Replace('__ZETA_SITE_DESCRIPTION__',(Quote $c.description))
  try {
-  $writer=[IO.StreamWriter]::new([IO.FileStream]::new($home,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::None),$Utf8)
+  $writer=[IO.StreamWriter]::new([IO.FileStream]::new($homepagePath,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::None),$Utf8)
   try{$writer.Write($body)}finally{$writer.Dispose()}
  }catch [IO.IOException]{
-  if(-not (Test-Path -LiteralPath $home -PathType Leaf)){throw}
+  if(-not (Test-Path -LiteralPath $homepagePath -PathType Leaf)){throw}
  }
- Write-Host "[INFO] Initialized Markdown homepage: $home" -ForegroundColor Cyan
+ Write-Host "[INFO] Initialized Markdown homepage: $homepagePath" -ForegroundColor Cyan
 }
