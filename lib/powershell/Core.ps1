@@ -210,9 +210,8 @@ function Build([string]$name){
  $stage=Join-Path $dir ('.zeta-ps-'+[guid]::NewGuid().ToString('N'))
  $final=Join-Path $dir $c.output;$previous="$final.zeta-previous"
  $files=@(Posts $name)
- if((Test-Path -LiteralPath (Join-Path $dir 'pages') -PathType Container) -and
-    -not (Test-Path -LiteralPath (Join-Path $dir 'pages/index.md') -PathType Leaf)){
-  throw 'Markdown pages directory exists without pages/index.md.'
+ if(Test-Path -LiteralPath (Join-Path $dir 'pages') -PathType Container){
+  Ensure-ZetaPageHome $name
  }
  if((Test-Path -LiteralPath (Join-Path $dir 'pages/index.md') -PathType Leaf) -and
     ((Yaml (ConfigPath $name) build blog 'true') -eq 'false')){$files=@()}
@@ -371,4 +370,31 @@ function Render-ZetaPages([string]$name,[string]$stage,[hashtable]$c,[bool]$blog
   if($opts -contains '--lua-filter=' -or $opts -contains ''){throw "Pandoc received an empty argument for page: $slug"}
   Invoke-ZetaPandoc $opts
  }
+}
+
+# Supply an initial Markdown homepage for an existing/partially-created pages folder.
+function Ensure-ZetaPageHome([string]$name){
+ $site=SiteDir $name
+ $pages=Join-Path $site 'pages'
+ if(-not (Test-Path -LiteralPath $pages -PathType Container)){return}
+ $pageInfo=Get-Item -LiteralPath $pages -Force
+ if($pageInfo.Attributes -band [IO.FileAttributes]::ReparsePoint){throw "Unsafe pages directory: $pages"}
+ $home=Join-Path $pages 'index.md'
+ if(Test-Path -LiteralPath $home){
+  if((Get-Item -LiteralPath $home -Force).Attributes -band [IO.FileAttributes]::ReparsePoint){throw "Unsafe homepage: $home"}
+  return
+ }
+ $template=Join-Path $Templates 'common/pages/index.md'
+ if(-not (Test-Path -LiteralPath $template -PathType Leaf)){throw "Missing homepage template: $template"}
+ $c=Config $name
+ $body=[IO.File]::ReadAllText($template)
+ if(-not $body.Contains('__ZETA_SITE_TITLE__') -or -not $body.Contains('__ZETA_SITE_DESCRIPTION__')){throw 'Homepage template has invalid placeholders'}
+ $body=$body.Replace('__ZETA_SITE_TITLE__',(Quote $c.title)).Replace('__ZETA_SITE_DESCRIPTION__',(Quote $c.description))
+ try {
+  $writer=[IO.StreamWriter]::new([IO.FileStream]::new($home,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::None),$Utf8)
+  try{$writer.Write($body)}finally{$writer.Dispose()}
+ }catch [IO.IOException]{
+  if(-not (Test-Path -LiteralPath $home -PathType Leaf)){throw}
+ }
+ Write-Host "[INFO] Initialized Markdown homepage: $home" -ForegroundColor Cyan
 }
