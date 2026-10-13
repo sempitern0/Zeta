@@ -1,15 +1,48 @@
 # Zeta PowerShell: site, post, fonts, preview, and maintenance.
+# Same HTML, CSS, statuses and metadata as the Bash workspace dashboard.
 function Dashboard {
  [void](New-Item -ItemType Directory -Path $Sites -Force)
- $cards=@()
- foreach($name in (SiteNames)){
-  $c=Config $name
-  $href='./'+$name+'/'+$c.output.Replace('\','/')+'/'
-  $cards+='<a href="'+(Escape $href)+'">'+(Escape $c.title)+'</a>'
+ $template=Join-Path $Templates 'common/workspace/index.html'
+ $stylesheet=Join-Path $Templates 'common/workspace/workspace.css'
+ if(!(Test-Path -LiteralPath $template) -or !(Test-Path -LiteralPath $stylesheet)){
+  throw 'Shared Zeta workspace templates are missing.'
  }
- $html='<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Zeta workspace</title><style>body{font:1.1rem system-ui;background:#101822;color:white;padding:3rem}a{display:block;margin:1rem;padding:1rem;background:#253548;color:white}</style></head><body><h1>Zeta workspace</h1>'+($cards -join '')+'</body></html>'
+ $cards=[Collections.Generic.List[string]]::new()
+ $siteCount=0;$builtCount=0;$postCount=0
+ foreach($name in @(SiteNames)){
+  $siteCount++
+  $title=$name;$description='';$theme='unknown';$status='Draft'
+  $statusClass='';$cardClass='';$count=0;$url='';$errorHtml=''
+  try{
+   $c=Config $name
+   $title=$c.title;$description=$c.description;$theme=$c.theme
+   if(!(SafeDir $c.content)){throw "Invalid build.content_dir in $(ConfigPath $name)"}
+   if(!(SafeDir $c.output)){throw "Invalid build.output_dir in $(ConfigPath $name)"}
+   $count=@(Posts $name).Count
+   if(Test-Path -LiteralPath (Join-Path (SiteDir $name) "$($c.output)/index.html") -PathType Leaf){
+    $status='Ready';$statusClass='ready';$cardClass='built';$builtCount++
+    $url='./'+(Escape $name)+'/'+(Escape $c.output.Replace('\','/'))+'/'
+   }
+  }catch{
+   $status='Configuration issue';$statusClass='issue'
+   $errorHtml='<p class="error">'+(Escape $_.Exception.Message)+'</p>'
+  }
+  $postCount+=$count
+  $titleHtml=Escape $title
+  $action='<span class="meta">Build this site to preview it.</span>'
+  if($url){
+   $titleHtml='<a href="'+$url+'">'+$titleHtml+'</a>'
+   $action='<a class="preview" href="'+$url+'">Open preview →</a>'
+  }elseif($errorHtml){$action=$errorHtml}
+  $cards.Add('<article class="card '+$cardClass+'"><div class="card-header"><span class="eyebrow">SITE / '+(Escape $name)+'</span><span class="status '+$statusClass+'">'+(Escape $status)+'</span></div><h3>'+$titleHtml+'</h3><p class="desc">'+(Escape $description)+'</p><dl class="details"><div><dt>Theme</dt><dd>'+(Escape $theme)+'</dd></div><div><dt>Articles</dt><dd>'+$count+'</dd></div></dl>'+$action+'</article>')
+ }
+ if($cards.Count -eq 0){$cards.Add('<p class="empty">No sites yet. Run zeta.sh create or zeta.ps1 create to begin.</p>')}
+ $html=[IO.File]::ReadAllText($template)
+ $html=$html.Replace('__ZETA_SITE_COUNT__',[string]$siteCount).Replace('__ZETA_BUILT_COUNT__',[string]$builtCount).Replace('__ZETA_POST_COUNT__',[string]$postCount).Replace('__ZETA_CARDS__',($cards.ToArray() -join [Environment]::NewLine))
  Save (Join-Path $Sites 'index.html') $html
+ Copy-Item -LiteralPath $stylesheet -Destination (Join-Path $Sites 'workspace.css') -Force
 }
+
 function SelectItem([string]$title,[string[]]$items,[string]$fallback=''){
  if($items.Count -eq 0){throw "No choices available for $title"}
  for($i=0;$i -lt $items.Count;$i++){Write-Host ("[{0}] {1}" -f ($i+1),$items[$i])}
