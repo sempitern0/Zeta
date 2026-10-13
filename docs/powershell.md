@@ -57,7 +57,7 @@ Only the generated site's `public/` directory should be deployed.
 
 ~~~powershell
 .\tests\powershell-create-smoke.ps1   # Wizard, no Pandoc required
-.\tests\powershell-build-smoke.ps1    # All five themes; Pandoc required
+.\tests\powershell-build-smoke.ps1    # All eight themes; Pandoc required
 .\tests\powershell-server-smoke.ps1   # Local HTTP server
 ~~~
 
