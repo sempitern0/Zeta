@@ -1175,57 +1175,55 @@ build_all_sites() {
 
 update_sites_index() {
     mkdir -p "$SITES_DIR"
-    local index_file="${SITES_DIR}/index.html"
-    local sites=()
+    local template="${TEMPLATES_DIR}/common/workspace/index.html"
+    local stylesheet="${TEMPLATES_DIR}/common/workspace/workspace.css"
+    [[ -f "$template" && -f "$stylesheet" ]] || { msg_error "Workspace templates missing."; return 1; }
+    local sites=() site site_dir config_file title desc theme content_rel output_rel count
+    local site_count=0 built_count=0 post_count=0
+    local cards="" html status status_class card_class link error_message title_html desc_html theme_html action title_content
     readarray -t sites < <(get_all_sites)
-
-    {
-        cat <<'EOF_HTML'
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Zeta local workspace</title>
-  <style>
-    :root{color-scheme:dark;--bg:#0d1117;--panel:#161b22;--border:#30363d;--text:#e6edf3;--muted:#8b949e;--accent:#58a6ff}
-    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-    main{max-width:72rem;margin:auto;padding:2rem 1rem}h1{margin:0 0 .35rem}.muted{color:var(--muted)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(16rem,1fr));gap:1rem;margin-top:2rem}
-    a.card{display:block;padding:1.1rem;border:1px solid var(--border);border-radius:.6rem;background:var(--panel);color:inherit;text-decoration:none}a.card:hover,a.card:focus{border-color:var(--accent);outline:none}.card strong{display:block;margin-bottom:.35rem}.meta{font-size:.875rem;color:var(--muted)}
-  </style>
-</head>
-<body>
-<main>
-  <h1>Zeta local workspace</h1>
-  <p class="muted">Generated sites. Only each site's public/ directory is deployable.</p>
-  <div class="grid">
-EOF_HTML
-
-        local site
-        for site in "${sites[@]}"; do
-            local site_dir="${SITES_DIR}/${site}"
-            local config_file title description output_rel
-            config_file=$(find_site_config "$site_dir")
-            title=$(get_site_yaml_prop "$config_file" site title "$site")
-            description=$(get_site_yaml_prop "$config_file" site description "")
-            title=$(html_escape "$title")
-            description=$(html_escape "$description")
-            output_rel=$(get_site_yaml_prop "$config_file" build output_dir public)
+    site_count="${#sites[@]}"
+    for site in "${sites[@]}"; do
+        site_dir="${SITES_DIR}/${site}"
+        config_file=$(find_site_config "$site_dir") || continue
+        title=$(get_site_yaml_prop "$config_file" site title "$site")
+        desc=$(get_site_yaml_prop "$config_file" site description "")
+        theme=$(get_site_yaml_prop "$config_file" theme name zen)
+        content_rel=$(get_site_yaml_prop "$config_file" build content_dir posts)
+        output_rel=$(get_site_yaml_prop "$config_file" build output_dir public)
+        count=0 status="Draft" status_class="" card_class="" link="" error_message=""
+        if ! is_safe_relative_dir "$content_rel" || ! is_safe_relative_dir "$output_rel"; then
+            status="Configuration issue"; status_class="issue"
+            error_message="Check the content_dir and output_dir settings in config.yaml."
+        else
+            count=$(site_post_count "$site")
             if [[ -f "${site_dir}/${output_rel}/index.html" ]]; then
-                printf '    <a class="card" href="./%s/%s/"><strong>%s</strong><span class="meta">%s post(s)</span><br><span class="meta">%s</span></a>\n' \
-                    "$site" "$output_rel" "$title" "$(site_post_count "$site")" "$description"
-            else
-                printf '    <div class="card"><strong>%s</strong><span class="meta">Not built yet</span><br><span class="meta">%s</span></div>\n' "$title" "$description"
+                status="Ready"; status_class="ready"; card_class="built"
+                link="./$(html_escape "$site")/$(html_escape "$output_rel")/"
+                built_count=$((built_count + 1))
             fi
-        done
-
-        cat <<'EOF_HTML'
-  </div>
-</main>
-</body>
-</html>
-EOF_HTML
-    } > "$index_file"
+        fi
+        post_count=$((post_count + count))
+        title_html=$(html_escape "$title")
+        desc_html=$(html_escape "$desc")
+        theme_html=$(html_escape "$theme")
+        title_content="$title_html"
+        action='<span class="meta">Build this site to preview it.</span>'
+        if [[ -n "$link" ]]; then
+            title_content="<a href=\"$link\">$title_html</a>"
+            action="<a class=\"preview\" href=\"$link\">Open preview →</a>"
+        fi
+        if [[ -n "$error_message" ]]; then action="<p class=\"error\">$(html_escape "$error_message")</p>"; fi
+        cards+="$(printf '<article class="card %s"><div class="card-header"><span class="eyebrow">SITE / %s</span><span class="status %s">%s</span></div><h3>%s</h3><p class="desc">%s</p><dl class="details"><div><dt>Theme</dt><dd>%s</dd></div><div><dt>Articles</dt><dd>%s</dd></div></dl>%s</article>' "$card_class" "$(html_escape "$site")" "$status_class" "$status" "$title_content" "$desc_html" "$theme_html" "$count" "$action")"
+    done
+    [[ -n "$cards" ]] || cards='<p class="empty">No sites yet. Run zeta.sh create or zeta.ps1 create to begin.</p>'
+    html=$(<"$template")
+    html="${html//__ZETA_SITE_COUNT__/$site_count}"
+    html="${html//__ZETA_BUILT_COUNT__/$built_count}"
+    html="${html//__ZETA_POST_COUNT__/$post_count}"
+    html="${html/__ZETA_CARDS__/$cards}"
+    printf '%s\n' "$html" > "${SITES_DIR}/index.html"
+    cp -- "$stylesheet" "${SITES_DIR}/workspace.css"
 }
 
 run_static_server() {
