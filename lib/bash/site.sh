@@ -629,8 +629,10 @@ build_site() {
         return 1
     }
 
+    local sitemap_content_dir="$content_dir"
+    [[ "$blog_enabled" == false ]] && sitemap_content_dir="${site_dir}/.zeta-no-posts"
     if ! write_robots_txt "$output_dir" "$site_url" || \
-       ! generate_sitemap "$content_dir" "$output_dir" "$site_url" "$site_author" "${theme_dir}/sitemap.xsl"; then
+       ! generate_sitemap "$sitemap_content_dir" "$output_dir" "$site_url" "$site_author" "${theme_dir}/sitemap.xsl"; then
         msg_error "Failed to generate robots.txt or sitemap.xml."
         rm -rf -- "$staging_dir"
         return 1
