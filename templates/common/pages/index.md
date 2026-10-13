@@ -1,6 +1,6 @@
 ---
-title: "__ZETA_SITE_TITLE__"
-description: "__ZETA_SITE_DESCRIPTION__"
+title: __ZETA_SITE_TITLE__
+description: __ZETA_SITE_DESCRIPTION__
 nav: true
 nav_order: 0
 ---
