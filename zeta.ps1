@@ -39,6 +39,8 @@ try {
   'appearance'{ThemeSite $Site $Value $Highlight}
   'posts'{ListPosts $Site}
   'new-post'{NewPost $Site}
+  'pages'{ListPages $Site}
+  'new-page'{NewPage $Site $Value $Highlight}
   'build'{Build $Site;Dashboard}
   'update'{Build $Site;Dashboard}
   'build-all'{foreach($n in (SiteNames)){Build $n};Dashboard}
