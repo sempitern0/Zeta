@@ -440,3 +440,46 @@ function ListPosts([string]$name){
   Write-Host ('{0,-12} {1,-40} {2}' -f $p.date,$p.title,$file.Name)
  }
 }
+
+
+function ListPages([string]$name) {
+ $dir=SiteDir $name
+ [void](ConfigPath $name)
+ $pageDir=Join-Path $dir 'pages'
+ if(!(Test-Path -LiteralPath $pageDir -PathType Container)){
+  Write-Host "No Markdown pages in $name";return
+ }
+ foreach($file in @(Get-ChildItem -LiteralPath $pageDir -Filter '*.md' -File | Sort-Object Name)){
+  $title=Meta $file.FullName title
+  Write-Host ("  {0,-20} {1}" -f $file.BaseName,$title)
+ }
+}
+function NewPage([string]$name,[string]$title='', [string]$slug='') {
+ $site=SiteDir $name
+ [void](ConfigPath $name)
+ if(!$title){$title=Read-Host 'Page title'}
+ if([string]::IsNullOrWhiteSpace($title)){throw 'Page title cannot be empty'}
+ if(!$slug){$slug=Slug $title}
+ if($slug -notmatch '^[a-z0-9]+(-[a-z0-9]+)*$' -or $slug -in @('posts','blog')){
+  throw "Invalid page slug: $slug"
+ }
+ $target=Join-Path $site "pages/$slug.md"
+ if(Test-Path -LiteralPath $target){throw "Page already exists: $target"}
+ $desc="Information about $title"
+ $text=@(
+  '---'
+  ('title: {0}' -f (Quote $title))
+  ('description: {0}' -f (Quote $desc))
+  'nav: true'
+  'nav_order: 50'
+  'draft: false'
+  '---'
+  ''
+  ('## '+$title)
+  ''
+  'Write your page here in Markdown.'
+ ) -join [Environment]::NewLine
+ Save $target $text
+ Write-Host "[OK] Markdown page created: $target" -ForegroundColor Green
+ if(Test-ZetaPandoc){Build $name;Dashboard}
+}
