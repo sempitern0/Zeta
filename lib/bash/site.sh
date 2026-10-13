@@ -462,9 +462,11 @@ build_site() {
         fi
     fi
     local pages_mode=false blog_enabled=true
-    if [[ -d "${site_dir}/pages" && ! -f "${site_dir}/pages/index.md" ]]; then
-        msg_error "Markdown pages directory exists without pages/index.md."
-        return 1
+    if [[ -d "${site_dir}/pages" || -L "${site_dir}/pages" ]]; then
+        if ! ensure_zeta_page_home "$site_dir" "$config_file"; then
+            rm -rf -- "$staging_dir"
+            return 1
+        fi
     fi
     if [[ -f "${site_dir}/pages/index.md" ]]; then
         pages_mode=true
@@ -781,4 +783,44 @@ zeta_render_markdown_pages() {
             msg_error "Failed to render Markdown page: $source"; return 1
         fi
     done
+}
+
+
+# Repair a partially created multipage site without overwriting its sources.
+# Called by build and new-page; sites with no pages/ remain untouched.
+ensure_zeta_page_home() {
+    local site_dir="$1" config_file="$2"
+    local pages_dir="${site_dir}/pages"
+    local homepage="${pages_dir}/index.md"
+    [[ -d "$pages_dir" || -L "$pages_dir" ]] || return 0
+    if [[ -L "$pages_dir" ]]; then
+        msg_error "Unsafe symbolic link for Markdown pages: $pages_dir"
+        return 1
+    fi
+    if [[ -L "$homepage" ]]; then
+        msg_error "Unsafe symbolic link for homepage: $homepage"
+        return 1
+    fi
+    [[ -e "$homepage" ]] && return 0
+
+    local template="${TEMPLATES_DIR}/common/pages/index.md"
+    [[ -f "$template" ]] || { msg_error "Missing Markdown homepage template: $template"; return 1; }
+    local content title description title_yaml desc_yaml
+    content=$(<"$template")
+    [[ "$content" == *'__ZETA_SITE_TITLE__'* && "$content" == *'__ZETA_SITE_DESCRIPTION__'* ]] || {
+        msg_error "Homepage template is missing required title/description placeholders."
+        return 1
+    }
+    title=$(get_site_yaml_prop "$config_file" site title "$(basename "$site_dir")")
+    description=$(get_site_yaml_prop "$config_file" site description "Built with Zeta")
+    title_yaml=$(yaml_quote "$title")
+    desc_yaml=$(yaml_quote "$description")
+    content="${content%%__ZETA_SITE_TITLE__*}${title_yaml}${content#*__ZETA_SITE_TITLE__}"
+    content="${content%%__ZETA_SITE_DESCRIPTION__*}${desc_yaml}${content#*__ZETA_SITE_DESCRIPTION__}"
+    # noclobber also guards against another process creating the file now.
+    if ! ( set -C; printf '%s\n' "$content" > "$homepage" ); then
+        msg_error "Could not create missing homepage without overwriting: $homepage"
+        return 1
+    fi
+    msg_info "Created missing Markdown homepage: $homepage"
 }
