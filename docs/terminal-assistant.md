@@ -1,26 +1,35 @@
-# Minimal, useful terminal interface
+# Zeta terminal assistant
 
-Zeta's terminal assistant intentionally uses **only Bash built-ins, printf, ANSI colors and Pandoc**. It avoids interactive frameworks, dependency installation and network-backed widgets.
+[← Project overview](../README.md)
 
-## Workspace view
+Zeta offers two native command-line assistants: **`zeta.sh`** for Bash 4.3+ (Linux/macOS), and **`zeta.ps1`** for PowerShell 7+ (Windows). The former `main.sh` remains as a backwards-compatible Bash wrapper.
 
-The initial screen shows the number of sites, renderer readiness, and a compact listing of up to four sites with post counts, selected theme and generated-state indicator. Actions are grouped by goal: workspace management versus build and preview.
+Both preserve the colorful ZETA wordmark, an overview of available sites and numbered options grouped by purpose.
 
-## Site view
+## Navigate
 
-Select **Manage site** to see the selected site's title, slug, Markdown count, theme and build status, plus grouped commands for editing, content, validation and maintenance. Short command descriptions explain effects before running them.
+The home menu groups **Workspace** (list, create and manage sites) and **Build & preview** (build, preview and serve). **Manage site** offers editing, article creation, appearance changes, diagnostics and maintenance. The Windows menu also offers Pandoc installation.
 
-## Accessibility and terminal behavior
+All operations can also be invoked directly without the menu:
 
-- Input remains number-based and compatible with ordinary terminal stdin.
-- Output avoids cursor control sequences and full-screen UI dependencies.
-- `NO_COLOR=1` and non-interactive terminals disable ANSI output.
-- The CLI keeps non-interactive script commands stable for CI.
-- The assistant is intended for Linux terminals and WSL; use `zeta.ps1` natively on Windows.
+~~~bash
+./zeta.sh sites
+./zeta.sh build my-site
+./zeta.sh doctor my-site
+~~~
 
-```bash
-./main.sh
-./main.sh --help
-./main.sh sites
-./main.sh doctor my-site
-```
+~~~powershell
+.\zeta.ps1 sites
+.\zeta.ps1 build my-site
+.\zeta.ps1 doctor my-site
+~~~
+
+## Terminal behavior
+
+- Menus are number-driven, while command mode is suitable for scripts.
+- The Bash interface supports `NO_COLOR=1` and compact output for narrower terminals. PowerShell uses native console colors and a compact banner on narrow screens.
+- Bash's preview requires optional Python 3; PowerShell uses its built-in .NET server.
+- Stop the PowerShell HTTP server with **Ctrl+C**, or **Q** where supported.
+- Existing `./main.sh` commands still work through the compatibility wrapper.
+
+See [Windows setup](powershell.md) and the [shared commands](../README.md#shared-commands).

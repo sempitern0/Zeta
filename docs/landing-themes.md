@@ -1,22 +1,28 @@
-# Landing themes
+# Landing themes · indie and organization
 
-Zeta supports `indie` (game marketing/devlog) and `organization` (GitHub organization and resources).
+[← All themes](../README.md#five-built-in-themes)
 
-## Selecting
+Zeta includes **`indie`** for game promotion and development logs and **`organization`** for open-source groups and project catalogs. Both run in **Bash and PowerShell** and reuse standard Markdown articles and site configuration.
 
-```bash
-./main.sh theme my-site indie zenburn
-./main.sh theme my-site organization zenburn
-./main.sh build my-site
-```
+## Choose a theme
 
-Both themes use the existing `config.yaml` and Markdown in `posts/` without a JavaScript runtime.
+~~~bash
+./zeta.sh theme my-site indie zenburn
+./zeta.sh theme my-site organization zenburn
+~~~
+
+~~~powershell
+.\zeta.ps1 theme my-site indie zenburn
+.\zeta.ps1 theme my-site organization zenburn
+~~~
+
+The theme command rebuilds the site. Use `sites/my-site/landing.md` for an introduction, features or mission written in Markdown.
 
 ## Optional landing settings
 
-Create `sites/<site>/landing.yaml`:
+Create `sites/my-site/landing.yaml`:
 
-```yaml
+~~~yaml
 landing:
   eyebrow: "Open-source Godot tools"
   primary_label: "Explore on GitHub"
@@ -25,31 +31,29 @@ landing:
   secondary_url: "#updates"
   hero_image: "assets/hero.webp"
   hero_alt: "Promotional artwork"
-```
+~~~
 
-Each field is optional. Put the hero image inside `sites/<site>/assets/`. Images are checked and copied into `public/assets/`. `landing.yaml` survives site-theme edits because it is separate from the main configuration.
+Every field is optional. Put images in the site's `assets/` folder so they are copied to `public/assets/`. Landing content is kept separately from the selected theme and survives theme changes.
 
-Create `sites/<site>/landing.md` containing the game description, features, mission or organizational purpose in Markdown. This displays in the homepage introduction. Neither Markdown nor YAML source gets copied into `public/`.
+## External project links
 
-## Project cards and external URLs
+Give a project's Markdown article an `external_url` to link its card directly to a repository or documentation:
 
-Every Markdown article becomes a card in the landing and archive. To link a repository or external document directly, use frontmatter:
-
-```markdown
+~~~markdown
 ---
 title: "Nucleus"
-description: "Procedural Godot tools."
+description: "Tools for Godot."
 date: "2026-10-12"
 external_url: "https://github.com/Dragonboon/Nucleus"
 ---
 
 # Nucleus
 
-Documentation and project details.
-```
+Project details.
+~~~
 
-Without `external_url`, the card links to its generated HTML article. With it, the card links to the external resource but the local article is still built and included in the sitemap. Unsafe link schemes are rejected.
+Without `external_url`, the card links to the article's generated page. With it, Zeta still builds the local article and includes it in the sitemap. Unsafe URL schemes are rejected.
 
-## Notes
+Both themes provide responsive layouts and keyboard navigation; no live GitHub API is required. Publish only the generated `public/` folder.
 
-Both themes are responsive, offer keyboard focus and skip links, and support reduced motion. Repository descriptions are maintained in Markdown; there is no live GitHub API dependency. Deploy only the generated `public/` directory.
+**Related:** [deployment](deployment.md) · [Windows setup](powershell.md).

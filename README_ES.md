@@ -1,198 +1,98 @@
 # Zeta
 
-Zeta convierte publicaciones Markdown en un blog estático listo para desplegar usando **Bash + Pandoc**.
+**Un generador de sitios estáticos basado en Markdown. Dos asistentes nativos: Bash y PowerShell.**
 
-El flujo de trabajo es deliberadamente pequeño:
+Crea blogs, notas técnicas, portadas de videojuegos y catálogos de proyectos con **Pandoc** y archivos locales. No necesitas CMS, base de datos, Node.js ni frameworks JavaScript para generar o alojar el sitio.
 
-1. Escribe Markdown en `sites/<sitio>/posts/`.
-2. Genera el sitio.
-3. Pruébalo localmente.
-4. Despliega únicamente `sites/<sitio>/public/`.
+| Linux / macOS | Windows |
+| :-- | :-- |
+| **Bash 4.3+** · `./zeta.sh` | **PowerShell 7+** · `.\zeta.ps1` |
 
-No necesita base de datos, framework JavaScript, runtime Node.js, servidor CMS ni servidor de aplicaciones para generar o alojar el sitio.
+**Los dos asistentes comparten artículos Markdown, configuración YAML, themes y estructura de HTML generado.** Puedes trabajar en Windows y continuar en Linux sin migrar los sitios. `main.sh` permanece como acceso compatible con scripts Bash antiguos.
 
-**English:** [README.md](README.md)
-
-## Requisitos
-
-Obligatorios:
-
-- Bash 4.3+
-- Pandoc
-
-Opcionales:
-
-- Python 3 — servidor de preview local integrado
-- Docker + Docker Compose — stack Nginx/HTTPS heredado y opcional
-- ShellCheck — lint para desarrollo y contribuciones
-
-Zeta no instala dependencias opcionales al abrir el asistente. En macOS instala un Bash actual con Homebrew, porque el Bash incluido por el sistema es anterior a la versión 4.3 requerida.
+[English](README.md)
 
 ## Inicio rápido
 
-```bash
+Clona el repositorio una vez:
+
+~~~sh
 git clone https://github.com/sempitern0/Zeta.git
 cd Zeta
+~~~
+
+### Linux / macOS (Bash)
+
+Requiere Bash 4.3+ y [Pandoc](https://pandoc.org/installing.html) para generar HTML. Python 3 es opcional para la vista previa. macOS incluye una versión de Bash antigua; utiliza una más reciente.
+
+~~~bash
 make setup
-./main.sh
-```
+./zeta.sh                  # Asistente interactivo
+./zeta.sh create
+./zeta.sh build mi-sitio
+./zeta.sh preview mi-sitio
+~~~
 
-`make setup` comprueba el runtime, prepara `sites/`, valida la sintaxis Bash e instala el hook Git del repositorio cuando corresponde. No inicia Docker ni modifica `/etc/hosts`.
+### Windows (PowerShell nativo)
 
-## Flujo de trabajo diario
+Requiere PowerShell 7+. **No hace falta Bash ni WSL.** Puedes crear los sitios antes de instalar Pandoc; solo es necesario para generar HTML.
 
-### 1. Crear un sitio
+~~~powershell
+.\zeta.ps1 deps            # Comprobar Pandoc
+.\zeta.ps1 install-pandoc  # Instalación opcional con winget y confirmación
+.\zeta.ps1                 # Asistente interactivo
+.\zeta.ps1 create
+.\zeta.ps1 build mi-sitio
+.\zeta.ps1 preview mi-sitio -Port 8000
+~~~
 
-```bash
-./main.sh create
-```
+Si no tienes el administrador de paquetes de Windows, puedes instalar Pandoc desde [pandoc.org](https://pandoc.org/installing.html). Consulta la [guía de Windows](docs/powershell.md).
 
-Se crea una estructura local como esta:
+## Mismos comandos, ambos sistemas
 
-```text
-sites/mi-blog/
-├── config.yaml     # configuración local de generación
-└── posts/          # fuentes Markdown locales
-```
+Utiliza **el mismo comando** después de `./zeta.sh` desde Bash o `.\zeta.ps1` desde PowerShell:
 
-Después del primer build:
+| Comando | Función |
+| :-- | :-- |
+| `create` | Crear un sitio paso a paso |
+| `sites` | Listar sitios y su estado |
+| `edit SITIO` | Editar configuración y apariencia |
+| `posts SITIO` / `new-post SITIO` | Listar / crear artículos Markdown |
+| `theme SITIO TEMA ESTILO` | Cambiar tema y resaltado de código |
+| `fonts SITIO` | Gestionar fuentes web locales |
+| `build SITIO` / `build-all` | Generar un sitio / todos los sitios |
+| `doctor SITIO` | Comprobar el estado para publicación |
+| `preview SITIO` / `serve` | Previsualizar un sitio / servir el workspace |
+| `dashboard` | Actualizar el índice de sitios |
+| `clean SITIO` / `delete SITIO` | Limpiar archivos generados / eliminar un sitio |
 
-```text
-sites/mi-blog/
-├── config.yaml
-├── posts/
-└── public/         # despliega únicamente este directorio
+Los dos asistentes muestran el logotipo ZETA a color, el estado de los sitios y menús numerados. La sintaxis del puerto depende de la shell: `./zeta.sh --port 8080 preview mi-sitio` frente a `.\zeta.ps1 preview mi-sitio -Port 8080`. Consulta `help` para ver todas las opciones.
+
+## Estructura de los sitios
+
+~~~text
+sites/mi-sitio/
+├── config.yaml        # Metadatos y configuración de generación
+├── posts/             # Artículos Markdown originales
+├── landing.yaml       # Controles opcionales para la portada
+├── landing.md         # Introducción opcional en Markdown
+├── styles/            # Personalizaciones CSS
+├── assets/            # Imágenes y fuentes opcionales
+└── public/            # Archivos generados: despliega SOLO esto
     ├── index.html
     ├── posts.html
     ├── posts/
     ├── styles/
-    ├── assets/        # sólo si el tema/sitio aporta assets
     ├── robots.txt
-    ├── sitemap.xml
-    └── sitemap.xsl
-```
+    └── sitemap.xml
+~~~
 
-`config.yaml` y `posts/` son entradas de autoría/generación. Zeta no los copia a `public/`.
+Ejemplo de `config.yaml`:
 
-### 2. Añadir un post Markdown
-
-La vía más rápida es el propio asistente:
-
-```bash
-./main.sh new-post mi-blog
-```
-
-También puedes crear manualmente un archivo dentro de `sites/mi-blog/posts/`:
-
-```markdown
----
-title: "Desplegando un sitio estático pequeño"
-author: "Ada"
-date: "2026-10-02"
-description: "Una nota práctica de despliegue."
-slug: "desplegando-un-sitio-estatico-pequeno"
-tags: [linux, devops, web]
----
-
-# Desplegando un sitio estático pequeño
-
-Escribe el artículo en Markdown normal.
-```
-
-Se recomienda un nombre de archivo prefijado por fecha:
-
-```text
-2026-10-02-desplegando-un-sitio-estatico-pequeno.md
-```
-
-### 3. Listar posts locales
-
-```bash
-./main.sh posts mi-blog
-```
-
-El listado lee directamente los metadatos Markdown de `posts/`; no necesita generar el sitio antes.
-
-Para el ciclo rápido de actualización después de copiar un Markdown nuevo:
-
-```bash
-cp articulo.md sites/mi-blog/posts/
-./main.sh posts mi-blog
-./main.sh update mi-blog
-./main.sh preview mi-blog
-```
-
-### 4. Generar o actualizar el sitio estático
-
-```bash
-./main.sh build mi-blog
-```
-
-Cada build regenera `public/` desde Markdown y plantillas. Esto elimina páginas generadas obsoletas cuando un post se renombra o borra. Zeta genera primero en staging y sólo sustituye `public/` cuando Pandoc termina correctamente; si el build falla, el último artefacto válido permanece intacto.
-
-Generar todos los sitios:
-
-```bash
-./main.sh build-all
-```
-
-### 5. Probar localmente
-
-Preview de un único sitio:
-
-```bash
-./main.sh preview mi-blog
-```
-
-URL por defecto:
-
-```text
-http://127.0.0.1:8000/
-```
-
-Usar otro puerto:
-
-```bash
-./main.sh --port 8080 preview mi-blog
-```
-
-Generar todos los sitios y servir el dashboard local:
-
-```bash
-./main.sh serve
-```
-
-Después abre `http://127.0.0.1:8000/`. El dashboard enlaza al `public/` generado de cada sitio.
-
-Python 3 sólo se utiliza para este servidor de preview. Si no está instalado, `build` sigue funcionando y puedes servir `public/` con cualquier servidor HTTP estático.
-
-## Comandos de gestión
-
-| Comando | Uso |
-| --- | --- |
-| `./main.sh` | Abrir el asistente interactivo |
-| `./main.sh sites` | Listar sitios y estado de generación |
-| `./main.sh create` | Crear un sitio |
-| `./main.sh edit <sitio>` | Editar metadatos, URL de producción y tema |
-| `./main.sh delete <sitio>` | Borrar un sitio local con confirmación explícita |
-| `./main.sh clean <sitio>` | Borrar únicamente el `public/` generado |
-| `./main.sh posts <sitio>` | Listar posts Markdown |
-| `./main.sh new-post <sitio>` | Crear el esqueleto de un nuevo post |
-| `./main.sh build <sitio>` / `update <sitio>` | Regenerar el `public/` de un sitio |
-| `./main.sh build-all` | Regenerar todos los sitios |
-| `./main.sh preview <sitio> [puerto]` | Generar y servir un sitio |
-| `./main.sh serve [puerto]` | Generar todos y servir el dashboard local |
-| `./main.sh dashboard` | Regenerar `sites/index.html` sin servidor |
-| `./main.sh --force ...` | Omitir confirmaciones destructivas donde esté soportado |
-
-## `config.yaml`
-
-La configuración generada se mantiene pequeña:
-
-```yaml
+~~~yaml
 site:
-  title: "Mi Blog"
-  description: "Notas sobre sistemas y software"
+  title: "Mi sitio"
+  description: "Proyectos y notas técnicas"
   author: "Ada"
   language: "es"
   url: "https://example.com"
@@ -204,242 +104,49 @@ theme:
 build:
   content_dir: "posts"
   output_dir: "public"
-```
+~~~
 
-Antes de producción, cambia `site.url` por la URL pública real. Zeta la usa para crear las URLs absolutas de `sitemap.xml` y la referencia al sitemap dentro de `robots.txt`.
+Los artículos son archivos `.md` con frontmatter YAML opcional: `title`, `date`, `description`, `slug`, `tags`, etc. Antes de publicar, configura `site.url` con la dirección pública: Zeta la utiliza para generar `sitemap.xml` y `robots.txt`.
 
-En un GitHub Pages de tipo proyecto, incluye la ruta del repositorio cuando forme parte de la URL pública, por ejemplo:
+## Cinco themes incluidos
 
-```yaml
-url: "https://usuario.github.io/proyecto"
-```
+| Theme | Uso recomendado |
+| :-- | :-- |
+| `zen` | Publicaciones oscuras y minimalistas |
+| `paper` | Lectura y estilo editorial claro |
+| `console` | Administración de sistemas y documentación técnica |
+| `indie` | Portada de videojuego y devlog |
+| `organization` | Organización open source y directorio de proyectos |
 
-La navegación HTML utiliza enlaces relativos, por lo que el resultado puede moverse entre preview local, raíz de dominio y hosting bajo subrutas.
+Todos funcionan en Bash y PowerShell. `indie` y `organization` admiten imágenes de portada, botones y enlaces externos; consulta [landings](docs/landing-themes.md). Hay fuentes locales opcionales: Cascadia Code, JetBrains Mono, Fira Code, IBM Plex Mono y Source Code Pro.
 
-## Despliegue
+## Generar y publicar
 
-El contrato de despliegue es siempre el mismo, independientemente del proveedor:
+`build` convierte Markdown y temas en HTML estático dentro de `sites/<sitio>/public/`. **Publica únicamente `public/`**, nunca `posts/` ni `config.yaml`. El proceso utiliza un directorio temporal antes de sustituir el resultado anterior.
 
-```text
-sites/<sitio>/public/
-```
+`preview` sirve localhost en el puerto 8000 por defecto: Bash utiliza Python 3 opcional y PowerShell el servidor .NET integrado. En PowerShell se detiene con **Ctrl+C** o **Q** en terminales compatibles.
 
-Ese directorio es el artefacto estático completo. No subas `posts/` ni `config.yaml`. Zeta mantiene deliberadamente fuera del generador las credenciales y SDK de cada proveedor: genera localmente y publica el artefacto con el hosting que prefieras.
+Puedes desplegarlo en GitHub Pages, Cloudflare Pages, Netlify o cualquier servidor de archivos estáticos. Consulta [despliegue](docs/deployment.md).
 
-### Netlify — despliegue manual muy simple
+## Guías y pruebas locales
 
-1. Ejecuta `./main.sh build <sitio>`.
-2. Abre Netlify Drop.
-3. Arrastra `sites/<sitio>/public/` al área de despliegue.
-4. Para actualizarlo, vuelve a generar localmente y arrastra el `public/` actualizado al área de despliegues del mismo sitio.
+- [Windows / PowerShell](docs/powershell.md) — instalación, Pandoc y vista previa.
+- [Asistente de terminal](docs/terminal-assistant.md) — navegación en ambas plataformas.
+- [Landings](docs/landing-themes.md) — portadas y tarjetas de proyectos.
+- [Despliegue](docs/deployment.md) — alojamiento y URL pública.
+- [Validación multiplataforma](docs/cross-platform-validation.md) — pruebas locales y limitaciones.
 
-Guía oficial: https://docs.netlify.com/start/quickstarts/netlify-drop-quickstart/
-
-### Vercel Drop — despliegue manual simple
-
-1. Ejecuta `./main.sh build <sitio>`.
-2. Abre Vercel Drop.
-3. Arrastra la carpeta `public/`.
-4. Vercel sirve los archivos estáticos directamente; no hace falta framework.
-
-Vercel Drop: https://vercel.com/drop
-
-### Cloudflare Pages
-
-Para el modelo de fuentes locales de Zeta, **Direct Upload** es el encaje más limpio: genera el sitio y sube los assets estáticos ya preparados desde `public/`. Cloudflare no necesita ejecutar ningún framework.
-
-Si más adelante creas un repositorio Git separado que contenga únicamente archivos desplegables, Pages también puede publicarlo configurando su directorio de salida estático.
-
-Documentación oficial:
-
-- https://developers.cloudflare.com/pages/get-started/direct-upload/
-- https://developers.cloudflare.com/pages/configuration/build-configuration/
-
-### GitHub Pages
-
-GitHub Pages puede publicar desde una rama o mediante GitHub Actions.
-
-El flujo de menor acoplamiento con Zeta consiste en mantener las fuentes de autoría localmente y copiar el contenido de `public/` a un repositorio Pages dedicado o a una rama de publicación. Configura Pages para servir esa rama desde la raíz del repositorio.
-
-Si prefieres CI, usa un workflow de Pages que suba el artefacto estático. Un build CI desde Markdown debe instalar Pandoc antes de ejecutar Zeta.
-
-Guía oficial: https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site
-
-## HTML, CSS y compatibilidad
-
-El tema `zen` mantiene una salida deliberadamente simple y sin JavaScript:
-
-- HTML5 semántico;
-- navegación con rutas relativas;
-- foco de teclado visible;
-- enlace para saltar directamente al contenido;
-- soporte para `prefers-reduced-motion`;
-- fuentes de sistema y monospace como fallback;
-- layout responsive con CSS estándar;
-- sin framework cliente ni hidratación.
-
-El objetivo es que el resultado sea fácil de inspeccionar, cachear, archivar y servir desde prácticamente cualquier hosting estático.
-
-## Docker/Nginx opcional
-
-El stack existente Docker/Nginx sigue disponible para quien necesite reproducir HTTPS/proxy localmente. No es necesario para el ciclo normal de autoría; `preview` es la ruta recomendada cuando quieres servir únicamente el artefacto público:
-
-```bash
-make docker-up
-make docker-ps
-make docker-down
-```
-
-Ya no forma parte del setup por defecto ni del ciclo diario de autoría.
-
-## Comprobaciones de desarrollo
-
-Validación de sintaxis Bash sin dependencias adicionales:
-
-```bash
+~~~bash
 make syntax
-```
+bash tests/theme-smoke.sh
+~~~
 
-ShellCheck, si lo instalas explícitamente:
+~~~powershell
+.\tests\powershell-create-smoke.ps1
+.\tests\powershell-build-smoke.ps1
+.\tests\powershell-server-smoke.ps1
+~~~
 
-```bash
-make lint
-```
+Comparten los archivos de autoría y los comandos; **no se garantiza que distintas versiones de Pandoc generen HTML idéntico byte a byte**. Las pruebas locales no requieren GitHub Actions.
 
-## Licencia
-
-MIT. Consulta [LICENSE](LICENSE).
-
-
-## Pruebas iniciales y fuentes opcionales
-
-Cada sitio nuevo incluye dos posts Markdown de ejemplo. Entre ambos prueban encabezados, listas, tablas, enlaces, citas y bloques de código en Bash, Python, JavaScript, YAML, JSON, CSS y HTML.
-
-Las fuentes web opcionales se instalan por sitio, no globalmente:
-
-```bash
-./main.sh fonts mi-blog
-```
-
-El build aplica siempre `templates/common` como base, después el tema seleccionado y finalmente las personalizaciones específicas del sitio.
-
-
-## Temas, renderizado Markdown y resaltado de código
-
-Zeta incluye ahora dos temas:
-
-- `zen`: oscuro e inspirado en terminal.
-- `paper`: claro, editorial y orientado a lectura.
-
-Cambia la apariencia de un sitio y regenera automáticamente `public/`:
-
-```bash
-./main.sh theme mi-blog
-```
-
-También puedes hacerlo directamente:
-
-```bash
-./main.sh theme mi-blog paper zenburn
-```
-
-El renderizador usa el Markdown extendido de Pandoc para tablas pipe/grid, listas de
-definición, task lists, notas al pie y bloques de código fenced. Las tablas se
-envuelven para responsive mediante el runtime Lua incluido en Pandoc, sin añadir
-ninguna dependencia externa.
-
-El estilo de syntax highlighting seleccionado se incrusta en cada artículo, por lo
-que `zenburn`, `haddock`, `pygments`, `tango`, `espresso`, `kate`, etc. controlan
-realmente los colores de los tokens.
-
-## Fuentes open source opcionales
-
-Desde el asistente o con:
-
-```bash
-./main.sh fonts mi-blog
-```
-
-puedes seleccionar:
-
-- Cascadia Code
-- JetBrains Mono
-- Fira Code
-- IBM Plex Mono
-- Source Code Pro
-
-La fuente se descarga únicamente para ese sitio junto con su licencia upstream y
-se publica en `public/` durante el build. El asistente regenera el sitio
-automáticamente después del cambio.
-
-
-### Cache local de fuentes
-
-Las fuentes se descargan una sola vez por checkout en `.zeta-cache/fonts/`. El
-directorio está ignorado por Git. Si un segundo sitio utiliza la misma fuente,
-Zeta reutiliza el cache sin volver a acceder a la red y sólo copia la fuente
-seleccionada al `assets/fonts/` local del sitio antes de generar `public/`.
-
-
-## Diagnóstico pre-deploy
-
-Ejecuta:
-
-```bash
-./main.sh doctor mi-blog
-```
-
-El diagnóstico valida los campos críticos del `config.yaml`, tema y highlighting,
-rutas de build, disponibilidad de Pandoc, posts, rutas duplicadas, contenido de
-`public/`, `robots.txt`, `sitemap.xml`, fugas de Markdown/configuración y si el
-artefacto parece desactualizado respecto a los Markdown.
-
-Al final muestra visualmente en terminal la paleta hexadecimal del tema Zeta y la
-paleta real que devuelve Pandoc para el syntax highlighting seleccionado. Los
-errores bloqueantes terminan con código distinto de cero, por lo que `doctor`
-también puede utilizarse en CI antes de un deploy.
-
-## Tema `console`
-
-Además de `zen` y `paper`, Zeta incluye `console`: un diseño oscuro dirigido a
-contenido técnico, administración de sistemas, DevOps y programación. Utiliza una
-estética de consola/ops dashboard, tipografía monoespaciada, paneles, prompts y
-estado del sistema sin introducir JavaScript.
-
-```bash
-./main.sh theme mi-blog console zenburn
-./main.sh doctor mi-blog
-```
-
-## Landing themes: indie y organization
-
-`indie` permite promocionar un videojuego y publicar un diario de desarrollo. `organization` presenta la misión de una organización de GitHub, sus repositorios y documentación. Se personalizan mediante `landing.yaml` y `landing.md` junto a `config.yaml`; el frontmatter Markdown admite el campo opcional `external_url`.
-
-Consulta la [guía](docs/landing-themes.md) y ejecuta `bash tests/theme-smoke.sh` para validar ambos diseños.
-
-## Asistente de terminal y Windows (PowerShell)
-
-El asistente Bash presenta ahora un dashboard compacto con resumen de los sitios, temas, número de artículos y estado de generación. No utiliza dependencias de interfaz externas. Más detalles en [la guía del asistente](docs/terminal-assistant.md).
-
-La implementación nativa [PowerShell 7+](zeta.ps1) permite generar webs desde Windows con Pandoc, sin WSL, Bash ni Node.js:
-
-```powershell
-./zeta.ps1 help
-./zeta.ps1 sites
-./zeta.ps1 build mi-sitio
-./zeta.ps1 preview mi-sitio -Port 8000
-```
-
-**La paridad aún no es absoluta**: están disponibles los flujos principales de contenido, plantillas, generación y previsualización, pero las fuentes opcionales y algunos diagnósticos avanzados siguen siendo exclusivos de Bash. Consulta [la documentación de Windows](docs/powershell.md).
-
-### Instalación de Pandoc en Windows
-
-Puedes crear un sitio mediante `.\zeta.ps1 create` sin tener Pandoc. El comando `.\zeta.ps1 deps` muestra el estado de las dependencias, y `.\zeta.ps1 install-pandoc` ofrece instalar el paquete oficial `JohnMacFarlane.Pandoc` con `winget`, previa confirmación. Si no existe `winget`, puedes instalar Pandoc manualmente. Más detalles en [la guía de Windows](docs/powershell.md); prueba local: `pwsh -NoProfile -File tests/powershell-create-smoke.ps1`.
-
-### Solución al error de plantillas Pandoc en PowerShell
-
-La versión Windows ahora comprueba que cada plantilla existe y proporciona una ruta absoluta a Pandoc. Después de `git pull origin main`, ejecuta `.\zeta.ps1 build NOMBRE_DEL_SITIO` y `.\zeta.ps1 serve`. Para verificar los cinco themes sin modificar tus sitios: `pwsh -NoProfile -File tests/powershell-build-smoke.ps1`. Consulta [docs/powershell.md](docs/powershell.md).
-
-### Paridad de campos entre Bash y PowerShell
-
-El asistente PowerShell ahora solicita los mismos ocho campos que Bash: título, descripción, autor, idioma, slug, URL, theme y resaltado de sintaxis. La edición permite cambiar también theme y resaltado. Prueba local sin Pandoc: `pwsh -NoProfile -File tests/powershell-create-smoke.ps1`.
+**Licencia:** [MIT](LICENSE).

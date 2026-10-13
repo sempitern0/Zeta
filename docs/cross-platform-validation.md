@@ -1,21 +1,57 @@
-# Cross-platform Zeta validation
+# Cross-platform validation
 
-Both entrypoints share a common publishing contract: `zeta.sh` (Bash) and `zeta.ps1` (PowerShell 7+). The old `main.sh` remains a compatibility wrapper. Bash modules live under `lib/bash/`; PowerShell modules under `lib/powershell/`.
+[← Project overview](../README.md)
 
-PowerShell now includes a colored interactive workspace and management menu, detailed read-only `doctor` checks, and the aliases `new`, `appearance`, `diagnose`, `check-site`, `index`, `rm`.
+Zeta shares a **publishing format and command surface** across two engines:
 
-## Local checks (no GitHub Actions)
+| Bash (Linux/macOS) | PowerShell (Windows) |
+| :-- | :-- |
+| `./zeta.sh` | `.\zeta.ps1` |
+| `lib/bash/` | `lib/powershell/` |
+| Bash 4.3+ | PowerShell 7+ |
+| Optional Python preview | Built-in .NET preview |
 
-```bash
+Both read the same `config.yaml`, Markdown articles and `templates/` and generate `sites/<site>/public/`. Arguments use each shell's conventions (e.g. `--port` and `-Port`).
+
+**Parity is not a promise of byte-identical HTML.** Pandoc versions, timestamps and some diagnostics can differ. Bash currently creates two Markdown demonstration posts, whereas PowerShell creates one welcome post. Compare generated artifacts before changing production build environments.
+
+## Check Bash locally
+
+~~~bash
 make syntax
-bash ./zeta.sh help
-bash ./main.sh help
-```
+bash tests/theme-smoke.sh
+./zeta.sh help
+./main.sh help    # Legacy entry point
+~~~
 
-```powershell
-pwsh -NoProfile -File ./zeta.ps1 help
-pwsh -NoProfile -File ./zeta.ps1 sites
-pwsh -NoProfile -File ./zeta.ps1 doctor MY_SITE
-```
+`make lint` is also available when ShellCheck is installed.
 
-Build and inspect an identical fixture on each operating system to compare generated pages, links, sitemap and diagnostics. PowerShell runtime execution was not available in the authoring environment, so the Windows tests must be performed locally before treating the engines as fully equivalent. No GitHub Actions were run.
+## Check PowerShell locally
+
+~~~powershell
+.\zeta.ps1 deps
+.\zeta.ps1 help
+.\zeta.ps1 sites
+.\tests\powershell-create-smoke.ps1
+.\tests\powershell-build-smoke.ps1
+.\tests\powershell-server-smoke.ps1
+~~~
+
+The PowerShell tests use temporary fixtures; the build test needs Pandoc. On an actual site run `doctor SITE` and check generated articles, styles, `sitemap.xml` and `robots.txt`.
+
+These tests run **locally**, with no GitHub Actions minutes or Docker required.
+
+## Source layout
+
+~~~text
+zeta.sh             Bash entry point
+zeta.ps1            PowerShell entry point
+main.sh             Legacy Bash compatibility
+lib/bash/           Bash implementation
+lib/powershell/     Native PowerShell implementation
+templates/          Shared themes and assets
+sites/              Source Markdown and generated HTML
+tests/              Local regression scripts
+~~~
+
+See also [Windows setup](powershell.md) and [deployment](deployment.md).
