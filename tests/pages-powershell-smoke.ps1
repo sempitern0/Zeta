@@ -80,6 +80,17 @@ Should not publish.
   if($sitemap.Contains('/posts/')){throw "$theme blog is disabled but post URLs remain"}
   Write-Host "[OK] $theme pages without blog" -ForegroundColor Green
  }
+ # Regression: new page must bootstrap a missing homepage and preserve it.
+ . (Join-Path $Root 'lib/powershell/Workspace.ps1')
+ $target=Join-Path $Sites 'pages-zen'
+ Remove-Item -LiteralPath (Join-Path $target 'pages/index.md') -Force
+ NewPage 'pages-zen' 'Privacy Policy' 'privacy'
+ if(-not (Test-Path -LiteralPath (Join-Path $target 'pages/index.md'))){throw 'Missing homepage was not bootstrapped'}
+ if(-not (Test-Path -LiteralPath (Join-Path $target 'public/privacy/index.html'))){throw 'New page was not built'}
+ $homepage=[IO.File]::ReadAllText((Join-Path $target 'pages/index.md'))
+ Build 'pages-zen'
+ if([IO.File]::ReadAllText((Join-Path $target 'pages/index.md')) -cne $homepage){throw 'Existing homepage was overwritten'}
+ Write-Host '[OK] NewPage bootstraps missing homepage without overwriting it.' -ForegroundColor Green
 }
 finally {
  if(Test-Path $Sites){Remove-Item -LiteralPath $Sites -Recurse -Force}
