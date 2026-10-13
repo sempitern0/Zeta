@@ -18,7 +18,7 @@ try{
  function Install-ZetaPandoc {return $false}
  function Get-ZetaHighlightStyles {return @('zenburn','tango')}
  $script:replies=[Collections.Generic.Queue[string]]::new()
- foreach($v in @('Zeta Test','Test description','QA','es-ES','','https://example.org','organization','tango')){
+ foreach($v in @('Zeta Test','Test description','QA','es-ES','','https://example.org','organization','tango','Y','Y','N')){
   $script:replies.Enqueue($v)
  }
  function Read-Host {
@@ -27,7 +27,7 @@ try{
   return $script:replies.Dequeue()
  }
  NewSite
- if($script:replies.Count -ne 0){throw 'Wizard did not ask all eight fields'}
+ if($script:replies.Count -ne 0){throw 'Wizard did not ask all eleven fields'}
  $site=Join-Path $Sites 'zeta-test'
  $yamlText=[IO.File]::ReadAllText((Join-Path $site 'config.yaml'))
  foreach($expectedLine in @('  title: "Zeta Test"','  description: "Test description"','  author: "QA"','  language: "es-ES"','  name: "organization"','  pandoc_theme: "tango"','  content_dir: "posts"','  output_dir: "public"')){
@@ -35,6 +35,11 @@ try{
    throw "YAML writer failed to emit a complete key/value line: $expectedLine"
   }
  }
+ foreach($page in @('index.md','about.md')){
+  if(-not (Test-Path -LiteralPath (Join-Path $site "pages/$page"))){throw "Missing Markdown page: $page"}
+ }
+ if(Test-Path -LiteralPath (Join-Path $site 'pages/contact.md')){throw 'Contact should be optional'}
+ if(-not $yamlText.Contains('blog: true')){throw 'Blog selection was not saved'}
  $postFiles=@(Get-ChildItem (Join-Path $site 'posts') -Filter '*.md' -File)
  if($postFiles.Count -ne 2){throw "Expected two Markdown showcases, got $($postFiles.Count)"}
  foreach($example in @('markdown-showcase','code-showcase')){
@@ -77,11 +82,11 @@ try{
   Save $target '<!doctype html><title>Generated</title>'
  }
  $script:replies.Clear()
- foreach($v in @('Built Site','A built example','QA','en','','https://example.org','zen','zenburn')){
+ foreach($v in @('Built Site','A built example','QA','en','','https://example.org','zen','zenburn','Y','Y','N')){
   $script:replies.Enqueue($v)
  }
  NewSite
  if($script:replies.Count -ne 0){throw 'Build-enabled wizard missed a prompt'}
  if(-not (Test-Path (Join-Path $Sites 'built-site/public/index.html'))){throw 'Creation did not run the HTML build'}
- Write-Host '[OK] Eight creation prompts, correctly formatted YAML, automatic build and duplicate protection.' -ForegroundColor Green
+ Write-Host '[OK] Eleven creation prompts, Markdown pages, YAML, automatic build and duplicate protection.' -ForegroundColor Green
 }finally{Remove-Item -LiteralPath $folder -Recurse -Force -ErrorAction SilentlyContinue}
