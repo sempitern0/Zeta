@@ -79,13 +79,24 @@ function Config([string]$name){
  output=(Yaml $p build output_dir public)
  }
 }
+# Emit one complete YAML key/value per line. In PowerShell comma expressions
+# combined with + can otherwise yield separate array items for keys and values.
 function ConfigText([hashtable]$c){
- @(
- 'site:','  title: '+(Quote $c.title),'  description: '+(Quote $c.description),
- '  author: '+(Quote $c.author),'  language: '+(Quote $c.language),'  url: '+(Quote $c.url),
- 'theme:','  name: '+(Quote $c.theme),'  pandoc_theme: '+(Quote $c.highlight),
- 'build:','  content_dir: '+(Quote $c.content),'  output_dir: '+(Quote $c.output)
- ) -join [Environment]::NewLine
+ $lines=@(
+  'site:'
+  ('  title: {0}' -f (Quote $c.title))
+  ('  description: {0}' -f (Quote $c.description))
+  ('  author: {0}' -f (Quote $c.author))
+  ('  language: {0}' -f (Quote $c.language))
+  ('  url: {0}' -f (Quote $c.url))
+  'theme:'
+  ('  name: {0}' -f (Quote $c.theme))
+  ('  pandoc_theme: {0}' -f (Quote $c.highlight))
+  'build:'
+  ('  content_dir: {0}' -f (Quote $c.content))
+  ('  output_dir: {0}' -f (Quote $c.output))
+ )
+ return ($lines -join [Environment]::NewLine) + [Environment]::NewLine
 }
 function SafeDir([string]$s){
  $s -ne '' -and $s -notin @('.','..') -and ![IO.Path]::IsPathRooted($s) -and $s -notmatch '(^|[/\\])\.\.([/\\]|$)|[:\r\n]'
