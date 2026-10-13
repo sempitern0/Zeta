@@ -226,8 +226,8 @@ create_example_posts() {
         template="${TEMPLATES_DIR}/common/examples/${filename}.md"
         [[ -f "$template" ]] || { msg_error "Missing example template: ${template}"; return 1; }
         content=$(<"$template")
-        content="${content//__ZETA_AUTHOR_YAML__/$author_yaml}"
-        content="${content//__ZETA_DATE_YAML__/$date_yaml}"
+        content="${content//__ZETA_AUTHOR_YAML__/"$author_yaml"}"
+        content="${content//__ZETA_DATE_YAML__/"$date_yaml"}"
         printf '%s\n' "$content" > "${site_dir}/${content_rel}/${today}-zeta-${filename}.md"
     done
     msg_success "Created 2 example Markdown posts in ${content_rel}/."
@@ -1221,7 +1221,7 @@ update_sites_index() {
     html="${html//__ZETA_SITE_COUNT__/$site_count}"
     html="${html//__ZETA_BUILT_COUNT__/$built_count}"
     html="${html//__ZETA_POST_COUNT__/$post_count}"
-    html="${html/__ZETA_CARDS__/$cards}"
+    html="${html%%__ZETA_CARDS__*}${cards}${html#*__ZETA_CARDS__}"
     printf '%s\n' "$html" > "${SITES_DIR}/index.html"
     cp -- "$stylesheet" "${SITES_DIR}/workspace.css"
 }
