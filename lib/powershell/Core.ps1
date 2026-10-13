@@ -257,7 +257,11 @@ function Build([string]$name){
   $vars=@{site_lang=(Escape $c.language);site_title=(Escape $c.title);site_desc=(Escape $c.description);
     site_author=(Escape $c.author);posts_list=($links -join [Environment]::NewLine);landing_content=$body}
   foreach($k in $extra.Keys){$vars[$k]=Escape $extra[$k]}
+  $pagesDir=Join-Path $dir 'pages'
+  $pagesMode=Test-Path -LiteralPath (Join-Path $pagesDir 'index.md') -PathType Leaf
+  $blogEnabled=(-not $pagesMode) -or ((Yaml (ConfigPath $name) build blog 'true') -ne 'false')
   foreach($tpl in (Get-ChildItem $theme -Filter '*.html' -File)){
+   if($pagesMode -and ($tpl.Name -eq 'index.html' -or (-not $blogEnabled -and $tpl.Name -eq 'posts.html'))){continue}
    if($tpl.Name -in @('article.html','post_link.html')){continue}
    $pageTemplate=Get-ZetaTemplate $theme $tpl.Name
    $pandocOptions=@('-f','markdown','-t','html5','--standalone','--quiet','--template',$pageTemplate)
@@ -266,6 +270,7 @@ function Build([string]$name){
    $pandocOptions+=@('-o',(Join-Path $stage $tpl.Name))
    Invoke-ZetaPandoc $pandocOptions
   }
+  if($pagesMode){Render-ZetaPages $name $stage $c $blogEnabled}
   if(!(Test-Path (Join-Path $stage 'index.html'))){throw 'Theme did not generate index'}
   $base=$c.url.TrimEnd('/')
   $robot=[IO.File]::ReadAllText((Join-Path $Templates 'robots.txt')).Replace('{{BASE_URL}}',$base)
@@ -274,8 +279,15 @@ function Build([string]$name){
   if(!(Test-Path $xsl)){$xsl=Join-Path $Templates 'common/sitemap.xsl'}
   Copy-Item $xsl (Join-Path $stage 'sitemap.xsl') -Force
   $today=Get-Date -Format yyyy-MM-dd
-  $locs=@("$base/","$base/posts.html")
-  foreach($file in $files){$p=PostInfo $file $c.author;$locs+="$base/posts/$($p.year)/$($p.slug).html"}
+  $locs=@("$base/")
+  if($blogEnabled){$locs+="$base/posts.html"}
+  if($blogEnabled){foreach($file in $files){$p=PostInfo $file $c.author;$locs+="$base/posts/$($p.year)/$($p.slug).html"}}
+  if($pagesMode){
+   foreach($file in @(Get-ChildItem $pagesDir -Filter '*.md' -File)){
+    if($file.BaseName -eq 'index' -or (Meta $file.FullName draft) -eq 'true'){continue}
+    $locs+="$base/$($file.BaseName)/"
+   }
+  }
   $rows=foreach($loc in $locs){"<url><loc>$(Xml $loc)</loc><lastmod>$today</lastmod></url>"}
   $xml='<?xml version="1.0" encoding="UTF-8"?>'+[Environment]::NewLine+
     '<?xml-stylesheet type="text/xsl" href="sitemap.xsl"?>'+[Environment]::NewLine+
@@ -288,4 +300,60 @@ function Build([string]$name){
   if(Test-Path $previous){Remove-Item $previous -Recurse -Force}
   Write-Host "[OK] $name : $($files.Count) articles" -ForegroundColor Green
  } finally {if(Test-Path $stage){Remove-Item $stage -Recurse -Force}}
+}
+
+
+# Shared Markdown pages are compiled inside Build's staging directory.
+function Render-ZetaPages([string]$name,[string]$stage,[hashtable]$c,[bool]$blogEnabled){
+ $site=SiteDir $name
+ $pages=Join-Path $site 'pages'
+ $sourceFiles=@(Get-ChildItem -LiteralPath $pages -Filter '*.md' -File | Sort-Object Name)
+ $nav=[Collections.Generic.List[object]]::new()
+ foreach($file in $sourceFiles){
+  $slug=$file.BaseName
+  if($slug -notmatch '^[a-z0-9]+(-[a-z0-9]+)*$' -or $slug -in @('posts','blog')){throw "Invalid or reserved Markdown page: $slug"}
+  if((Meta $file.FullName draft) -eq 'true'){continue}
+  $label=Meta $file.FullName menu_title
+  if(-not $label){$label=Meta $file.FullName title}
+  if(-not $label){$label=$slug}
+  if((Meta $file.FullName nav) -ne 'false'){
+   $order=50; $raw=Meta $file.FullName nav_order
+   if($raw -match '^\d{1,3}$'){$order=[int]$raw}
+   if($slug -eq 'index'){$order=0}
+   $nav.Add([pscustomobject]@{Slug=$slug;Label=$label;Order=$order})
+  }
+ }
+ foreach($file in $sourceFiles){
+  $slug=$file.BaseName
+  if((Meta $file.FullName draft) -eq 'true'){
+   if($slug -eq 'index'){throw 'The homepage cannot be a draft'}
+   continue
+  }
+  $root=if($slug -eq 'index'){''}else{'../'}
+  $dest=if($slug -eq 'index'){Join-Path $stage 'index.html'}else{Join-Path $stage "$slug/index.html"}
+  $heading=Meta $file.FullName title
+  if(-not $heading){$heading=$slug}
+  $desc=Meta $file.FullName description
+  if(-not $desc){$desc=$c.description}
+  $items=[Collections.Generic.List[string]]::new()
+  foreach($item in @($nav | Sort-Object Order,Slug)){
+   $href=if($item.Slug -eq 'index'){$root+'index.html'}else{$root+$item.Slug+'/'}
+   $attr=if($item.Slug -eq $slug){' aria-current="page"'}else{''}
+   $items.Add('<a href="'+(Escape $href)+'"'+$attr+'>'+(Escape $item.Label)+'</a>')
+  }
+  if($blogEnabled){$items.Add('<a href="'+(Escape ($root+'posts.html'))+'">Blog</a>')}
+  $canonical=if($slug -eq 'index'){$c.url.TrimEnd('/')+'/'}else{$c.url.TrimEnd('/')+'/'+$slug+'/'}
+  $depth=if($slug -eq 'index'){'0'}else{'1'}
+  $opts=@($file.FullName,'-f','markdown','-t','html5','--standalone','--wrap=none',
+    '--template',(Join-Path $Templates 'common/pages/page.html'),
+    '--lua-filter='+(Join-Path $Templates 'common/filters/page-links.lua'),
+    '-M',('zeta_page_depth='+$depth),
+    '-V',('title='+(Escape $heading)),'-V',('description='+(Escape $desc)),
+    '-V',('site_title='+(Escape $c.title)),'-V',('site_author='+(Escape $c.author)),
+    '-V',('site_lang='+(Escape $c.language)),'-V',('site_theme='+(Escape $c.theme)),
+    '-V',('page_slug='+(Escape $slug)),'-V',('canonical='+(Escape $canonical)),
+    '-V',('rel_root='+$root),'-V',('page_navigation='+($items -join ' ')),
+    '-V',('css='+$root+'styles/zeta-pages.css'),'-o',$dest)
+  Invoke-ZetaPandoc $opts
+ }
 }
