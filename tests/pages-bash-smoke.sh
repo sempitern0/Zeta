@@ -76,6 +76,9 @@ rm -rf -- "$dir/pages"
 mkdir -p "$dir/pages"
 bash "$ROOT/zeta.sh" new-page "$name" "Privacy Policy" privacy >/dev/null
 test -s "$dir/pages/index.md"
+grep -Fxq 'title: "Page smoke"' "$dir/pages/index.md"
+grep -Fxq 'description: "Test site"' "$dir/pages/index.md"
+pandoc -f markdown -t html "$dir/pages/index.md" -o /dev/null
 test -s "$dir/pages/privacy.md"
 test -s "$dir/public/privacy/index.html"
 original=$(<"$dir/pages/index.md")
