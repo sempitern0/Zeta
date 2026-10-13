@@ -11,11 +11,11 @@ function Dashboard {
  $siteCount=0;$builtCount=0;$postCount=0
  foreach($name in @(SiteNames)){
   $siteCount++
-  $title=$name;$description='';$theme='unknown';$status='Draft'
+  $title=$name;$description='';$theme='unknown';$status='Draft';$author='—';$language='—';$output='—'
   $statusClass='';$cardClass='';$count=0;$url='';$errorHtml=''
   try{
    $c=Config $name
-   $title=$c.title;$description=$c.description;$theme=$c.theme
+   $title=$c.title;$description=$c.description;$theme=$c.theme;$author=$c.author;$language=$c.language;$output=$c.output
    if(!(SafeDir $c.content)){throw "Invalid build.content_dir in $(ConfigPath $name)"}
    if(!(SafeDir $c.output)){throw "Invalid build.output_dir in $(ConfigPath $name)"}
    $count=@(Posts $name).Count
@@ -34,7 +34,7 @@ function Dashboard {
    $titleHtml='<a href="'+$url+'">'+$titleHtml+'</a>'
    $action='<a class="preview" href="'+$url+'">Open preview →</a>'
   }elseif($errorHtml){$action=$errorHtml}
-  $cards.Add('<article class="card '+$cardClass+'"><div class="card-header"><span class="eyebrow">SITE / '+(Escape $name)+'</span><span class="status '+$statusClass+'">'+(Escape $status)+'</span></div><h3>'+$titleHtml+'</h3><p class="desc">'+(Escape $description)+'</p><dl class="details"><div><dt>Theme</dt><dd>'+(Escape $theme)+'</dd></div><div><dt>Articles</dt><dd>'+$count+'</dd></div></dl>'+$action+'</article>')
+  $cards.Add('<article class="card '+$cardClass+'"><div class="card-header"><span class="eyebrow">SITE / '+(Escape $name)+'</span><span class="status '+$statusClass+'">'+(Escape $status)+'</span></div><h3>'+$titleHtml+'</h3><p class="desc">'+(Escape $description)+'</p><dl class="details"><div><dt>Theme</dt><dd>'+(Escape $theme)+'</dd></div><div><dt>Articles</dt><dd>'+$count+'</dd></div><div><dt>Author</dt><dd>'+(Escape $author)+'</dd></div><div><dt>Language</dt><dd>'+(Escape $language)+'</dd></div><div><dt>Output</dt><dd>'+(Escape $output)+'</dd></div></dl>'+$action+'</article>')
  }
  if($cards.Count -eq 0){$cards.Add('<p class="empty">No sites yet. Run zeta.sh create or zeta.ps1 create to begin.</p>')}
  $html=[IO.File]::ReadAllText($template)
