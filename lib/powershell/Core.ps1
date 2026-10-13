@@ -179,7 +179,8 @@ function Build([string]$name){
  Assert-ZetaPandoc
  $dir=SiteDir $name;$c=Config $name
  if($c.url -notmatch '^https?://[^\s?#]+$'){throw 'Invalid production URL'}
- if(!(SafeDir $c.content) -or !(SafeDir $c.output)){throw 'Unsafe path'}
+ if(-not (SafeDir $c.content)){throw "Unsafe build.content_dir '$($c.content)' in $(ConfigPath $name): expected relative path such as posts."}
+ if(-not (SafeDir $c.output)){throw "Unsafe build.output_dir '$($c.output)' in $(ConfigPath $name): expected relative path such as public."}
  $content=$c.content.Replace('\','/').Trim('/');$output=$c.output.Replace('\','/').Trim('/')
  if($content -eq $output -or $content.StartsWith("$output/") -or $output.StartsWith("$content/")){throw 'Build directory overlap'}
  if((Themes) -notcontains $c.theme){throw "Unknown theme: $($c.theme)"}
