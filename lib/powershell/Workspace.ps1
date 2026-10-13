@@ -11,12 +11,17 @@ function Dashboard {
  Save (Join-Path $Sites 'index.html') $html
 }
 function SelectItem([string]$title,[string[]]$items,[string]$fallback=''){
+ if($items.Count -eq 0){throw "No choices available for $title"}
  for($i=0;$i -lt $items.Count;$i++){Write-Host ("[{0}] {1}" -f ($i+1),$items[$i])}
- $answer=Read-Host $title
- if(!$answer){return $fallback}
- $n=0
- if(![int]::TryParse($answer,[ref]$n) -or $n -lt 1 -or $n -gt $items.Count){throw 'Invalid selection'}
- return $items[$n-1]
+ $answer=Read-Host "$title (number or name)"
+ if([string]::IsNullOrWhiteSpace($answer)){return $fallback}
+ $number=0
+ if([int]::TryParse($answer,[ref]$number)){
+  if($number -lt 1 -or $number -gt $items.Count){throw "Invalid selection $number"}
+  return $items[$number-1]
+ }
+ foreach($item in $items){if($item -ieq $answer.Trim()){return $item}}
+ throw "Unknown choice '$answer'"
 }
 function Ask([string]$title,[string]$fallback=''){
  $v=Read-Host ("$title [$fallback]")
@@ -24,21 +29,48 @@ function Ask([string]$title,[string]$fallback=''){
 }
 function NewSite{
  $title=Ask 'Site title' 'My New Blog'
- $slug=Ask 'Site slug' (Slug $title)
- $dir=SiteDir $slug;if(Test-Path $dir){throw 'Site already exists'}
- $theme=SelectItem 'Theme' (Themes) 'zen'
- $c=@{title=$title;description=(Ask 'Description' 'Built with Zeta');
- author=(Ask 'Author' [Environment]::UserName);language='en';url=(Ask 'Production URL' 'https://example.com');
- theme=$theme;highlight='zenburn';content='posts';output='public'}
- [void](New-Item -ItemType Directory -Path (Join-Path $dir 'posts') -Force)
- Save (Join-Path $dir 'config.yaml') (ConfigText $c)
- $today=Get-Date -Format yyyy-MM-dd
- $sample=@('---','title: "Welcome to Zeta"','author: '+(Quote $c.author),'date: '+(Quote $today),
- 'description: "Your first Markdown article"','tags: [zeta, introduction]','---','',
- '# Hello, world','','This is a Markdown article.','','## Next steps','','Edit this file and rebuild the site.')
- Save (Join-Path (Join-Path $dir 'posts') "$today-welcome.md") ($sample -join [Environment]::NewLine)
- Dashboard
- Write-Host "Created $dir" -ForegroundColor Green
+ $defaultSlug=Slug $title
+ if(-not $defaultSlug){throw 'Invalid site title: cannot create a slug'}
+ $slug=Ask 'Site slug' $defaultSlug
+ $dir=SiteDir $slug
+ if(Test-Path -LiteralPath $dir){throw "Site '$slug' already exists. Nothing was overwritten."}
+ $themes=@(Themes)
+ if($themes.Count -eq 0){throw 'No compatible themes were found in templates/'}
+ $defaultTheme=if($themes -contains 'zen'){'zen'}else{$themes[0]}
+ $theme=SelectItem 'Theme' $themes $defaultTheme
+ if($themes -notcontains $theme){throw "Invalid theme '$theme'."}
+ $c=@{
+  title=$title;description=(Ask 'Description' 'Built with Zeta');
+  author=(Ask 'Author' [Environment]::UserName);
+  language='en';url=(Ask 'Production URL' 'https://example.com');
+  theme=$theme;highlight='zenburn';content='posts';output='public'
+ }
+ if($c.url -notmatch '^https?://[^\s?#]+$'){throw "Invalid URL '$($c.url)'."}
+ $created=$false
+ try{
+  [void](New-Item -ItemType Directory -Path (Join-Path $dir 'posts') -Force)
+  $created=$true
+  Save (Join-Path $dir 'config.yaml') (ConfigText $c)
+  $today=Get-Date -Format yyyy-MM-dd
+  $sample=@('---','title: "Welcome to Zeta"','author: '+(Quote $c.author),
+    'date: '+(Quote $today),'description: "Your first Markdown article"',
+    'tags: [zeta, introduction]','---','',
+    '# Hello, world','','This is a Markdown article.','','## Next steps','','Edit this file and rebuild the site.')
+  Save (Join-Path (Join-Path $dir 'posts') "$today-welcome.md") ($sample -join [Environment]::NewLine)
+ }catch{
+  if($created -and (Test-Path -LiteralPath $dir)){
+   Remove-Item -LiteralPath $dir -Recurse -Force -ErrorAction SilentlyContinue
+  }
+  throw
+ }
+ Write-Host "[OK] Site created: $dir" -ForegroundColor Green
+ try{Dashboard}catch{Write-Warning "Workspace index update failed: $($_.Exception.Message)"}
+ if(-not (Test-ZetaPandoc)){
+  Write-Host 'Site sources are ready; Pandoc is only needed for building HTML.' -ForegroundColor Yellow
+  if($IsWindows){[void](Install-ZetaPandoc)}
+ }else{
+  Write-Host "Next: .\zeta.ps1 build $slug" -ForegroundColor Cyan
+ }
 }
 function EditSite([string]$name){
  $c=Config $name
