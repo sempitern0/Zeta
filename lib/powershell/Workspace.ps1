@@ -126,31 +126,79 @@ function Preview([string]$name,[int]$serverPort){
  Serve $dir $serverPort
 }
 function Serve([string]$dir,[int]$serverPort){
+ if($serverPort -lt 1 -or $serverPort -gt 65535){throw "Invalid preview port: $serverPort"}
+ if(-not (Test-Path -LiteralPath $dir -PathType Container)){
+  throw "Cannot serve missing directory: $dir"
+ }
  $listener=[Net.HttpListener]::new()
  $listener.Prefixes.Add("http://localhost:$serverPort/")
- try {
-  $listener.Start();Write-Host "http://localhost:$serverPort/ (Ctrl+C to stop)"
-  while($listener.IsListening){
-   $ctx=$listener.GetContext()
-   try {
+ $started=$false
+ $interactiveConsole=$false
+ try{
+  try{
+   $interactiveConsole=($Host.Name -eq 'ConsoleHost' -and -not [Console]::IsInputRedirected)
+  }catch [System.InvalidOperationException]{
+   # Windows Terminal, IDE hosts, and redirected input can differ.
+  }
+  $listener.Start()
+  $started=$true
+  Write-Host "http://localhost:$serverPort/  (Ctrl+C or Q to stop)" -ForegroundColor Cyan
+  $running=$true
+  while($running -and $listener.IsListening){
+   # A synchronous GetContext() blocks PowerShell's Ctrl+C pipeline stop.
+   # Poll an asynchronous accept instead, yielding to the host every 100 ms.
+   $pending=$listener.GetContextAsync()
+   while(-not $pending.IsCompleted){
+    Start-Sleep -Milliseconds 100
+    if($interactiveConsole){
+     try{
+      if([Console]::KeyAvailable){
+       $key=[Console]::ReadKey($true)
+       if($key.Key -eq [ConsoleKey]::Q){
+        $running=$false
+        break
+       }
+      }
+     }catch [System.InvalidOperationException]{
+      $interactiveConsole=$false
+     }catch [System.IO.IOException]{
+      $interactiveConsole=$false
+     }
+    }
+   }
+   if(-not $running){break}
+   # Preserve the existing request routing and media types.
+   $ctx=$pending.GetAwaiter().GetResult()
+   try{
     $rel=[uri]::UnescapeDataString($ctx.Request.Url.AbsolutePath.TrimStart('/'))
     if(!$rel -or $rel.EndsWith('/')){$rel+='index.html'}
     $full=[IO.Path]::GetFullPath((Join-Path $dir $rel))
     $base=[IO.Path]::GetFullPath($dir).TrimEnd([IO.Path]::DirectorySeparatorChar)+[IO.Path]::DirectorySeparatorChar
     $comparison=if($IsWindows){[StringComparison]::OrdinalIgnoreCase}else{[StringComparison]::Ordinal}
-    if(!$full.StartsWith($base,$comparison) -or !(Test-Path $full -PathType Leaf)){$ctx.Response.StatusCode=404}
-    else{
+    if(!$full.StartsWith($base,$comparison) -or !(Test-Path -LiteralPath $full -PathType Leaf)){
+     $ctx.Response.StatusCode=404
+    }else{
      $ext=[IO.Path]::GetExtension($full).ToLowerInvariant()
      $type=@{'.html'='text/html';'.css'='text/css';'.js'='text/javascript';'.svg'='image/svg+xml';
        '.png'='image/png';'.jpg'='image/jpeg';'.webp'='image/webp';'.xml'='application/xml'}
      $ctx.Response.ContentType=if($type.ContainsKey($ext)){$type[$ext]}else{'application/octet-stream'}
-     $bytes=[IO.File]::ReadAllBytes($full);$ctx.Response.ContentLength64=$bytes.Length
+     $bytes=[IO.File]::ReadAllBytes($full)
+     $ctx.Response.ContentLength64=$bytes.Length
      $ctx.Response.OutputStream.Write($bytes,0,$bytes.Length)
     }
-   } finally{$ctx.Response.Close()}
+   }finally{
+    $ctx.Response.Close()
+   }
   }
- } finally{$listener.Close()}
+ }finally{
+  if($started){
+   $listener.Stop()
+  }
+  $listener.Close()
+  if($started){Write-Host 'Zeta local server stopped. Port released.' -ForegroundColor Green}
+ }
 }
+
 
 function RemoveSite([string]$name){
  $path=SiteDir $name

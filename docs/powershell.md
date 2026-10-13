@@ -61,3 +61,9 @@ Run `pwsh -NoProfile -File tests/powershell-create-smoke.ps1` to verify source c
 ## Template resolution and local build regression
 
 PowerShell resolves each theme template to a verified absolute path before passing it to Pandoc as two separate command arguments (`--template`, `PATH`). This avoids Pandoc falling back to a missing data-file template such as `templates\\.html5`. To test all five bundled themes, run `pwsh -NoProfile -File tests/powershell-build-smoke.ps1` after installing Pandoc. This test creates only temporary sites, checks HTML/articles/assets/SEO files, and uses **no GitHub Actions**.
+
+## Stopping the local server
+
+When `./zeta.ps1 preview SITE` or `./zeta.ps1 serve` is running in PowerShell 7, press **Ctrl+C** to interrupt it. Zeta now uses a cancellable, nonblocking HTTP accept loop (100 ms polling intervals) instead of waiting indefinitely inside `HttpListener.GetContext()`. In Windows Terminal / ConsoleHost you can also press **Q** (without Enter) to return to the Zeta assistant without terminating PowerShell. The listener is stopped and closed in a `finally` block, releasing the localhost port. Other terminal hosts may not offer the Q shortcut; Ctrl+C remains the standard mechanism.
+
+Run the local server regression test using `pwsh -NoProfile -File tests/powershell-server-smoke.ps1`. It starts an isolated test server, requests a page, and stops its job without running GitHub Actions. For a manual Ctrl+C test, run `./zeta.ps1 serve -Port 8099`, open the page and press Ctrl+C while the server is idle.
