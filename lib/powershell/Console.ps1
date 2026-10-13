@@ -56,6 +56,8 @@ Workspace
 Content
   posts SITE                       List Markdown articles with metadata
   new-post SITE                    Create Markdown article
+  pages SITE                       List standalone pages
+  new-page SITE [TITLE] [SLUG]     Create a page and rebuild the site
   fonts SITE [KEY]                 Manage optional local fonts
   doctor | diagnose SITE           Check deployment readiness
 
@@ -90,7 +92,8 @@ function Manage-Menu([string]$name){
    Write-ZetaLine '  Doctor [6] and Delete site [10] remain available.' 'Yellow'
   }
   Show-Actions 'Content & appearance' @(
-   '[1] Site settings','[2] Switch theme','[3] List posts','[4] New post','[5] Manage fonts')
+   '[1] Site settings','[2] Switch theme','[3] List posts','[4] New post','[5] Manage fonts',
+   '[11] List pages','[12] New page')
   Show-Actions 'Build & validate' @(
    '[6] Doctor','[7] Build site','[8] Preview site')
   Show-Actions 'Maintenance' @(
@@ -104,6 +107,8 @@ function Manage-Menu([string]$name){
     '3'{ListPosts $name}
     '4'{NewPost $name}
     '5'{FontSite $name}
+    '11'{ListPages $name}
+    '12'{NewPage $name}
     '6'{Doctor $name}
     '7'{Build $name;Dashboard}
     '8'{Preview $name $Port}
