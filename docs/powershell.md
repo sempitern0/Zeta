@@ -57,3 +57,7 @@ Creating a site (`.\zeta.ps1 create`) only writes its configuration and Markdown
 During site creation, Zeta offers Pandoc installation if it is missing. It asks before invoking `winget`. The `-Yes` switch on the explicit `install-pandoc` command bypasses that question when automation is intended. Neither create nor the editor downloads Pandoc silently.
 
 Run `pwsh -NoProfile -File tests/powershell-create-smoke.ps1` to verify source creation without Pandoc. This local test uses an isolated temporary workspace and does not access the network or GitHub Actions.
+
+## Template resolution and local build regression
+
+PowerShell resolves each theme template to a verified absolute path before passing it to Pandoc as two separate command arguments (`--template`, `PATH`). This avoids Pandoc falling back to a missing data-file template such as `templates\\.html5`. To test all five bundled themes, run `pwsh -NoProfile -File tests/powershell-build-smoke.ps1` after installing Pandoc. This test creates only temporary sites, checks HTML/articles/assets/SEO files, and uses **no GitHub Actions**.

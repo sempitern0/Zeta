@@ -136,9 +136,27 @@ function PostInfo([IO.FileInfo]$file,[string]$defaultAuthor){
  @{title=$title;slug=$slug;date=$date;year=$year;human=$human;author=$author;
    description=$desc;external_url=(Meta $file.FullName external_url);tags=@(Tags $file.FullName)}
 }
+# Resolve a theme template to a real, absolute file before invoking Pandoc.
+# Pandoc otherwise searches its data directory and reports misleading ".html5" paths.
+function Get-ZetaTemplate([string]$themeDirectory,[string]$fileName){
+ if([string]::IsNullOrWhiteSpace($themeDirectory) -or [string]::IsNullOrWhiteSpace($fileName)){
+  throw 'Theme directory and template name must both be provided.'
+ }
+ $fullPath=[IO.Path]::GetFullPath((Join-Path -Path $themeDirectory -ChildPath $fileName))
+ if(-not (Test-Path -LiteralPath $fullPath -PathType Leaf)){
+  throw "Theme template missing: '$fullPath'. Verify the selected theme in config.yaml and templates/."
+ }
+ return $fullPath
+}
 function Invoke-ZetaPandoc([string[]]$options){
  '' | & pandoc @options
- if($LASTEXITCODE -ne 0){throw 'Pandoc generation failed'}
+ if($LASTEXITCODE -ne 0){
+  $outputTarget='generated HTML'
+  for($i=0;$i -lt $options.Count-1;$i++){
+   if($options[$i] -eq '-o'){$outputTarget=$options[$i+1];break}
+  }
+  throw "Pandoc failed while generating '$outputTarget' (exit code $LASTEXITCODE)."
+ }
 }
 function Layer([string]$from,[string]$to){
  if(!(Test-Path $from)){return}
@@ -153,9 +171,9 @@ function Styles([string]$theme,[string]$dir,[string]$prefix){
    $names+= $f.Name
   }}
  }
- $args=@()
- foreach($n in $names){$args+=@('-V',"css=$prefix"+"styles/$n")}
- return $args
+ $styleOptions=@()
+ foreach($n in $names){$styleOptions+=@('-V',("css=${prefix}styles/$n"))}
+ return $styleOptions
 }
 function Build([string]$name){
  Assert-ZetaPandoc
@@ -165,7 +183,9 @@ function Build([string]$name){
  $content=$c.content.Replace('\','/').Trim('/');$output=$c.output.Replace('\','/').Trim('/')
  if($content -eq $output -or $content.StartsWith("$output/") -or $output.StartsWith("$content/")){throw 'Build directory overlap'}
  if((Themes) -notcontains $c.theme){throw "Unknown theme: $($c.theme)"}
- $theme=Join-Path $Templates $c.theme
+ $theme=Join-Path -Path $Templates -ChildPath $c.theme
+ $articleTemplate=Get-ZetaTemplate $theme 'article.html'
+ $cardTemplate=Get-ZetaTemplate $theme 'post_link.html'
  $landing=Join-Path $dir 'landing.yaml';$extra=@{}
  foreach($k in @('eyebrow','primary_label','primary_url','secondary_label','secondary_url','hero_image','hero_alt')){
   $extra[$k]=Yaml $landing landing $k ''
@@ -177,7 +197,7 @@ function Build([string]$name){
  }
  $stage=Join-Path $dir ('.zeta-ps-'+[guid]::NewGuid().ToString('N'))
  $final=Join-Path $dir $c.output;$previous="$final.zeta-previous"
- $files=Posts $name
+ $files=@(Posts $name)
  try{
   [void](New-Item -ItemType Directory -Force -Path (Join-Path $stage 'styles'),(Join-Path $stage 'posts'))
   foreach($kind in @('styles','assets')){
@@ -202,24 +222,24 @@ function Build([string]$name){
    if(!$routes.Add($rel)){throw "Duplicate route: $rel"}
    $target=Join-Path $stage $rel
    [void](New-Item -ItemType Directory -Path (Split-Path $target -Parent) -Force)
-   $args=@($file.FullName,'-f','markdown','-t','html5','--standalone','--section-divs','--wrap=none',
-      '--table-of-contents','--toc-depth=3','--preserve-tabs','--template='+ (Join-Path $theme 'article.html'),
+   $pandocOptions=@($file.FullName,'-f','markdown','-t','html5','--standalone','--section-divs','--wrap=none',
+      '--table-of-contents','--toc-depth=3','--preserve-tabs','--template',$articleTemplate,
       '-V','rel_root=../../','-V',"title=$(Escape $p.title)",'-V',"author=$(Escape $p.author)",
       '-V',"date=$(Escape $p.human)",'-V',"iso_date=$(Escape $p.date)",'-V',"year=$($p.year)",
       '-V',"slug=$($p.slug)",'-V',"description=$(Escape $p.description)",'-V',"site_title=$(Escape $c.title)",
       '-V',"site_author=$(Escape $c.author)",'-V',"site_lang=$(Escape $c.language)",
       "$hflag=$($c.highlight)")
    $filter=Join-Path $Templates 'common/filters/table-wrapper.lua'
-   if(Test-Path $filter){$args+="--lua-filter=$filter"}
-   $args+=@(Styles $c.theme $dir '../../')
-   foreach($tag in $p.tags){$args+=@('-V',('tags='+(Escape $tag)))}
-   $args+=@('-o',$target)
-   Invoke-ZetaPandoc $args
-   $args=@('-f','markdown','--quiet','--template='+ (Join-Path $theme 'post_link.html'),
+   if(Test-Path $filter){$pandocOptions+="--lua-filter=$filter"}
+   $pandocOptions+=@(Styles $c.theme $dir '../../')
+   foreach($tag in $p.tags){$pandocOptions+=@('-V',('tags='+(Escape $tag)))}
+   $pandocOptions+=@('-o',$target)
+   Invoke-ZetaPandoc $pandocOptions
+   $pandocOptions=@('-f','markdown','-t','html5','--standalone','--quiet','--template',$cardTemplate,
       '-V',"title=$(Escape $p.title)",'-V',"date=$(Escape $p.human)",'-V',"iso_date=$(Escape $p.date)",
       '-V',"path=$rel",'-V',"description=$(Escape $p.description)",'-V',"external_url=$(Escape $p.external_url)")
-   $item=('' | & pandoc @args) -join [Environment]::NewLine
-   if($LASTEXITCODE -ne 0){throw 'Post card rendering failed'}
+   $item=('' | & pandoc @pandocOptions) -join [Environment]::NewLine
+   if($LASTEXITCODE -ne 0){throw "Post card rendering failed for '$($file.Name)' (exit code $LASTEXITCODE)."}
    $links.Add($item)
   }
   $vars=@{site_lang=(Escape $c.language);site_title=(Escape $c.title);site_desc=(Escape $c.description);
@@ -227,11 +247,12 @@ function Build([string]$name){
   foreach($k in $extra.Keys){$vars[$k]=Escape $extra[$k]}
   foreach($tpl in (Get-ChildItem $theme -Filter '*.html' -File)){
    if($tpl.Name -in @('article.html','post_link.html')){continue}
-   $args=@('-f','markdown','-t','html5','--quiet',"--template=$($tpl.FullName)")
-   foreach($k in $vars.Keys){$args+=@('-V',('{0}={1}' -f $k,$vars[$k]))}
-   $args+=@(Styles $c.theme $dir '')
-   $args+=@('-o',(Join-Path $stage $tpl.Name))
-   Invoke-ZetaPandoc $args
+   $pageTemplate=Get-ZetaTemplate $theme $tpl.Name
+   $pandocOptions=@('-f','markdown','-t','html5','--standalone','--quiet','--template',$pageTemplate)
+   foreach($k in $vars.Keys){$pandocOptions+=@('-V',('{0}={1}' -f $k,$vars[$k]))}
+   $pandocOptions+=@(Styles $c.theme $dir '')
+   $pandocOptions+=@('-o',(Join-Path $stage $tpl.Name))
+   Invoke-ZetaPandoc $pandocOptions
   }
   if(!(Test-Path (Join-Path $stage 'index.html'))){throw 'Theme did not generate index'}
   $base=$c.url.TrimEnd('/')

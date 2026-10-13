@@ -435,3 +435,7 @@ La implementación nativa [PowerShell 7+](zeta.ps1) permite generar webs desde W
 ### Instalación de Pandoc en Windows
 
 Puedes crear un sitio mediante `.\zeta.ps1 create` sin tener Pandoc. El comando `.\zeta.ps1 deps` muestra el estado de las dependencias, y `.\zeta.ps1 install-pandoc` ofrece instalar el paquete oficial `JohnMacFarlane.Pandoc` con `winget`, previa confirmación. Si no existe `winget`, puedes instalar Pandoc manualmente. Más detalles en [la guía de Windows](docs/powershell.md); prueba local: `pwsh -NoProfile -File tests/powershell-create-smoke.ps1`.
+
+### Solución al error de plantillas Pandoc en PowerShell
+
+La versión Windows ahora comprueba que cada plantilla existe y proporciona una ruta absoluta a Pandoc. Después de `git pull origin main`, ejecuta `.\zeta.ps1 build NOMBRE_DEL_SITIO` y `.\zeta.ps1 serve`. Para verificar los cinco themes sin modificar tus sitios: `pwsh -NoProfile -File tests/powershell-build-smoke.ps1`. Consulta [docs/powershell.md](docs/powershell.md).
