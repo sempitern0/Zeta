@@ -70,3 +70,15 @@ EOF
  ! grep -Fq '/posts/' "$dir/public/sitemap.xml"
  echo "[OK] $theme: Markdown pages, links, sitemap, blog disabled"
 done
+
+# Regression: creating a page in a site with a missing homepage auto-bootstraps index.md.
+rm -rf -- "$dir/pages"
+mkdir -p "$dir/pages"
+bash "$ROOT/zeta.sh" new-page "$name" "Privacy Policy" privacy >/dev/null
+test -s "$dir/pages/index.md"
+test -s "$dir/pages/privacy.md"
+test -s "$dir/public/privacy/index.html"
+original=$(<"$dir/pages/index.md")
+bash "$ROOT/zeta.sh" build "$name" >/dev/null
+test "$original" = "$(<"$dir/pages/index.md")"
+echo "[OK] new-page restores missing homepage without overwriting it."
