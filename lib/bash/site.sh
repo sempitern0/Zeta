@@ -757,7 +757,7 @@ zeta_render_markdown_pages() {
         mkdir -p "$(dirname "$destination")"
         nav=$(zeta_pages_navigation "$site_dir" "$prefix" "$slug" "$blog_enabled")
         local options=(
-            --from=markdown --to=html5 --standalone --wrap=none
+            --from=markdown-raw_html --to=html5 --standalone --wrap=none
             "--template=${TEMPLATES_DIR}/common/pages/page.html"
             "--lua-filter=${TEMPLATES_DIR}/common/filters/page-links.lua"
             -M "zeta_page_depth=${depth}"
