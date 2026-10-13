@@ -68,6 +68,12 @@ Utiliza **el mismo comando** después de `./zeta.sh` desde Bash o `.\zeta.ps1` d
 
 Los dos asistentes muestran el logotipo ZETA a color, el estado de los sitios y menús numerados. La sintaxis del puerto depende de la shell: `./zeta.sh --port 8080 preview mi-sitio` frente a `.\zeta.ps1 preview mi-sitio -Port 8080`. Consulta `help` para ver todas las opciones.
 
+## Páginas Markdown y blog opcional
+
+El asistente pregunta si quieres incluir **Blog**, **About** y **Contacto**. Todo sitio nuevo incluye la portada Markdown `pages/index.md`; las demás páginas generan URLs limpias como `/about/` y navegación accesible. Si desactivas el blog, el resultado no contiene archivos ni URLs de publicaciones.
+
+Puedes crear más páginas con `./zeta.sh new-page SITIO "Privacidad" privacidad` desde Bash o `.\zeta.ps1 new-page SITIO "Privacidad" privacidad` desde PowerShell; utiliza `pages SITIO` para listarlas. Los metadatos controlan el menú y los borradores. Consulta la [guía de páginas Markdown](docs/pages.md).
+
 ## Índice visual y contenido inicial compartidos
 
 Bash y PowerShell generan **el mismo índice de sitios**, adaptable y navegable con teclado, en `sites/index.html`, con CSS compartido, estados de compilación, descripciones, temas, cantidad de artículos y acceso a las vistas previas.
