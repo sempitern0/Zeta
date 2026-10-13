@@ -29,6 +29,12 @@ try{
  NewSite
  if($script:replies.Count -ne 0){throw 'Wizard did not ask all eight fields'}
  $site=Join-Path $Sites 'zeta-test'
+ $yamlText=[IO.File]::ReadAllText((Join-Path $site 'config.yaml'))
+ foreach($expectedLine in @('  title: "Zeta Test"','  description: "Test description"','  author: "QA"','  language: "es-ES"','  name: "organization"','  pandoc_theme: "tango"','  content_dir: "posts"','  output_dir: "public"')){
+  if(-not (($yamlText -split '\r?\n') -ccontains $expectedLine)){
+   throw "YAML writer failed to emit a complete key/value line: $expectedLine"
+  }
+ }
  $c=Config 'zeta-test'
  if($c.title -ne 'Zeta Test' -or $c.language -ne 'es-ES' -or
    $c.highlight -ne 'tango' -or $c.theme -ne 'organization' -or
@@ -42,5 +48,20 @@ try{
  try{NewSite}catch{$failed=$true}
  if(!$failed){throw 'Duplicate site must be rejected'}
  if(!(Test-Path (Join-Path $site 'config.yaml'))){throw 'Duplicate attempt modified original'}
- Write-Host '[OK] Eight creation prompts, language, theme, highlight and duplicate protection.' -ForegroundColor Green
+ # With Pandoc available, creating a site must also produce the public directory.
+ function Test-ZetaPandoc {return $true}
+ function Build([string]$name) {
+  $c=Config $name
+  if($c.content -ne 'posts' -or $c.output -ne 'public'){throw 'Invalid site paths during build'}
+  $target=Join-Path (SiteDir $name) 'public/index.html'
+  Save $target '<!doctype html><title>Generated</title>'
+ }
+ $script:replies.Clear()
+ foreach($v in @('Built Site','A built example','QA','en','','https://example.org','zen','zenburn')){
+  $script:replies.Enqueue($v)
+ }
+ NewSite
+ if($script:replies.Count -ne 0){throw 'Build-enabled wizard missed a prompt'}
+ if(-not (Test-Path (Join-Path $Sites 'built-site/public/index.html'))){throw 'Creation did not run the HTML build'}
+ Write-Host '[OK] Eight creation prompts, correctly formatted YAML, automatic build and duplicate protection.' -ForegroundColor Green
 }finally{Remove-Item -LiteralPath $folder -Recurse -Force -ErrorAction SilentlyContinue}
