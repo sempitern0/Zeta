@@ -308,6 +308,39 @@ function Build([string]$name){
    $null=@('' | & pandoc @seoArgs)
    if($LASTEXITCODE -ne 0){throw 'Shared SEO generation failed; existing public/ was preserved'}
   }finally{Remove-Item -LiteralPath $seoTmp -Force -ErrorAction SilentlyContinue}
+  # Only explicit editorial updated dates are used for sitemap lastmod.
+  $updates=Join-Path $stage '.zeta-updates.tsv'
+  $dateRows=[Collections.Generic.List[string]]::new()
+  if($pagesMode){
+   foreach($file in @(Get-ChildItem $pagesDir -Filter '*.md' -File)){
+    if((Meta $file.FullName draft) -eq 'true'){continue}
+    $updated=Meta $file.FullName updated
+    if(!$updated){continue}
+    if($updated -notmatch '^\d{4}-\d{2}-\d{2}$'){throw "Invalid updated date in $($file.FullName)"}
+    $route=if($file.BaseName -eq 'index'){'index.html'}else{$file.BaseName+'/index.html'}
+    $dateRows.Add($route+"@t"+$updated)
+   }
+  }
+  if($blogEnabled){
+   foreach($file in $files){
+    $updated=Meta $file.FullName updated
+    if(!$updated){continue}
+    if($updated -notmatch '^\d{4}-\d{2}-\d{2}$'){throw "Invalid updated date in $($file.FullName)"}
+    $post=PostInfo $file $c.author
+    $dateRows.Add(("posts/{0}/{1}.html" -f $post.year,$post.slug)+"@t"+$updated)
+   }
+  }
+  Save $updates (($dateRows -join [Environment]::NewLine).Replace('@t',([char]9)))
+  $extrasFilter=Join-Path $Templates 'common/filters/publish-extras.lua'
+  if(!(Test-Path -LiteralPath $extrasFilter -PathType Leaf)){throw "Missing publishing filter: $extrasFilter"}
+  $extrasTemp=[IO.Path]::GetTempFileName()
+  try{
+   $extrasArgs=@('-f','markdown','-t','plain',("--lua-filter=$extrasFilter"),'-M',("zeta_extra_output=$stage"),'-M',("zeta_extra_url=$($c.url.TrimEnd('/'))"),'-M',("zeta_extra_title=$($c.title)"),'-M',("zeta_extra_description=$($c.description)"),'-M',("zeta_extra_author=$($c.author)"),'-M',("zeta_extra_language=$($c.language)"),'-M',("zeta_extra_blog=$($blogEnabled.ToString().ToLowerInvariant())"),'-o',$extrasTemp)
+   $null=@('' | & pandoc @extrasArgs)
+   if($LASTEXITCODE -ne 0){throw 'RSS/Atom, structured data or sitemap generation failed'}
+  }finally{Remove-Item -LiteralPath $extrasTemp -Force -ErrorAction SilentlyContinue}
+  Remove-Item -LiteralPath $updates -Force
+
   if(Test-Path $previous){Remove-Item $previous -Recurse -Force}
   if(Test-Path $final){Move-Item $final $previous}
   try{Move-Item $stage $final}catch{if(Test-Path $previous){Move-Item $previous $final};throw}
