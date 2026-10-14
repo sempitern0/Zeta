@@ -62,6 +62,8 @@ EOF
  test -s "$dir/public/about/index.html"
  test -s "$dir/public/styles/zeta-pages.css"
  test ! -e "$dir/public/posts.html"
+ test ! -e "$dir/public/rss.xml"
+ test ! -e "$dir/public/atom.xml"
  test ! -e "$dir/public/draft"
  test ! -e "$dir/public/posts/2026/hidden.html"
  grep -Fq 'href="./about/"' "$dir/public/index.html"
