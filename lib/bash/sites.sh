@@ -724,13 +724,13 @@ diagnose_site() {
     if [[ -f "${site_dir}/pages/index.md" ]]; then
         pages_mode=true
         [[ "$(get_site_yaml_prop "$config_file" build blog true)" == false ]] && blog_enabled=false
-        doctor_ok "Pages" "Markdown homepage present"
     fi
 
     doctor_ok()   { printf '  %b %-20s %s\n' "${boldGreen}[OK]${endColour}" "$1" "$2"; }
     doctor_warn() { printf '  %b %-20s %s\n' "${boldYellow}[WARN]${endColour}" "$1" "$2"; ((warnings += 1)); }
     doctor_fail() { printf '  %b %-20s %s\n' "${boldRed}[FAIL]${endColour}" "$1" "$2"; ((errors += 1)); }
 
+    [[ "$pages_mode" == true ]] && doctor_ok "Pages" "Markdown homepage present"
     echo -e "${boldWhite}Configuration${endColour}"
 
     [[ -n "$title" ]] && doctor_ok "site.title" "$title" || doctor_fail "site.title" "missing"
