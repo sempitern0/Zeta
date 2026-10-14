@@ -679,6 +679,41 @@ build_site() {
         rm -rf -- "$staging_dir"; return 1
     fi
 
+    local update_map="${output_dir}/.zeta-updates.tsv" update_md updated update_slug
+    : > "$update_map"
+    if [[ "$pages_mode" == true ]]; then
+        for update_md in "${site_dir}/pages/"*.md; do
+            [[ -f "$update_md" ]] || continue
+            [[ "$(extract_frontmatter_property "$update_md" draft 2>/dev/null || true)" == true ]] && continue
+            updated=$(extract_frontmatter_property "$update_md" updated 2>/dev/null || true)
+            [[ -n "$updated" ]] || continue
+            [[ "$updated" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]] || { msg_error "Invalid updated date in $update_md"; rm -rf -- "$staging_dir"; return 1; }
+            update_slug=$(basename "$update_md" .md)
+            if [[ "$update_slug" == index ]]; then printf 'index.html\t%s\n' "$updated" >> "$update_map"
+            else printf '%s/index.html\t%s\n' "$update_slug" "$updated" >> "$update_map"; fi
+        done
+    fi
+    if [[ "$blog_enabled" == true ]]; then
+        for update_md in "${md_files[@]}"; do
+            declare -A update_post=()
+            get_post_metadata "$update_md" update_post "$site_author"
+            updated=$(extract_frontmatter_property "$update_md" updated 2>/dev/null || true)
+            [[ -n "$updated" ]] || continue
+            [[ "$updated" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]] || { msg_error "Invalid updated date in $update_md"; rm -rf -- "$staging_dir"; return 1; }
+            printf 'posts/%s/%s.html\t%s\n' "${update_post[year]}" "${update_post[slug]}" "$updated" >> "$update_map"
+        done
+    fi
+    local extra_filter="${TEMPLATES_DIR}/common/filters/publish-extras.lua"
+    if [[ ! -f "$extra_filter" ]] || ! printf '' | pandoc -f markdown -t plain --lua-filter="$extra_filter" \
+        -M "zeta_extra_output=$output_dir" -M "zeta_extra_url=$site_url" \
+        -M "zeta_extra_title=$site_title" -M "zeta_extra_description=$site_desc" \
+        -M "zeta_extra_author=$site_author" -M "zeta_extra_language=$site_lang" \
+        -M "zeta_extra_blog=$blog_enabled" -o /dev/null; then
+        msg_error "RSS/Atom, JSON-LD or sitemap generation failed."
+        rm -rf -- "$staging_dir"; return 1
+    fi
+    rm -f -- "$update_map"
+
     local previous_output="${final_output_dir}.zeta-previous"
     mkdir -p "$(dirname "$final_output_dir")"
     rm -rf -- "$previous_output"
