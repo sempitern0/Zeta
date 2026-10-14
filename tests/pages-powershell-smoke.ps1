@@ -68,7 +68,7 @@ Should not publish.
   foreach($path in @('index.html','about/index.html','styles/zeta-pages.css','sitemap.xml')){
    if(!(Test-Path (Join-Path $out $path))){throw "$theme missing $path"}
   }
-  foreach($path in @('draft/index.html','posts.html','posts/2026/hidden.html')){
+  foreach($path in @('draft/index.html','posts.html','posts/2026/hidden.html','rss.xml','atom.xml')){
    if(Test-Path (Join-Path $out $path)){throw "$theme unexpectedly published $path"}
   }
   $index=[IO.File]::ReadAllText((Join-Path $out 'index.html'))
