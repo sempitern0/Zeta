@@ -1,14 +1,25 @@
 # Zeta PowerShell: read-only deployment diagnostics (same checks as Bash doctor).
+function DoctorCategory([string]$label){
+ if($label -match '(?i)link|image|unsafe_url|asset'){return 'Links & assets'}
+ if($label -match '(?i)canonical|description|html_title|html_lang|og:|seo|site.url|metadata'){return 'SEO & metadata'}
+ if($label -match '(?i)sitemap|robots|public/|freshness|artifact|output_checked|published html'){return 'Publishing'}
+ if($label -match '(?i)markdown|post|page|source|homepage|draft'){return 'Content'}
+ return 'Configuration'
+}
 function DoctorStatus([hashtable]$state,[string]$level,[string]$label,[string]$detail){
  if($level -eq 'FAIL'){$state.errors++;$color='Red';if($state.ContainsKey('findings')){$state.findings.Add($label)}}
  elseif($level -eq 'WARN'){$state.warnings++;$color='Yellow';if($state.ContainsKey('findings')){$state.findings.Add($label)}}
+ if($level -in @('FAIL','WARN') -and $state.ContainsKey('categories')){
+  $group=DoctorCategory $label
+  $state.categories[$group]=1+$state.categories[$group]
+ }
  else{$color='Green'}
  Write-Host ('  [{0,-4}] {1,-21} {2}' -f $level,$label,$detail) -ForegroundColor $color
 }
 function Doctor([string]$name){
  $configPath=ConfigPath $name
  $siteDir=SiteDir $name
- $state=@{errors=0;warnings=0;findings=[Collections.Generic.List[string]]::new()}
+ $state=@{errors=0;warnings=0;findings=[Collections.Generic.List[string]]::new();categories=@{'Links & assets'=0;'SEO & metadata'=0;Publishing=0;Content=0;Configuration=0}}
  Write-Host ''
  Write-Host ("ZETA / Doctor: {0}" -f $name) -ForegroundColor Cyan
  Write-Host ('-'*65) -ForegroundColor DarkGray
@@ -200,7 +211,23 @@ function Doctor([string]$name){
  if($state.errors -or $state.warnings){
   $ids=@($state.findings | Select-Object -Unique)
   Write-Host ('Priority findings: '+($ids -join ', ')) -ForegroundColor Yellow
-  Write-Host 'Recommended: fix FAIL items first; then review WARN metadata and rebuild the site.' -ForegroundColor Yellow
+  Write-Host 'Issues by category:' -ForegroundColor Yellow
+  foreach($group in @($state.categories.Keys | Sort-Object)){
+   if($state.categories[$group] -gt 0){Write-Host ('  {0}: {1}' -f $group,$state.categories[$group]) -ForegroundColor Yellow}
+  }
+  if($ids -match '(?i)link|image|unsafe_url|asset'){
+   Write-Host '  Fix local href/src targets and publish missing assets.' -ForegroundColor Yellow
+  }
+  if($ids -match '(?i)canonical|description|html_title|html_lang|site.url'){
+   Write-Host '  Review site.url and Markdown title/description; rebuild to regenerate SEO tags.' -ForegroundColor Yellow
+  }
+  if($ids -match '(?i)Markdown parse|Homepage|page'){
+   Write-Host '  Correct YAML frontmatter and verify pages/index.md before rebuilding.' -ForegroundColor Yellow
+  }
+  if($ids -match '(?i)sitemap|robots|freshness|public/'){
+   Write-Host '  Rebuild the site and check public/sitemap.xml and robots.txt.' -ForegroundColor Yellow
+  }
+  Write-Host 'Recommended: address FAIL findings before deploying; then review WARN items.' -ForegroundColor Yellow
   Write-Host ("Commands: .\\zeta.ps1 build {0} ; .\\zeta.ps1 doctor {0}" -f $name) -ForegroundColor Gray
  }else{Write-Host 'No corrective actions required by the current checks.' -ForegroundColor Green}
  if($state.errors){
