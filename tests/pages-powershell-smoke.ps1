@@ -86,39 +86,27 @@ Should not publish.
  Remove-Item -LiteralPath (Join-Path $target 'pages/index.md') -Force
  NewPage 'pages-zen' 'Privacy Policy' 'privacy'
  $recovered=[IO.File]::ReadAllText((Join-Path $target 'pages/index.md'))
- if($recovered -notmatch '(?m)^title: "Page smoke"
- if(-not (Test-Path -LiteralPath (Join-Path $target 'pages/index.md'))){throw 'Missing homepage was not bootstrapped'}
- if(-not (Test-Path -LiteralPath (Join-Path $target 'public/privacy/index.html'))){throw 'New page was not built'}
- $homepage=[IO.File]::ReadAllText((Join-Path $target 'pages/index.md'))
- Build 'pages-zen'
- if([IO.File]::ReadAllText((Join-Path $target 'pages/index.md')) -cne $homepage){throw 'Existing homepage was overwritten'}
- Write-Host '[OK] NewPage bootstraps missing homepage without overwriting it.' -ForegroundColor Green
-}
-finally {
- if(Test-Path $Sites){Remove-Item -LiteralPath $Sites -Recurse -Force}
-}
- -or $recovered -match '(?m)^title: ""'){throw 'Invalid generated YAML title'}
- if($recovered -notmatch '(?m)^description: "Test site"
- if(-not (Test-Path -LiteralPath (Join-Path $target 'pages/index.md'))){throw 'Missing homepage was not bootstrapped'}
- if(-not (Test-Path -LiteralPath (Join-Path $target 'public/privacy/index.html'))){throw 'New page was not built'}
- $homepage=[IO.File]::ReadAllText((Join-Path $target 'pages/index.md'))
- Build 'pages-zen'
- if([IO.File]::ReadAllText((Join-Path $target 'pages/index.md')) -cne $homepage){throw 'Existing homepage was overwritten'}
- Write-Host '[OK] NewPage bootstraps missing homepage without overwriting it.' -ForegroundColor Green
-}
-finally {
- if(Test-Path $Sites){Remove-Item -LiteralPath $Sites -Recurse -Force}
-}
-){throw 'Invalid generated YAML description'}
+ if($recovered -notmatch '(?m)^title: "Page smoke"$' -or $recovered -match '(?m)^title: ""'){
+  throw 'Invalid generated YAML title'
+ }
+ if($recovered -notmatch '(?m)^description: "Test site"$'){throw 'Invalid generated YAML description'}
  $null=& pandoc --from markdown --to html (Join-Path $target 'pages/index.md')
  if($LASTEXITCODE -ne 0){throw 'Pandoc rejected recovered homepage frontmatter'}
-
- if(-not (Test-Path -LiteralPath (Join-Path $target 'pages/index.md'))){throw 'Missing homepage was not bootstrapped'}
  if(-not (Test-Path -LiteralPath (Join-Path $target 'public/privacy/index.html'))){throw 'New page was not built'}
  $homepage=[IO.File]::ReadAllText((Join-Path $target 'pages/index.md'))
  Build 'pages-zen'
  if([IO.File]::ReadAllText((Join-Path $target 'pages/index.md')) -cne $homepage){throw 'Existing homepage was overwritten'}
- Write-Host '[OK] NewPage bootstraps missing homepage without overwriting it.' -ForegroundColor Green
+
+ # Existing malformed homepage is repaired without touching Markdown body.
+ $damaged=$homepage -replace '(?m)^title: "Page smoke"$','title: ""Page smoke""'
+ Save (Join-Path $target 'pages/index.md') $damaged
+ Build 'pages-zen'
+ $after=[IO.File]::ReadAllText((Join-Path $target 'pages/index.md'))
+ if($after -cne $homepage){throw 'Repair did not restore original valid YAML'}
+ $backups=@(Get-ChildItem -LiteralPath (Join-Path $target 'pages') -Filter 'index.md.zeta-backup-*.bak')
+ if($backups.Count -ne 1){throw 'No backup produced for corrected malformed frontmatter'}
+ if([IO.File]::ReadAllText($backups[0].FullName) -cne $damaged){throw 'Backup did not preserve original malformed file'}
+ Write-Host '[OK] Homepage bootstrap, Pandoc parse, backup and non-destructive repair.' -ForegroundColor Green
 }
 finally {
  if(Test-Path $Sites){Remove-Item -LiteralPath $Sites -Recurse -Force}
