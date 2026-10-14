@@ -70,3 +70,34 @@ Both Bash (`./zeta.sh doctor SITE`) and PowerShell (`.\zeta.ps1 doctor SITE`) no
 Run `bash tests/doctor-content-bash-smoke.sh` and `.\tests\doctor-content-powershell-smoke.ps1` to verify known-bad documents are correctly diagnosed. The smoke tests create temporary site folders and clean them afterward; they never run GitHub Actions.
 
 This source-level validation does not yet validate every rendered URL or guarantee that an external HTTP link is reachable. Those checks are later enhancements to Doctor.
+
+## Doctor 2.0 — Published HTML and sitemap
+
+Doctor now audits every generated HTML page and the sitemap read-only through
+`templates/common/filters/doctor-public.lua`, shared by Bash and PowerShell.
+
+It checks published local links to HTML/CSS/images, HTML titles, descriptions,
+canonical URLs, document language, sitemap URL origins, duplicates, missing
+indexed routes and HTML files omitted from the sitemap.
+
+- FAIL: broken local asset/link; duplicate or wrong canonical; duplicate
+  sitemap location; indexed route without output; missing HTML title
+- WARN: absent description, canonical or language; missing sitemap entry
+
+Missing metadata is a warning because the current themes do not all emit
+complete SEO tags yet. Doctor never requests external URLs and never rewrites
+the generated HTML.
+
+Local regression checks:
+
+~~~bash
+bash tests/doctor-content-bash-smoke.sh
+bash tests/doctor-public-bash-smoke.sh
+~~~
+
+~~~powershell
+.\tests\doctor-content-powershell-smoke.ps1
+.\tests\doctor-public-powershell-smoke.ps1
+~~~
+
+Tests use a local Pandoc executable. GitHub Actions is not involved.
