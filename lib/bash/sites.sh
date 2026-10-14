@@ -890,6 +890,32 @@ diagnose_site() {
             done
         fi
 
+        echo ""
+        echo -e "${boldWhite}Published HTML and sitemap${endColour}"
+        local public_filter="${TEMPLATES_DIR}/common/filters/doctor-public.lua"
+        if ! command_exists pandoc; then
+            doctor_warn "Published HTML" "Pandoc unavailable"
+        elif [[ ! -f "$public_filter" ]]; then
+            doctor_fail "Published HTML" "doctor-public.lua missing"
+        elif [[ "$url" =~ ^https?:// ]]; then
+            local doctor_output doctor_rc doctor_line prefix severity code detail
+            doctor_output=$(printf '' | pandoc -f markdown -t plain --lua-filter="$public_filter" \
+                -M "zeta_doctor_output=$output_dir" -M "zeta_doctor_url=${url%/}" \
+                -o /dev/null 2>&1) && doctor_rc=0 || doctor_rc=$?
+            while IFS= read -r doctor_line; do
+                if [[ "$doctor_line" == ZETA_DOCTOR\|* ]]; then
+                    IFS='|' read -r prefix severity code detail <<< "$doctor_line"
+                    case "$severity" in
+                        FAIL) doctor_fail "$code" "$detail" ;;
+                        WARN) doctor_warn "$code" "$detail" ;;
+                        OK) doctor_ok "$code" "$detail" ;;
+                    esac
+                elif (( doctor_rc != 0 )) && [[ -n "$doctor_line" ]]; then
+                    doctor_fail "Published HTML" "$doctor_line"
+                fi
+            done <<< "$doctor_output"
+        fi
+
         if find "$output_dir" -type f \( -name '*.md' -o -name '*.markdown' -o -name 'config.yaml' -o -name 'config.yml' \) | grep -q .; then
             doctor_fail "Artifact hygiene" "Markdown/config files leaked into public/"
         else
