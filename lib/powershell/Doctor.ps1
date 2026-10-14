@@ -1,14 +1,14 @@
 # Zeta PowerShell: read-only deployment diagnostics (same checks as Bash doctor).
 function DoctorStatus([hashtable]$state,[string]$level,[string]$label,[string]$detail){
- if($level -eq 'FAIL'){$state.errors++;$color='Red'}
- elseif($level -eq 'WARN'){$state.warnings++;$color='Yellow'}
+ if($level -eq 'FAIL'){$state.errors++;$color='Red';if($state.ContainsKey('findings')){$state.findings.Add($label)}}
+ elseif($level -eq 'WARN'){$state.warnings++;$color='Yellow';if($state.ContainsKey('findings')){$state.findings.Add($label)}}
  else{$color='Green'}
  Write-Host ('  [{0,-4}] {1,-21} {2}' -f $level,$label,$detail) -ForegroundColor $color
 }
 function Doctor([string]$name){
  $configPath=ConfigPath $name
  $siteDir=SiteDir $name
- $state=@{errors=0;warnings=0}
+ $state=@{errors=0;warnings=0;findings=[Collections.Generic.List[string]]::new()}
  Write-Host ''
  Write-Host ("ZETA / Doctor: {0}" -f $name) -ForegroundColor Cyan
  Write-Host ('-'*65) -ForegroundColor DarkGray
@@ -195,6 +195,14 @@ function Doctor([string]$name){
  }
  Write-Host ''
  Write-Host ('-'*65) -ForegroundColor DarkGray
+ $quality=[Math]::Max(0,100-(15*$state.errors)-(3*$state.warnings))
+ Write-Host ("Quality snapshot: {0}/100 (errors: {1}; warnings: {2})" -f $quality,$state.errors,$state.warnings) -ForegroundColor Cyan
+ if($state.errors -or $state.warnings){
+  $ids=@($state.findings | Select-Object -Unique)
+  Write-Host ('Priority findings: '+($ids -join ', ')) -ForegroundColor Yellow
+  Write-Host 'Recommended: fix FAIL items first; then review WARN metadata and rebuild the site.' -ForegroundColor Yellow
+  Write-Host ("Commands: .\\zeta.ps1 build {0} ; .\\zeta.ps1 doctor {0}" -f $name) -ForegroundColor Gray
+ }else{Write-Host 'No corrective actions required by the current checks.' -ForegroundColor Green}
  if($state.errors){
   Write-Host ("Doctor found {0} blocking issue(s), {1} warning(s)." -f $state.errors,$state.warnings) -ForegroundColor Red
   throw 'Site is not ready for deployment'
