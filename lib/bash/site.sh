@@ -669,6 +669,41 @@ build_site() {
         fi
     fi
 
+    # Generate category and tag archives before SEO.
+    if [[ "$blog_enabled" == true ]]; then
+        local tax_map="${output_dir}/.zeta-taxonomy.tsv" tax_md category tax_slug tax_label tag
+        : > "$tax_map"
+        for tax_md in "${md_files[@]}"; do
+            declare -A tax_post=()
+            get_post_metadata "$tax_md" tax_post "$site_author"
+            local tax_route="posts/${tax_post[year]}/${tax_post[slug]}.html"
+            category=$(extract_frontmatter_property "$tax_md" category 2>/dev/null || true)
+            if [[ -n "$category" ]]; then
+                tax_slug=$(slugify "$category")
+                [[ -n "$tax_slug" ]] || { msg_error "Invalid category: $tax_md"; rm -rf -- "$staging_dir"; return 1; }
+                printf '%s\tcategory\t%s\t%s\n' "$tax_route" "$tax_slug" "$category" >> "$tax_map"
+            fi
+            local -a tax_tags=()
+            IFS=',' read -r -a tax_tags <<< "${tax_post[tags]}"
+            for tag in "${tax_tags[@]}"; do
+                tax_label=$(trim_yaml_value "$tag")
+                [[ -n "$tax_label" ]] || continue
+                tax_slug=$(slugify "$tax_label")
+                [[ -n "$tax_slug" ]] || { msg_error "Invalid tag: $tax_md"; rm -rf -- "$staging_dir"; return 1; }
+                printf '%s\ttag\t%s\t%s\n' "$tax_route" "$tax_slug" "$tax_label" >> "$tax_map"
+            done
+        done
+        if [[ -s "$tax_map" ]]; then
+            local taxonomy_filter="${TEMPLATES_DIR}/common/filters/taxonomies.lua"
+            if [[ ! -f "$taxonomy_filter" ]] || ! printf '' | pandoc -f markdown -t plain --lua-filter="$taxonomy_filter" \
+                -M "zeta_taxonomy_output=$output_dir" -M "zeta_taxonomy_url=$site_url" \
+                -M "zeta_taxonomy_title=$site_title" -M "zeta_taxonomy_language=$site_lang" -o /dev/null; then
+                msg_error "Taxonomy generation failed."; rm -rf -- "$staging_dir"; return 1
+            fi
+        fi
+        rm -f -- "$tax_map"
+    fi
+
     # Normalize search metadata while the build is staged; never modify live public/.
     local seo_filter="${TEMPLATES_DIR}/common/filters/seo-publish.lua"
     if [[ ! -f "$seo_filter" ]] || ! printf '' | pandoc -f markdown -t plain --lua-filter="$seo_filter" \
