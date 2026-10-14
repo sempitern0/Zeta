@@ -31,7 +31,7 @@ grep -Fq 'article:published_time" content="2026-10-14"' "$stage/posts/2026/first
 grep -Fq 'og:title" content="Example &amp; Zeta"' "$stage/index.html"
 test "$(grep -c 'name="description"' "$stage/index.html")" -eq 1
 test "$(grep -c 'rel="canonical"' "$stage/index.html")" -eq 1
-before=$(sha256sum "$stage/index.html" | cut -d ' ' -f 1)
+before=$(cat "$stage/index.html")
 render
-test "$(sha256sum "$stage/index.html" | cut -d ' ' -f 1)" = "$before"
+test "$(cat "$stage/index.html")" = "$before"
 echo '[OK] Bash SEO filter: canonical, social preview, article date and idempotence'
