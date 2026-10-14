@@ -1,7 +1,7 @@
-.PHONY: help setup chmod init-dirs check syntax lint install-hooks run serve build-all certs docker-up docker-down docker-ps docker-restart
+.PHONY: help setup chmod init-dirs check syntax lint install-hooks run serve build-all test test-tooling
 
 .DEFAULT_GOAL := help
-SCRIPTS := $(wildcard *.sh) $(wildcard lib/bash/*.sh)
+SCRIPTS := $(wildcard *.sh) $(wildcard lib/bash/*.sh) $(wildcard tests/*.sh) githooks/pre-commit
 
 help: ## Show available targets
 	@echo "Usage: make [target]"
@@ -32,7 +32,7 @@ syntax: ## Validate Bash syntax without extra tools
 
 lint: syntax ## Run ShellCheck when already installed
 	@if command -v shellcheck >/dev/null 2>&1; then \
-		shellcheck $(SCRIPTS); \
+		shellcheck $(SCRIPTS) || exit $$?; \
 		echo "✓ ShellCheck passed"; \
 	else \
 		echo "✗ ShellCheck is not installed. Install it explicitly if you want linting."; \
@@ -62,25 +62,12 @@ serve: ## Build every local site and serve the workspace on port 8000
 build-all: ## Build every local site into its public/ directory
 	@./zeta.sh build-all
 
-certs: ## Optional: generate local zeta.local TLS certificates for Docker/Nginx
-	@mkdir -p nginx/certs
-	@if [ ! -f nginx/certs/zeta.crt ]; then \
-		openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-			-keyout nginx/certs/zeta.key \
-			-out nginx/certs/zeta.crt \
-			-subj "/CN=zeta.local/O=Zeta SSG/C=ES"; \
-		echo "✓ Local certificates generated"; \
-	else \
-		echo "✓ Local certificates already exist"; \
-	fi
 
-docker-up: certs ## Optional: start the existing Nginx HTTPS development stack
-	docker compose up -d
+test-tooling: syntax ## Test lint failure handling and the staged-file hook (no Pandoc required)
+	@bash tests/tooling-smoke.sh
 
-docker-down: ## Stop the optional Docker development stack
-	docker compose down --remove-orphans
-
-docker-ps: ## Show optional Docker stack status
-	docker compose ps
-
-docker-restart: docker-down docker-up ## Restart the optional Docker development stack
+test: check test-tooling ## Run all Bash smoke tests (requires Pandoc; temporary sites only)
+	@set -e; for file in tests/*-smoke.sh; do \
+		[ "$$file" = tests/tooling-smoke.sh ] && continue; \
+		bash "$$file"; \
+	done

@@ -19,9 +19,8 @@ Both read the same `config.yaml`, Markdown articles and `templates/` and generat
 
 ~~~bash
 make syntax
-bash tests/theme-smoke.sh
-bash tests/workspace-parity-smoke.sh
-bash tests/catalog-smoke.sh   # All eight themes
+make test-tooling  # Lint failure propagation and staged-only hook checks
+make test          # All Bash regressions, including all eight themes
 ./zeta.sh help
 ./main.sh help    # Legacy entry point
 ~~~
@@ -69,7 +68,7 @@ Both Bash (`./zeta.sh doctor SITE`) and PowerShell (`.\zeta.ps1 doctor SITE`) no
 
 Run `bash tests/doctor-content-bash-smoke.sh` and `.\tests\doctor-content-powershell-smoke.ps1` to verify known-bad documents are correctly diagnosed. The smoke tests create temporary site folders and clean them afterward; they never run GitHub Actions.
 
-This source-level validation does not yet validate every rendered URL or guarantee that an external HTTP link is reachable. Those checks are later enhancements to Doctor.
+Source checks complement the published-output checks below. Neither guarantees that an external HTTP link is reachable.
 
 ## Doctor 2.0 — Published HTML and sitemap
 
@@ -123,3 +122,20 @@ bash tests/doctor-content-bash-smoke.sh
 ~~~
 
 No GitHub Actions or third-party web service is required.
+
+## Maintenance review · 2026-10-14
+
+- `make lint` propagates ShellCheck failures instead of printing a false success.
+- The pre-commit hook checks an isolated snapshot of staged shell files, handles
+  spaces in paths and leaves unstaged changes/line endings untouched. Documentation-only
+  commits do not require ShellCheck. It no longer references a nonexistent installer target.
+- Removed obsolete Docker/certificate Make targets: this repository contains no Compose stack.
+- Fixed Bash site creation duplicating About/Contact Markdown when templates have
+  no site placeholders. The workspace regression compares those pages with their sources.
+- `make test-tooling` checks the lint/hook contract using a stub checker;
+  `make test` runs all nine Bash smoke scripts, including the eight-theme builds,
+  pages, taxonomy, SEO, Doctor and the interactive creation workflow. Both passed.
+
+ShellCheck itself and PowerShell were unavailable in the review environment, so
+these results do not claim a real ShellCheck pass or native Windows parity. The
+PowerShell engine was not changed. Run its existing suite on a suitable host.

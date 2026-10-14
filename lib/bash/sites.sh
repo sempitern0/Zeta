@@ -1073,15 +1073,22 @@ create_new_site() {
         local title_yaml desc_yaml
         title_yaml=$(yaml_quote "$site_title")
         desc_yaml=$(yaml_quote "$site_desc")
-        page_body="${page_body%%__ZETA_SITE_TITLE__*}${title_yaml}${page_body#*__ZETA_SITE_TITLE__}"
-        page_body="${page_body%%__ZETA_SITE_DESCRIPTION__*}${desc_yaml}${page_body#*__ZETA_SITE_DESCRIPTION__}"
+        # Optional pages contain no site placeholders: leave their Markdown intact.
+        if [[ "$page_body" == *__ZETA_SITE_TITLE__* ]]; then
+            page_body="${page_body%%__ZETA_SITE_TITLE__*}${title_yaml}${page_body#*__ZETA_SITE_TITLE__}"
+        fi
+        if [[ "$page_body" == *__ZETA_SITE_DESCRIPTION__* ]]; then
+            page_body="${page_body%%__ZETA_SITE_DESCRIPTION__*}${desc_yaml}${page_body#*__ZETA_SITE_DESCRIPTION__}"
+        fi
         printf '%s\n' "$page_body" > "${site_path}/pages/${page_template}.md"
     done
     if [[ "$enable_blog" == true ]]; then create_example_posts "$site_slug" || return 1; fi
 
     msg_success "Site '${site_slug}' created."
-    msg_info "Markdown source: ${site_path}/posts/"
-    msg_info "Two example posts were created to validate Markdown and syntax highlighting."
+    msg_info "Markdown homepage: ${site_path}/pages/index.md"
+    if [[ "$enable_blog" == true ]]; then
+        msg_info "Two example posts were created in ${site_path}/posts/."
+    fi
     msg_info "Build output: ${site_path}/public/"
     update_sites_index
 }
