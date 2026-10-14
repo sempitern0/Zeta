@@ -382,6 +382,7 @@ function Ensure-ZetaPageHome([string]$name){
  $homepagePath=Join-Path $pages 'index.md'
  if(Test-Path -LiteralPath $homepagePath){
   if((Get-Item -LiteralPath $homepagePath -Force).Attributes -band [IO.FileAttributes]::ReparsePoint){throw "Unsafe homepage: $homepagePath"}
+  Repair-ZetaGeneratedHomepageYaml $homepagePath
   return
  }
  $template=Join-Path $Templates 'common/pages/index.md'
@@ -397,4 +398,37 @@ function Ensure-ZetaPageHome([string]$name){
   if(-not (Test-Path -LiteralPath $homepagePath -PathType Leaf)){throw}
  }
  Write-Host "[INFO] Initialized Markdown homepage: $homepagePath" -ForegroundColor Cyan
+}
+
+
+# Historical Zeta builds wrote title: ""Title"" in pages/index.md.
+# Repair only that precise invalid frontmatter pattern, preserving article
+# content, YAML ordering, existing single quotes and line endings.
+function Repair-ZetaGeneratedHomepageYaml([string]$homepagePath){
+ if(-not (Test-Path -LiteralPath $homepagePath -PathType Leaf)){return $false}
+ $original=[IO.File]::ReadAllText($homepagePath)
+ if($original -notmatch '\A---\r?\n'){return $false}
+ $closing=[regex]::Match($original,'(?m)^---\r?$',[Text.RegularExpressions.RegexOptions]::None,[TimeSpan]::FromSeconds(1))
+ # Find the delimiter after the opening --- (not the delimiter at offset zero).
+ $tail=[regex]::Match($original.Substring(4),'(?m)^---\r?$',[Text.RegularExpressions.RegexOptions]::None,[TimeSpan]::FromSeconds(1))
+ if(-not $tail.Success){return $false}
+ $frontmatterEnd=4+$tail.Index
+ $frontmatter=$original.Substring(0,$frontmatterEnd)
+ $body=$original.Substring($frontmatterEnd)
+ $pattern='(?m)^(title|description):[ \t]*""([^"\r\n]*)""(?=\r?$)'
+ $fixed=[regex]::Replace($frontmatter,$pattern,[Text.RegularExpressions.MatchEvaluator]{
+  param($m)
+  return $m.Groups[1].Value+': "'+$m.Groups[2].Value+'"'
+ })
+ if($fixed -ceq $frontmatter){return $false}
+ $backup="$homepagePath.zeta-backup-$([guid]::NewGuid().ToString('N')).bak"
+ Copy-Item -LiteralPath $homepagePath -Destination $backup -ErrorAction Stop
+ try{
+  [IO.File]::WriteAllText($homepagePath,($fixed+$body),$Utf8)
+ }catch{
+  Copy-Item -LiteralPath $backup -Destination $homepagePath -Force
+  throw
+ }
+ Write-Warning "Repaired duplicate-quote YAML in $homepagePath. Original saved to $backup"
+ return $true
 }
