@@ -711,6 +711,7 @@ diagnose_site() {
 
     local errors=0 warnings=0
     local -a doctor_findings=()
+    local -A doctor_category_counts=([Links]=0 [SEO]=0 [Publishing]=0 [Content]=0 [Configuration]=0)
     local title desc author lang url theme highlight content_rel output_rel
     title=$(get_site_yaml_prop "$config_file" site title "")
     desc=$(get_site_yaml_prop "$config_file" site description "")
@@ -728,8 +729,23 @@ diagnose_site() {
     fi
 
     doctor_ok()   { printf '  %b %-20s %s\n' "${boldGreen}[OK]${endColour}" "$1" "$2"; }
-    doctor_warn() { printf '  %b %-20s %s\n' "${boldYellow}[WARN]${endColour}" "$1" "$2"; ((warnings += 1)); doctor_findings+=("$1"); }
-    doctor_fail() { printf '  %b %-20s %s\n' "${boldRed}[FAIL]${endColour}" "$1" "$2"; ((errors += 1)); doctor_findings+=("$1"); }
+    doctor_category() {
+        case "$1" in
+            *LINK*|*IMAGE*|*link*|*image*|*asset*|*UNSAFE_URL*) printf Links ;;
+            *CANONICAL*|*DESCRIPTION*|*HTML_TITLE*|*HTML_LANG*|*SEO*|*site.url*|*description*) printf SEO ;;
+            *SITEMAP*|*sitemap*|*robots*|*public/*|*Freshness*|*Artifact*|*PUBLISHED*) printf Publishing ;;
+            *Post*|*Page*|*Markdown*|*Sources*|*Homepage*) printf Content ;;
+            *) printf Configuration ;;
+        esac
+    }
+    doctor_record() {
+        local group
+        group=$(doctor_category "$1")
+        doctor_category_counts[$group]=$(( ${doctor_category_counts[$group]} + 1 ))
+        doctor_findings+=("$1")
+    }
+    doctor_warn() { printf '  %b %-20s %s\n' "${boldYellow}[WARN]${endColour}" "$1" "$2"; ((warnings += 1)); doctor_record "$1"; }
+    doctor_fail() { printf '  %b %-20s %s\n' "${boldRed}[FAIL]${endColour}" "$1" "$2"; ((errors += 1)); doctor_record "$1"; }
 
     [[ "$pages_mode" == true ]] && doctor_ok "Pages" "Markdown homepage present"
     echo -e "${boldWhite}Configuration${endColour}"
@@ -962,7 +978,25 @@ diagnose_site() {
         printf '  Priority findings:'
         local entry
         for entry in "${doctor_findings[@]}"; do printf ' %s;' "$entry"; done
-        printf '\n  Recommended: fix FAIL first, review WARN, then rebuild and rerun Doctor.\n'
+        printf '\n  Issues by category:\n'
+        local group
+        for group in Links SEO Publishing Content Configuration; do
+            (( doctor_category_counts[$group] > 0 )) && printf '    %-15s %s\n' "$group" "${doctor_category_counts[$group]}"
+        done
+        local seen_link=false seen_seo=false seen_content=false seen_publish=false
+        for entry in "${doctor_findings[@]}"; do
+            case "$(doctor_category "$entry")" in
+                Links) seen_link=true ;;
+                SEO) seen_seo=true ;;
+                Content) seen_content=true ;;
+                Publishing) seen_publish=true ;;
+            esac
+        done
+        [[ "$seen_link" == true ]] && printf '  Fix local href/src targets and copy missing assets into the site.\n'
+        [[ "$seen_seo" == true ]] && printf '  Review site.url and Markdown title/description; rebuild SEO metadata.\n'
+        [[ "$seen_content" == true ]] && printf '  Correct YAML frontmatter and verify pages/index.md.\n'
+        [[ "$seen_publish" == true ]] && printf '  Rebuild and check sitemap.xml, robots.txt and public/ contents.\n'
+        printf '  Recommended: fix FAIL first, review WARN, then rebuild and rerun Doctor.\n'
         printf '  Commands: ./zeta.sh build %s && ./zeta.sh doctor %s\n' "$site_slug" "$site_slug"
     else
         printf '  No corrective actions required by current checks.\n'
