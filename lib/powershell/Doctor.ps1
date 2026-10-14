@@ -9,11 +9,11 @@ function DoctorCategory([string]$label){
 function DoctorStatus([hashtable]$state,[string]$level,[string]$label,[string]$detail){
  if($level -eq 'FAIL'){$state.errors++;$color='Red';if($state.ContainsKey('findings')){$state.findings.Add($label)}}
  elseif($level -eq 'WARN'){$state.warnings++;$color='Yellow';if($state.ContainsKey('findings')){$state.findings.Add($label)}}
+ else{$color='Green'}
  if($level -in @('FAIL','WARN') -and $state.ContainsKey('categories')){
   $group=DoctorCategory $label
   $state.categories[$group]=1+$state.categories[$group]
  }
- else{$color='Green'}
  Write-Host ('  [{0,-4}] {1,-21} {2}' -f $level,$label,$detail) -ForegroundColor $color
 }
 function Doctor([string]$name){
