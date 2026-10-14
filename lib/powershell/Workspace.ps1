@@ -242,6 +242,7 @@ function NewPost([string]$name){
  $file=Join-Path (Join-Path (SiteDir $name) $c.content) "$date-$slug.md"
  if((Test-Path $file) -and !$Force){throw 'Article exists'}
  $desc=Ask 'Description' $title
+ $category=Ask 'Category (optional)' ''
  $tags=Ask 'Tags (comma-separated)' ''
  $body=@(
   '---'
@@ -250,6 +251,7 @@ function NewPost([string]$name){
   ('date: {0}' -f (Quote $date))
   ('description: {0}' -f (Quote $desc))
   ('slug: {0}' -f (Quote $slug))
+  ('category: {0}' -f (Quote $category))
   'tags: []'
   '---'
   ''
@@ -259,7 +261,7 @@ function NewPost([string]$name){
   ''
  )
  if($tags){
-  $body=@($body[0..5])+@('tags:')+@(foreach($t in ($tags -split ',')){if($t.Trim()){'  - '+(Quote $t.Trim())}})+@($body[7..($body.Length-1)])
+  $body=@($body[0..6])+@('tags:')+@(foreach($t in ($tags -split ',')){if($t.Trim()){'  - '+(Quote $t.Trim())}})+@($body[8..($body.Length-1)])
  }
  Save $file ($body -join [Environment]::NewLine)
  Write-Host "Created $file" -ForegroundColor Green
