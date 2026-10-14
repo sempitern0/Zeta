@@ -829,6 +829,41 @@ diagnose_site() {
     fi
 
     echo ""
+    echo -e "${boldWhite}Markdown integrity (read-only)${endColour}"
+    local doctor_filter="${TEMPLATES_DIR}/common/filters/doctor-links.lua"
+    if ! command_exists pandoc; then
+        doctor_warn "Markdown" "Pandoc unavailable; unable to parse sources"
+    elif [[ ! -f "$doctor_filter" ]]; then
+        doctor_fail "Markdown" "Missing shared doctor-links.lua filter"
+    else
+        local md_file doctor_output doctor_line doctor_rc inspected=0
+        local -a doctor_sources=()
+        if [[ -d "$content_dir" ]]; then
+            while IFS= read -r -d '' md_file; do doctor_sources+=("$md_file"); done < <(find "$content_dir" -type f -name '*.md' -print0)
+        fi
+        if [[ -d "${site_dir}/pages" ]]; then
+            [[ -f "${site_dir}/pages/index.md" ]] || doctor_fail "Homepage" "pages/index.md is missing"
+            while IFS= read -r -d '' md_file; do doctor_sources+=("$md_file"); done < <(find "${site_dir}/pages" -maxdepth 1 -type f -name '*.md' -print0)
+        fi
+        for md_file in "${doctor_sources[@]}"; do
+            doctor_output=$(pandoc "$md_file" -f markdown -t plain \
+                --lua-filter="$doctor_filter" \
+                -M "zeta_doctor_source=$md_file" -M "zeta_doctor_site=$site_dir" -o /dev/null 2>&1) && doctor_rc=0 || doctor_rc=$?
+            while IFS= read -r doctor_line; do
+                if [[ "$doctor_line" == ZETA_DOCTOR\|* ]]; then
+                    local prefix severity code detail
+                    IFS='|' read -r prefix severity code detail <<< "$doctor_line"
+                    if [[ "$severity" == FAIL ]]; then doctor_fail "$code" "$(basename "$md_file"): $detail"
+                    else doctor_warn "$code" "$(basename "$md_file"): $detail"; fi
+                elif (( doctor_rc != 0 )) && [[ -n "$doctor_line" ]]; then
+                    doctor_fail "Markdown parse" "$(basename "$md_file"): $doctor_line"
+                fi
+            done <<< "$doctor_output"
+            (( inspected+=1 ))
+        done
+        doctor_ok "Sources inspected" "$inspected Markdown document(s)"
+    fi
+    echo ""
     echo -e "${boldWhite}Generated deploy artifact${endColour}"
 
     if [[ -d "$output_dir" ]]; then
