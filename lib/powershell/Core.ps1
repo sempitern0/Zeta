@@ -299,6 +299,15 @@ function Build([string]$name){
     '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'+
     ($rows -join [Environment]::NewLine)+'</urlset>'
   Save (Join-Path $stage 'sitemap.xml') $xml
+  # Apply shared SEO before replacing public/.
+  $seoFilter=Join-Path $Templates 'common/filters/seo-publish.lua'
+  if(!(Test-Path -LiteralPath $seoFilter -PathType Leaf)){throw "Missing SEO filter: $seoFilter"}
+  $seoTmp=[IO.Path]::GetTempFileName()
+  try{
+   $seoArgs=@('-f','markdown','-t','plain',("--lua-filter=$seoFilter"),'-M',("zeta_seo_output=$stage"),'-M',("zeta_seo_url=$($c.url.TrimEnd('/'))"),'-M',("zeta_seo_title=$($c.title)"),'-M',("zeta_seo_description=$($c.description)"),'-o',$seoTmp)
+   $null=@('' | & pandoc @seoArgs)
+   if($LASTEXITCODE -ne 0){throw 'Shared SEO generation failed; existing public/ was preserved'}
+  }finally{Remove-Item -LiteralPath $seoTmp -Force -ErrorAction SilentlyContinue}
   if(Test-Path $previous){Remove-Item $previous -Recurse -Force}
   if(Test-Path $final){Move-Item $final $previous}
   try{Move-Item $stage $final}catch{if(Test-Path $previous){Move-Item $previous $final};throw}
