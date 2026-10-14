@@ -67,8 +67,15 @@ This is an **article**.
   }
   $index=[IO.File]::ReadAllText((Join-Path $public 'index.html'))
   if($index -notmatch '(?i)<html'){throw "$theme did not apply the HTML template"}
+  if(-not $index.Contains('rel="canonical" href="https://example.org/zeta/"')){throw "$theme missing home canonical"}
+  if(-not $index.Contains('og:type" content="website"')){throw "$theme missing Open Graph"}
+  if(([regex]::Matches($index,'rel="canonical"')).Count -ne 1){throw "$theme duplicates canonical"}
+  if(([regex]::Matches($index,'name="description"')).Count -ne 1){throw "$theme duplicates description"}
   $article=[IO.File]::ReadAllText((Join-Path $public 'posts/2026/smoke.html'))
   if($article -notmatch 'Hello Zeta'){throw "$theme article has no Markdown content"}
+  if(-not $article.Contains('rel="canonical" href="https://example.org/zeta/posts/2026/smoke.html"')){throw "$theme article canonical incorrect"}
+  if(-not $article.Contains('og:type" content="article"')){throw "$theme missing article metadata"}
+
   Write-Host "[OK] $theme rendered with absolute templates" -ForegroundColor Green
  }
  Write-Host '[OK] All eight themes generated on PowerShell.' -ForegroundColor Green
