@@ -143,6 +143,12 @@ Ejecuta `./zeta.sh doctor SITIO` o `.\\zeta.ps1 doctor SITIO` para revisar el Ma
 
 Consulta la [guía SEO](docs/seo.md) y la [validación multiplataforma](docs/cross-platform-validation.md).
 
+## Categorías, etiquetas y artículos relacionados
+
+Los artículos Markdown admiten `category` y `tags` opcionales. Zeta genera automáticamente archivos estáticos en `/categories/` y `/tags/`, enlaza cada artículo con sus temas y recomienda hasta tres artículos relacionados. Los archivos se añaden al sitemap y reciben el SEO automático, sin JavaScript.
+
+Los asistentes Bash y PowerShell preguntan por la categoría y las etiquetas. Consulta la [guía de gestión avanzada](docs/advanced-content.md).
+
 ## Generar y publicar
 
 `build` convierte Markdown y temas en HTML estático dentro de `sites/<sitio>/public/`. **Publica únicamente `public/`**, nunca `posts/` ni `config.yaml`. El proceso utiliza un directorio temporal antes de sustituir el resultado anterior.
