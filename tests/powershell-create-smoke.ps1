@@ -40,116 +40,15 @@ try{
  }
  if(Test-Path -LiteralPath (Join-Path $site 'pages/contact.md')){throw 'Contact should be optional'}
  $homepage=[IO.File]::ReadAllText((Join-Path $site 'pages/index.md'))
- if($homepage -notmatch '(?m)^title: "Zeta Test"
- if(-not $yamlText.Contains('blog: true')){throw 'Blog selection was not saved'}
- $postFiles=@(Get-ChildItem (Join-Path $site 'posts') -Filter '*.md' -File)
- if($postFiles.Count -ne 2){throw "Expected two Markdown showcases, got $($postFiles.Count)"}
- foreach($example in @('markdown-showcase','code-showcase')){
-  $path=Join-Path (Join-Path $site 'posts') "$(Get-Date -Format yyyy-MM-dd)-zeta-$example.md"
-  if(-not (Test-Path -LiteralPath $path)){throw "Missing shared example: $example"}
-  $text=[IO.File]::ReadAllText($path)
-  foreach($line in @('author: "QA"',('date: "'+(Get-Date -Format yyyy-MM-dd)+'"'))){
-   if(-not (($text -split '\r?\n') -ccontains $line)){throw "Malformed $example metadata: $line"}
-  }
-  if($example -eq 'markdown-showcase' -and ($text -notmatch '## Grid table' -or $text -notmatch '\[\^zeta\]')){
-   throw 'Markdown showcase lost tables or footnotes'
-  }
-  if($example -eq 'code-showcase' -and ($text -notmatch '```bash' -or $text -notmatch '```python')){
-   throw 'Code showcase lost syntax highlighting examples'
-  }
-  if(Get-Command pandoc -ErrorAction SilentlyContinue){
-   $null=& pandoc --from markdown --to html $path
-   if($LASTEXITCODE -ne 0){throw "Pandoc cannot parse $example"}
-  }
+ if($homepage -notmatch '(?m)^title: "Zeta Test"$' -or
+    $homepage -notmatch '(?m)^description: "Test description"$' -or
+    $homepage -match '(?m)^title: ""'){
+  throw 'Generated homepage has invalid YAML'
  }
- $c=Config 'zeta-test'
- if($c.title -ne 'Zeta Test' -or $c.language -ne 'es-ES' -or
-   $c.highlight -ne 'tango' -or $c.theme -ne 'organization' -or
-   $c.description -ne 'Test description' -or $c.author -ne 'QA'){
-  throw 'Creation fields were not saved'
- }
- if(@(SiteNames) -notcontains 'zeta-test'){throw 'Created site not discovered'}
- $script:replies.Clear()
- foreach($v in @('Zeta Test','','','en','')){$script:replies.Enqueue($v)}
- $failed=$false
- try{NewSite}catch{$failed=$true}
- if(!$failed){throw 'Duplicate site must be rejected'}
- if(!(Test-Path (Join-Path $site 'config.yaml'))){throw 'Duplicate attempt modified original'}
- # With Pandoc available, creating a site must also produce the public directory.
- function Test-ZetaPandoc {return $true}
- function Build([string]$name) {
-  $c=Config $name
-  if($c.content -ne 'posts' -or $c.output -ne 'public'){throw 'Invalid site paths during build'}
-  $target=Join-Path (SiteDir $name) 'public/index.html'
-  Save $target '<!doctype html><title>Generated</title>'
- }
- $script:replies.Clear()
- foreach($v in @('Built Site','A built example','QA','en','','https://example.org','zen','zenburn','Y','Y','N')){
-  $script:replies.Enqueue($v)
- }
- NewSite
- if($script:replies.Count -ne 0){throw 'Build-enabled wizard missed a prompt'}
- if(-not (Test-Path (Join-Path $Sites 'built-site/public/index.html'))){throw 'Creation did not run the HTML build'}
- Write-Host '[OK] Eleven creation prompts, Markdown pages, YAML, automatic build and duplicate protection.' -ForegroundColor Green
-}finally{Remove-Item -LiteralPath $folder -Recurse -Force -ErrorAction SilentlyContinue}
- -or $homepage -notmatch '(?m)^description: "Test description"
- if(-not $yamlText.Contains('blog: true')){throw 'Blog selection was not saved'}
- $postFiles=@(Get-ChildItem (Join-Path $site 'posts') -Filter '*.md' -File)
- if($postFiles.Count -ne 2){throw "Expected two Markdown showcases, got $($postFiles.Count)"}
- foreach($example in @('markdown-showcase','code-showcase')){
-  $path=Join-Path (Join-Path $site 'posts') "$(Get-Date -Format yyyy-MM-dd)-zeta-$example.md"
-  if(-not (Test-Path -LiteralPath $path)){throw "Missing shared example: $example"}
-  $text=[IO.File]::ReadAllText($path)
-  foreach($line in @('author: "QA"',('date: "'+(Get-Date -Format yyyy-MM-dd)+'"'))){
-   if(-not (($text -split '\r?\n') -ccontains $line)){throw "Malformed $example metadata: $line"}
-  }
-  if($example -eq 'markdown-showcase' -and ($text -notmatch '## Grid table' -or $text -notmatch '\[\^zeta\]')){
-   throw 'Markdown showcase lost tables or footnotes'
-  }
-  if($example -eq 'code-showcase' -and ($text -notmatch '```bash' -or $text -notmatch '```python')){
-   throw 'Code showcase lost syntax highlighting examples'
-  }
-  if(Get-Command pandoc -ErrorAction SilentlyContinue){
-   $null=& pandoc --from markdown --to html $path
-   if($LASTEXITCODE -ne 0){throw "Pandoc cannot parse $example"}
-  }
- }
- $c=Config 'zeta-test'
- if($c.title -ne 'Zeta Test' -or $c.language -ne 'es-ES' -or
-   $c.highlight -ne 'tango' -or $c.theme -ne 'organization' -or
-   $c.description -ne 'Test description' -or $c.author -ne 'QA'){
-  throw 'Creation fields were not saved'
- }
- if(@(SiteNames) -notcontains 'zeta-test'){throw 'Created site not discovered'}
- $script:replies.Clear()
- foreach($v in @('Zeta Test','','','en','')){$script:replies.Enqueue($v)}
- $failed=$false
- try{NewSite}catch{$failed=$true}
- if(!$failed){throw 'Duplicate site must be rejected'}
- if(!(Test-Path (Join-Path $site 'config.yaml'))){throw 'Duplicate attempt modified original'}
- # With Pandoc available, creating a site must also produce the public directory.
- function Test-ZetaPandoc {return $true}
- function Build([string]$name) {
-  $c=Config $name
-  if($c.content -ne 'posts' -or $c.output -ne 'public'){throw 'Invalid site paths during build'}
-  $target=Join-Path (SiteDir $name) 'public/index.html'
-  Save $target '<!doctype html><title>Generated</title>'
- }
- $script:replies.Clear()
- foreach($v in @('Built Site','A built example','QA','en','','https://example.org','zen','zenburn','Y','Y','N')){
-  $script:replies.Enqueue($v)
- }
- NewSite
- if($script:replies.Count -ne 0){throw 'Build-enabled wizard missed a prompt'}
- if(-not (Test-Path (Join-Path $Sites 'built-site/public/index.html'))){throw 'Creation did not run the HTML build'}
- Write-Host '[OK] Eleven creation prompts, Markdown pages, YAML, automatic build and duplicate protection.' -ForegroundColor Green
-}finally{Remove-Item -LiteralPath $folder -Recurse -Force -ErrorAction SilentlyContinue}
-){throw 'Generated homepage has invalid YAML'}
  if(Get-Command pandoc -ErrorAction SilentlyContinue){
   $null=& pandoc --from markdown --to html (Join-Path $site 'pages/index.md')
   if($LASTEXITCODE -ne 0){throw 'Pandoc rejected site creation homepage'}
  }
-
  if(-not $yamlText.Contains('blog: true')){throw 'Blog selection was not saved'}
  $postFiles=@(Get-ChildItem (Join-Path $site 'posts') -Filter '*.md' -File)
  if($postFiles.Count -ne 2){throw "Expected two Markdown showcases, got $($postFiles.Count)"}
