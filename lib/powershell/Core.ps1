@@ -299,6 +299,39 @@ function Build([string]$name){
     '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'+
     ($rows -join [Environment]::NewLine)+'</urlset>'
   Save (Join-Path $stage 'sitemap.xml') $xml
+  # Generate the taxonomy archives before shared SEO.
+  if($blogEnabled){
+   $taxPath=Join-Path $stage '.zeta-taxonomy.tsv'
+   $taxonomyRows=[Collections.Generic.List[string]]::new()
+   foreach($file in $files){
+    $post=PostInfo $file $c.author
+    $route="posts/$($post.year)/$($post.slug).html"
+    $category=Meta $file.FullName category
+    if($category){
+     $term=Slug $category
+     if(!$term){throw "Invalid category: $($file.FullName)"}
+     $taxonomyRows.Add((@($route,'category',$term,$category) -join [char]9))
+    }
+    foreach($tag in @($post.tags)){
+     if(!$tag){continue}
+     $term=Slug $tag
+     if(!$term){throw "Invalid tag: $($file.FullName)"}
+     $taxonomyRows.Add((@($route,'tag',$term,$tag) -join [char]9))
+    }
+   }
+   if($taxonomyRows.Count -gt 0){
+    Save $taxPath ($taxonomyRows -join [Environment]::NewLine)
+    $filter=Join-Path $Templates 'common/filters/taxonomies.lua'
+    if(!(Test-Path -LiteralPath $filter)){throw "Missing taxonomy filter: $filter"}
+    $temporary=[IO.Path]::GetTempFileName()
+    try{
+     $args=@('-f','markdown','-t','plain',("--lua-filter=$filter"),'-M',("zeta_taxonomy_output=$stage"),'-M',("zeta_taxonomy_url=$($c.url.TrimEnd('/'))"),'-M',("zeta_taxonomy_title=$($c.title)"),'-M',("zeta_taxonomy_language=$($c.language)"),'-o',$temporary)
+     $null=@('' | & pandoc @args)
+     if($LASTEXITCODE -ne 0){throw 'Taxonomy generation failed'}
+    }finally{Remove-Item -LiteralPath $temporary -Force -ErrorAction SilentlyContinue}
+    Remove-Item -LiteralPath $taxPath -Force
+   }
+  }
   # Apply shared SEO before replacing public/.
   $seoFilter=Join-Path $Templates 'common/filters/seo-publish.lua'
   if(!(Test-Path -LiteralPath $seoFilter -PathType Leaf)){throw "Missing SEO filter: $seoFilter"}
