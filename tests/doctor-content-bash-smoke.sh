@@ -39,6 +39,9 @@ fi
 grep -Fq 'BROKEN_LINK' "$root/report.txt"
 grep -Fq 'MISSING_IMAGE' "$root/report.txt"
 grep -Fq 'UNSAFE_URL' "$root/report.txt"
+grep -Fq 'Quality snapshot:' "$root/report.txt"
+grep -Fq 'Issues by category:' "$root/report.txt"
+grep -Fq 'Fix local href/src targets' "$root/report.txt"
 cat > "$root/pages/index.md" <<'MD'
 ---
 title: ""Broken""
