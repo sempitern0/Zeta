@@ -47,12 +47,16 @@ function Pandoc(doc)
  local urls={}
  local function archive(items,folder,title)
   if #items==0 then return end
-  local directory=root..'/'..folder;make_dir(directory)
+  local directory=root..'/'..folder
+  if read(directory..'/index.html') then error('Taxonomy route conflicts with page: '..folder) end
+  make_dir(directory)
   local home={html_head(title..' · '..site,'Browse '..title:lower()..' on '..site,lang,'../'),'<h1>'..escape(title)..'</h1><ul class="zeta-tax-list">'}
   urls[#urls+1]=base..'/'..folder..'/'
   for _,term in ipairs(items) do
    home[#home+1]='<li><a href="'..term.slug..'/">'..escape(term.label)..'</a> <span>('..#term.posts..')</span></li>'
-   local path=directory..'/'..term.slug;make_dir(path)
+   local path=directory..'/'..term.slug
+   if read(path..'/index.html') then error('Taxonomy route conflict: '..folder..'/'..term.slug) end
+   make_dir(path)
    table.sort(term.posts,sort_posts)
    local page={html_head(term.label..' · '..title..' · '..site,'Articles on '..term.label,lang,'../../'),'<nav aria-label="Breadcrumbs"><a href="../">'..escape(title)..'</a> / '..escape(term.label)..'</nav><h1>'..escape(term.label)..'</h1><ul class="zeta-tax-list">'}
    for _,post in ipairs(term.posts) do page[#page+1]='<li><a href="../../'..post.route..'">'..escape(post.title)..'</a></li>' end
