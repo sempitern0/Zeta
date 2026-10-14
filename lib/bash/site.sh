@@ -673,7 +673,8 @@ build_site() {
     local seo_filter="${TEMPLATES_DIR}/common/filters/seo-publish.lua"
     if [[ ! -f "$seo_filter" ]] || ! printf '' | pandoc -f markdown -t plain --lua-filter="$seo_filter" \
         -M "zeta_seo_output=$output_dir" -M "zeta_seo_url=$site_url" \
-        -M "zeta_seo_title=$site_title" -M "zeta_seo_description=$site_desc" -o /dev/null; then
+        -M "zeta_seo_title=$site_title" -M "zeta_seo_description=$site_desc" \
+        -M "zeta_seo_image=$(get_site_yaml_prop "$config_file" site image "")" -o /dev/null; then
         msg_error "Shared SEO metadata generation failed."
         rm -rf -- "$staging_dir"; return 1
     fi
