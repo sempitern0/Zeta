@@ -1239,7 +1239,7 @@ create_post() {
         return 1
     }
 
-    local content_rel content_dir site_author title slug description tags post_date file
+    local content_rel content_dir site_author title slug description tags category post_date file
     content_rel=$(get_site_yaml_prop "$config_file" build content_dir posts)
     site_author=$(get_site_yaml_prop "$config_file" site author "${USER:-Author}")
     is_safe_relative_dir "$content_rel" || return 1
@@ -1257,6 +1257,7 @@ create_post() {
     slug=$(slugify "$slug")
     read -rp "Description [${title}]: " description
     description="${description:-$title}"
+    read -rp "Category [none]: " category
     read -rp "Tags, comma-separated [none]: " tags
     post_date=$(date +%Y-%m-%d)
     file="${content_dir}/${post_date}-${slug}.md"
@@ -1273,6 +1274,7 @@ author: $(yaml_quote "$site_author")
 date: $(yaml_quote "$post_date")
 description: $(yaml_quote "$description")
 slug: $(yaml_quote "$slug")
+category: $(yaml_quote "$category")
 EOF_POST
 
     if [[ -n "$(trim_yaml_value "$tags")" ]]; then
