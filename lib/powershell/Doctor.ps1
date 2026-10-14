@@ -92,6 +92,169 @@ function Doctor([string]$name){
   }else{DoctorStatus $state FAIL 'Posts' 'content directory missing'}
  }
  Write-Host ''
+ Write-Host 'Markdown integrity (read-only)' -ForegroundColor White
+ $doctorFilter=Join-Path $Templates 'common/filters/doctor-links.lua'
+ if(-not $pandoc){DoctorStatus $state WARN 'Markdown validation' 'Pandoc unavailable'}
+ elseif(-not (Test-Path -LiteralPath $doctorFilter -PathType Leaf)){DoctorStatus $state FAIL 'Markdown validation' 'shared Lua filter missing'}
+ else{
+  $sourceFiles=@()
+  if($validContent -and (Test-Path -LiteralPath $contentDir -PathType Container)){$sourceFiles+=@(Get-ChildItem -LiteralPath $contentDir -Filter '*.md' -File -Recurse)}
+  if(Test-Path -LiteralPath $pageDir -PathType Container){
+   $sourceFiles+=@(Get-ChildItem -LiteralPath $pageDir -Filter '*.md' -File)
+   if(-not $pageMode){DoctorStatus $state FAIL 'Homepage' 'pages/index.md is missing'}
+  }
+  foreach($file in $sourceFiles){
+   $sourcePath=$file.FullName
+   $messages=@()
+   $argument=@($sourcePath,'-f','markdown','-t','plain','--lua-filter='+$doctorFilter,
+      '-M',('zeta_doctor_source='+$sourcePath),'-M',('zeta_doctor_site='+$siteDir),'-o',$([IO.Path]::GetTempFileName()))
+   $tempOutput=$argument[-1]
+   try{
+    $messages=@(& pandoc @argument 2>&1 | ForEach-Object {"$_"})
+    $exitCode=$LASTEXITCODE
+    foreach($line in $messages){
+     if($line -match '^ZETA_DOCTOR\|(FAIL|WARN)\|([^|]+)\|(.*)
+ if($validOutput){
+  $outputDir=Join-Path $siteDir $output
+  if(Test-Path -LiteralPath $outputDir -PathType Container){
+   DoctorStatus $state OK 'public/' $outputDir
+   $required=@('index.html','robots.txt','sitemap.xml')
+   if($blogEnabled){$required+= 'posts.html'}
+   foreach($file in $required){
+    $target=Join-Path $outputDir $file
+    $present=(Test-Path -LiteralPath $target -PathType Leaf)
+    if($present){$present=(Get-Item -LiteralPath $target).Length -gt 0}
+    if($present){DoctorStatus $state OK $file 'present'}
+    elseif($file -eq 'posts.html'){DoctorStatus $state WARN $file 'missing or empty'}
+    else{DoctorStatus $state FAIL $file 'missing or empty'}
+   }
+   if($pageMode){
+    foreach($page in @(Get-ChildItem -LiteralPath $pageDir -Filter '*.md' -File)){
+     if((Meta $page.FullName draft) -eq 'true'){continue}
+     $route=if($page.BaseName -eq 'index'){'index.html'}else{$page.BaseName+'/index.html'}
+     if(Test-Path -LiteralPath (Join-Path $outputDir $route) -PathType Leaf){
+      DoctorStatus $state OK "Page $($page.BaseName)" 'published'
+     }else{
+      DoctorStatus $state FAIL "Page $($page.BaseName)" 'missing from public/'
+     }
+    }
+   }
+   $leaks=@(Get-ChildItem -LiteralPath $outputDir -Recurse -File | Where-Object {
+    $_.Extension -in @('.md','.markdown') -or $_.Name -in @('config.yaml','config.yml')
+   })
+   if($leaks.Count){DoctorStatus $state FAIL 'Artifact hygiene' ("{0} source file(s) in output" -f $leaks.Count)}
+   else{DoctorStatus $state OK 'Artifact hygiene' 'no Markdown/config sources published'}
+   if($contentDir -and (Test-Path -LiteralPath $contentDir -PathType Container)){
+    $newestSource=$posts | Sort-Object LastWriteTimeUtc -Descending | Select-Object -First 1
+    $newestOutput=Get-ChildItem -LiteralPath $outputDir -Recurse -File -Filter '*.html' |
+      Sort-Object LastWriteTimeUtc -Descending | Select-Object -First 1
+    if($newestSource -and (!$newestOutput -or $newestSource.LastWriteTimeUtc -gt $newestOutput.LastWriteTimeUtc)){
+     DoctorStatus $state WARN 'Freshness' 'source is newer than generated HTML'
+    }else{DoctorStatus $state OK 'Freshness' 'generated HTML is current'}
+   }
+   $robots=Join-Path $outputDir 'robots.txt'
+   if($validUrl -and (Test-Path -LiteralPath $robots -PathType Leaf)){
+    $expected='Sitemap: '+$url.TrimEnd('/')+'/sitemap.xml'
+    if([IO.File]::ReadAllText($robots).Contains($expected)){
+     DoctorStatus $state OK 'robots sitemap' 'matches site.url'
+    }else{DoctorStatus $state WARN 'robots sitemap' 'rebuild recommended'}
+   }
+   $sitemap=Join-Path $outputDir 'sitemap.xml'
+   if($validUrl -and (Test-Path -LiteralPath $sitemap -PathType Leaf)){
+    $expected='<loc>'+(Xml ($url.TrimEnd('/')+'/'))
+    if([IO.File]::ReadAllText($sitemap).Contains($expected)){
+     DoctorStatus $state OK 'sitemap URLs' 'match site.url'
+    }else{DoctorStatus $state WARN 'sitemap URLs' 'rebuild recommended'}
+   }
+  }else{DoctorStatus $state WARN 'public/' 'not built yet'}
+ }
+ Write-Host ''
+ Write-Host ('-'*65) -ForegroundColor DarkGray
+ if($state.errors){
+  Write-Host ("Doctor found {0} blocking issue(s), {1} warning(s)." -f $state.errors,$state.warnings) -ForegroundColor Red
+  throw 'Site is not ready for deployment'
+ }
+ if($state.warnings){
+  Write-Host ("Doctor found no blocking issues and {0} warning(s)." -f $state.warnings) -ForegroundColor Yellow
+ }else{Write-Host 'Doctor: site is ready for deployment.' -ForegroundColor Green}
+}
+){
+      DoctorStatus $state $Matches[1] $Matches[2] ("{0}: {1}" -f $file.Name,$Matches[3])
+     }elseif($line -match '^\s*
+ if($validOutput){
+  $outputDir=Join-Path $siteDir $output
+  if(Test-Path -LiteralPath $outputDir -PathType Container){
+   DoctorStatus $state OK 'public/' $outputDir
+   $required=@('index.html','robots.txt','sitemap.xml')
+   if($blogEnabled){$required+= 'posts.html'}
+   foreach($file in $required){
+    $target=Join-Path $outputDir $file
+    $present=(Test-Path -LiteralPath $target -PathType Leaf)
+    if($present){$present=(Get-Item -LiteralPath $target).Length -gt 0}
+    if($present){DoctorStatus $state OK $file 'present'}
+    elseif($file -eq 'posts.html'){DoctorStatus $state WARN $file 'missing or empty'}
+    else{DoctorStatus $state FAIL $file 'missing or empty'}
+   }
+   if($pageMode){
+    foreach($page in @(Get-ChildItem -LiteralPath $pageDir -Filter '*.md' -File)){
+     if((Meta $page.FullName draft) -eq 'true'){continue}
+     $route=if($page.BaseName -eq 'index'){'index.html'}else{$page.BaseName+'/index.html'}
+     if(Test-Path -LiteralPath (Join-Path $outputDir $route) -PathType Leaf){
+      DoctorStatus $state OK "Page $($page.BaseName)" 'published'
+     }else{
+      DoctorStatus $state FAIL "Page $($page.BaseName)" 'missing from public/'
+     }
+    }
+   }
+   $leaks=@(Get-ChildItem -LiteralPath $outputDir -Recurse -File | Where-Object {
+    $_.Extension -in @('.md','.markdown') -or $_.Name -in @('config.yaml','config.yml')
+   })
+   if($leaks.Count){DoctorStatus $state FAIL 'Artifact hygiene' ("{0} source file(s) in output" -f $leaks.Count)}
+   else{DoctorStatus $state OK 'Artifact hygiene' 'no Markdown/config sources published'}
+   if($contentDir -and (Test-Path -LiteralPath $contentDir -PathType Container)){
+    $newestSource=$posts | Sort-Object LastWriteTimeUtc -Descending | Select-Object -First 1
+    $newestOutput=Get-ChildItem -LiteralPath $outputDir -Recurse -File -Filter '*.html' |
+      Sort-Object LastWriteTimeUtc -Descending | Select-Object -First 1
+    if($newestSource -and (!$newestOutput -or $newestSource.LastWriteTimeUtc -gt $newestOutput.LastWriteTimeUtc)){
+     DoctorStatus $state WARN 'Freshness' 'source is newer than generated HTML'
+    }else{DoctorStatus $state OK 'Freshness' 'generated HTML is current'}
+   }
+   $robots=Join-Path $outputDir 'robots.txt'
+   if($validUrl -and (Test-Path -LiteralPath $robots -PathType Leaf)){
+    $expected='Sitemap: '+$url.TrimEnd('/')+'/sitemap.xml'
+    if([IO.File]::ReadAllText($robots).Contains($expected)){
+     DoctorStatus $state OK 'robots sitemap' 'matches site.url'
+    }else{DoctorStatus $state WARN 'robots sitemap' 'rebuild recommended'}
+   }
+   $sitemap=Join-Path $outputDir 'sitemap.xml'
+   if($validUrl -and (Test-Path -LiteralPath $sitemap -PathType Leaf)){
+    $expected='<loc>'+(Xml ($url.TrimEnd('/')+'/'))
+    if([IO.File]::ReadAllText($sitemap).Contains($expected)){
+     DoctorStatus $state OK 'sitemap URLs' 'match site.url'
+    }else{DoctorStatus $state WARN 'sitemap URLs' 'rebuild recommended'}
+   }
+  }else{DoctorStatus $state WARN 'public/' 'not built yet'}
+ }
+ Write-Host ''
+ Write-Host ('-'*65) -ForegroundColor DarkGray
+ if($state.errors){
+  Write-Host ("Doctor found {0} blocking issue(s), {1} warning(s)." -f $state.errors,$state.warnings) -ForegroundColor Red
+  throw 'Site is not ready for deployment'
+ }
+ if($state.warnings){
+  Write-Host ("Doctor found no blocking issues and {0} warning(s)." -f $state.warnings) -ForegroundColor Yellow
+ }else{Write-Host 'Doctor: site is ready for deployment.' -ForegroundColor Green}
+}
+){}elseif($exitCode -ne 0){
+      DoctorStatus $state FAIL 'Markdown parse' ("{0}: {1}" -f $file.Name,$line)
+     }
+    }
+    if($exitCode -ne 0 -and $messages.Count -eq 0){DoctorStatus $state FAIL 'Markdown parse' $file.Name}
+   }finally{Remove-Item -LiteralPath $tempOutput -Force -ErrorAction SilentlyContinue}
+  }
+  DoctorStatus $state OK 'Sources inspected' ("{0} Markdown document(s)" -f $sourceFiles.Count)
+ }
+ Write-Host ''
  Write-Host 'Generated deploy artifact' -ForegroundColor White
  if($validOutput){
   $outputDir=Join-Path $siteDir $output
