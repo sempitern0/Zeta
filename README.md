@@ -143,6 +143,12 @@ Run `./zeta.sh doctor SITE` or `.\\zeta.ps1 doctor SITE` to check Markdown, publ
 
 See the [SEO guide](docs/seo.md) and [cross-platform validation](docs/cross-platform-validation.md).
 
+## Categories, tags and related articles
+
+Article frontmatter supports an optional `category` and multiple `tags`. Zeta automatically generates static archives at `/categories/` and `/tags/`, links each article to its topics, and recommends up to three related articles sharing categories or tags. The archives also participate in the sitemap and shared SEO pipeline; the whole process is JavaScript-free.
+
+Both creation assistants ask for the category and tags. See the [advanced content management guide](docs/advanced-content.md).
+
 ## Build and publish
 
 `build` converts Markdown and themes to static HTML in `sites/<site>/public/`. **Publish only `public/`**, never `posts/` or `config.yaml`. Generation uses a staging directory before replacing the previous output.
