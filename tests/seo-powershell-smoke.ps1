@@ -8,10 +8,10 @@ $utf8=[Text.UTF8Encoding]::new($false)
 try {
  if(-not (Get-Command pandoc -ErrorAction SilentlyContinue)){throw 'Pandoc required'}
  [void](New-Item -ItemType Directory -Force -Path (Join-Path $stage 'about'),(Join-Path $stage 'posts/2026'),(Join-Path $stage 'assets'))
- $home='<!doctype html><html lang="en"><head><title>Example &amp; Zeta</title><meta name="description" content="Homepage"><meta name="description" content="duplicate"><link rel="canonical" href="https://old.example/"></head><body>Home</body></html>'
+ $homeHtml='<!doctype html><html lang="en"><head><title>Example &amp; Zeta</title><meta name="description" content="Homepage"><meta name="description" content="duplicate"><link rel="canonical" href="https://old.example/"></head><body>Home</body></html>'
  $about='<!doctype html><html lang="en"><head><title>About</title></head><body>About</body></html>'
  $post='<!doctype html><html lang="en"><head><title>First article</title><meta name="description" content="Individual summary"></head><body><time datetime="2026-10-14">14 October</time></body></html>'
- [IO.File]::WriteAllText((Join-Path $stage 'index.html'),$home,$utf8)
+ [IO.File]::WriteAllText((Join-Path $stage 'index.html'),$homeHtml,$utf8)
  [IO.File]::WriteAllText((Join-Path $stage 'about/index.html'),$about,$utf8)
  [IO.File]::WriteAllText((Join-Path $stage 'posts/2026/first.html'),$post,$utf8)
  [IO.File]::WriteAllText((Join-Path $stage 'assets/cover.svg'),'<svg xmlns="http://www.w3.org/2000/svg"></svg>',$utf8)
