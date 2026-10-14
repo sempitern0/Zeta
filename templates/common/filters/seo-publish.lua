@@ -45,6 +45,7 @@ local function process(root,base,title,description,global_image,rel)
   local published=tail:match('<[Tt][Ii][Mm][Ee][^>]*[Dd][Aa][Tt][Ee][Tt][Ii][Mm][Ee]%s*=%s*"(%d%d%d%d%-%d%d%-%d%d)"')
   if published then add[#add+1]='<meta property="article:published_time" content="'..published..'">' end
  end
+ head=head:gsub('%s+$','')
  local new=head..'\n'..table.concat(add,'\n')..'\n'..tail
  local f=assert(io.open(path,'wb')); assert(f:write(new)); assert(f:close())
 end
