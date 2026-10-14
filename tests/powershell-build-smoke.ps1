@@ -40,6 +40,8 @@ build:
 ---
 title: "Test article"
 description: "A Markdown publishing test."
+category: "Godot"
+tags: [plugins, tools]
 author: "Zeta QA"
 date: "2026-10-12"
 updated: "2026-10-13"
@@ -78,6 +80,9 @@ This is an **article**.
   if(-not $index.Contains('og:type" content="website"')){throw "$theme missing Open Graph"}
   if(([regex]::Matches($index,'rel="canonical"')).Count -ne 1){throw "$theme duplicates canonical"}
   if(([regex]::Matches($index,'name="description"')).Count -ne 1){throw "$theme duplicates description"}
+  foreach($taxonomy in @('categories/godot/index.html','tags/plugins/index.html')){
+   if(!(Test-Path (Join-Path $public $taxonomy))){throw "$theme missing taxonomy $taxonomy"}
+  }
   $article=[IO.File]::ReadAllText((Join-Path $public 'posts/2026/smoke.html'))
   if($article -notmatch 'Hello Zeta'){throw "$theme article has no Markdown content"}
   if(-not $article.Contains('rel="canonical" href="https://example.org/zeta/posts/2026/smoke.html"')){throw "$theme article canonical incorrect"}
