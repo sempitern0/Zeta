@@ -1,50 +1,62 @@
-# SEO automation checklist
+# SEO publishing in Zeta
 
-Zeta is a static generator. Search visibility depends on the quality of Markdown content, a real `site.url`, accessible navigation, and successful crawling. Metadata alone does not guarantee rankings.
+Zeta builds static websites without JavaScript. Metadata improves discoverability and link previews, but search rankings also depend on editorial quality, correct hosting, accessible HTML and search-engine crawling.
 
-## Planned common build contract
+## Implemented: shared build-time SEO
 
-Every published route (home, page, post, archive) should have exactly one:
+All eight themes, Markdown pages, the home page, blog archive and articles use the same Pandoc Lua filter: `templates/common/filters/seo-publish.lua`. Both Bash and PowerShell run it against the **temporary build directory, before publishing**. An SEO failure stops publication and preserves the existing `public/`.
 
-- Unique title and description, with useful fallback text
-- Absolute canonical URL derived from `site.url` and its actual output route
-- Open Graph type/title/description/url/site_name; optional validated image
-- Twitter summary card; large card only when a valid image is present
-- Correct HTML `lang`, semantic landmarks and accessible links
+Every generated HTML file receives a single canonical URL, description, Open Graph type/title/description/url/site name, and Twitter card metadata. Existing duplicate descriptions, canonical links and OG/Twitter tags are normalized. Repeated processing is idempotent.
 
-Articles can additionally have a valid publication date and author. Do not invent update dates or structured data fields.
+Canonical URLs use `site.url` and the actual published location (for example `/about/` or `/posts/2026/example.html`). The page's existing HTML title and description are preferred, with the site metadata as fallback. Articles receive `article:published_time` when the HTML contains a usable `<time datetime="YYYY-MM-DD">` element.
 
-## Markdown fields
+### Optional social cover
 
-For pages and articles:
+In `sites/YOUR-SITE/config.yaml`:
+
+~~~yaml
+site:
+  title: "My site"
+  description: "My website introduction."
+  url: "https://example.org"
+  image: "assets/social-cover.webp"
+~~~
+
+`site.image` is optional. Supported forms are a published, local `assets/` file or an absolute HTTPS image URL. Local images are only included when they exist in the staged public assets. Invalid or missing images are omitted instead of producing broken OG tags. An available image enables the Twitter large preview; otherwise the summary card is used. A preexisting `og:image` in the rendered page may take precedence.
+
+For page-specific descriptions, set `description` in Markdown frontmatter:
 
 ~~~yaml
 ---
-title: "A useful page title"
-description: "A brief summary of what the reader will find."
-image: "assets/social-cover.webp"
-draft: false
+title: "About"
+description: "A brief explanation of who we are and what we do."
 ---
 ~~~
 
-The optional `image` must be a public HTTPS URL or a local `assets/` file copied into the published site. Missing images should not create broken `og:image` links. The global fallback can be `site.image` in config.yaml.
+## Doctor quality report
 
-## Sitemap
+`./zeta.sh doctor SITE` and `.\zeta.ps1 doctor SITE` report errors, warnings, a **heuristic quality score from 0 to 100**, category counts and suggested corrective actions. Categories include links/assets, SEO/metadata, content, publishing, and configuration.
 
-- Emit only actual published routes, exactly once each.
-- Exclude drafts and disabled blogs; skip unbuilt or missing routes.
-- Only emit `lastmod` when it can be verified from source metadata, not merely because a build ran today.
-- Keep `robots.txt` and the sitemap's host in sync with `site.url`.
-- If `site.url` still points to example.com, warn about production deployment.
+The score is calculated as `max(0, 100 - 15 × FAIL - 3 × WARN)` and is **not** a Google Lighthouse/PageSpeed score, a search-ranking prediction or a replacement for manual accessibility testing.
 
-## Build diagnostics
+Doctor checks source Markdown as well as published HTML, local links, canonical links and sitemap consistency. No files are changed during the diagnosis.
 
-Warnings (not silent content rewriting): empty/duplicate titles; missing/oversized descriptions; absent image alt text; broken local Markdown links; canonical duplication; invalid dates; placeholder production domains.
+## Local validation (no GitHub Actions)
 
-Checks should inspect **final staged HTML**, and a failed SEO phase should preserve the previously generated `public/`.
+~~~bash
+bash tests/seo-bash-smoke.sh
+bash tests/doctor-public-bash-smoke.sh
+bash tests/doctor-content-bash-smoke.sh
+~~~
 
-## Acceptance test
+~~~powershell
+.\tests\seo-powershell-smoke.ps1
+.\tests\doctor-public-powershell-smoke.ps1
+.\tests\doctor-content-powershell-smoke.ps1
+~~~
 
-Build a Markdown site and blog in Bash and PowerShell for all eight themes. Parse the final HTML, verify unique canonical/description/social tags per route, confirm valid sitemap and robots, verify no draft or disabled-blog routes, and compare functionality rather than byte-identical output.
+The SEO tests cover clean canonical routes, social images, valid article dates, escaping, duplicate removal and idempotence. Pandoc must be installed.
 
-This is an implementation checklist, not a claim that every item is already implemented.
+## Remaining enhancements
+
+Automatic per-post social-image selection, validated Schema.org JSON-LD, RSS/Atom, accurate modification dates in the sitemap, deeper accessibility audits and online link reachability are **not** part of this iteration. Current sitemap generation may still report build-time dates rather than source modification dates; do not treat its `lastmod` values as verified editorial updates.
