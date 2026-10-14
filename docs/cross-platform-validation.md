@@ -101,3 +101,25 @@ bash tests/doctor-public-bash-smoke.sh
 ~~~
 
 Tests use a local Pandoc executable. GitHub Actions is not involved.
+
+## Shared SEO pipeline and quality summary
+
+Bash and PowerShell run the same `seo-publish.lua` filter while their output is still in the staging directory. It creates/normalizes canonical, description, Open Graph and Twitter metadata for each generated HTML route; a failed filter does not replace the previous published directory. The optional `site.image` provides social preview imagery only when valid.
+
+Doctor displays a heuristic score using the same formula in both shells: `max(0, 100 - 15 × FAIL - 3 × WARN)`, as well as category counts and tailored advice. This score is not a search ranking or a Lighthouse score.
+
+Regression tests:
+
+~~~bash
+bash tests/seo-bash-smoke.sh
+bash tests/theme-smoke.sh
+bash tests/doctor-content-bash-smoke.sh
+~~~
+
+~~~powershell
+.\tests\seo-powershell-smoke.ps1
+.\tests\powershell-build-smoke.ps1
+.\tests\doctor-content-powershell-smoke.ps1
+~~~
+
+No GitHub Actions or third-party web service is required.
