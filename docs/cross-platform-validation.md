@@ -62,3 +62,11 @@ See also [Windows setup](powershell.md) and [deployment](deployment.md).
 ## Markdown multipage regressions
 
 Run `bash tests/pages-bash-smoke.sh` or `.\tests\pages-powershell-smoke.ps1` for blog-free static site builds in each of the eight themes. The smoke tests assert clean URLs, relative Markdown links, draft exclusion and sitemap entries. These are local tests; GitHub Actions are not needed.
+
+## Doctor 2.0: Markdown source integrity
+
+Both Bash (`./zeta.sh doctor SITE`) and PowerShell (`.\zeta.ps1 doctor SITE`) now invoke the same Pandoc Lua diagnostic filter without modifying source files. They report invalid YAML/frontmatter, local Markdown links pointing to missing files, missing image assets, unsafe link schemes, and images without alternative text. Errors (`FAIL`) block deployment readiness; missing alternative text produces a `WARN`.
+
+Run `bash tests/doctor-content-bash-smoke.sh` and `.\tests\doctor-content-powershell-smoke.ps1` to verify known-bad documents are correctly diagnosed. The smoke tests create temporary site folders and clean them afterward; they never run GitHub Actions.
+
+This source-level validation does not yet validate every rendered URL or guarantee that an external HTTP link is reachable. Those checks are later enhancements to Doctor.
