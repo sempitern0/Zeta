@@ -65,6 +65,11 @@ This is an **article**.
    $path=Join-Path $public $file
    if(-not (Test-Path -LiteralPath $path -PathType Leaf)){throw "$theme failed to generate $file"}
   }
+  foreach($feed in @('rss.xml','atom.xml')){
+   if(-not (Test-Path (Join-Path $public $feed))){throw "$theme missing $feed"}
+  }
+  $sitemapText=[IO.File]::ReadAllText((Join-Path $public 'sitemap.xml'))
+  if($sitemapText.Contains('<lastmod>')){throw "$theme invented sitemap modification dates"}
   $index=[IO.File]::ReadAllText((Join-Path $public 'index.html'))
   if($index -notmatch '(?i)<html'){throw "$theme did not apply the HTML template"}
   if(-not $index.Contains('rel="canonical" href="https://example.org/zeta/"')){throw "$theme missing home canonical"}
