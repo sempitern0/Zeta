@@ -42,6 +42,7 @@ title: "Test article"
 description: "A Markdown publishing test."
 author: "Zeta QA"
 date: "2026-10-12"
+updated: "2026-10-13"
 ---
 
 # Hello Zeta
@@ -69,7 +70,8 @@ This is an **article**.
    if(-not (Test-Path (Join-Path $public $feed))){throw "$theme missing $feed"}
   }
   $sitemapText=[IO.File]::ReadAllText((Join-Path $public 'sitemap.xml'))
-  if($sitemapText.Contains('<lastmod>')){throw "$theme invented sitemap modification dates"}
+  if(-not $sitemapText.Contains('<lastmod>2026-10-13</lastmod>')){throw "$theme explicit updated date missing"}
+  if(([regex]::Matches($sitemapText,'<lastmod>')).Count -ne 1){throw "$theme sitemap has invented modification dates"}
   $index=[IO.File]::ReadAllText((Join-Path $public 'index.html'))
   if($index -notmatch '(?i)<html'){throw "$theme did not apply the HTML template"}
   if(-not $index.Contains('rel="canonical" href="https://example.org/zeta/"')){throw "$theme missing home canonical"}
