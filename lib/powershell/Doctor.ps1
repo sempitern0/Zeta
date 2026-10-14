@@ -227,6 +227,9 @@ function Doctor([string]$name){
   if($ids -match '(?i)sitemap|robots|freshness|public/'){
    Write-Host '  Rebuild the site and check public/sitemap.xml and robots.txt.' -ForegroundColor Yellow
   }
+  if($state.categories.Configuration -gt 0){
+   Write-Host '  Check config.yaml values, selected theme, Pandoc installation and build directories.' -ForegroundColor Yellow
+  }
   Write-Host 'Recommended: address FAIL findings before deploying; then review WARN items.' -ForegroundColor Yellow
   Write-Host ("Commands: .\\zeta.ps1 build {0} ; .\\zeta.ps1 doctor {0}" -f $name) -ForegroundColor Gray
  }else{Write-Host 'No corrective actions required by the current checks.' -ForegroundColor Green}
