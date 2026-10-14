@@ -57,6 +57,34 @@ bash tests/doctor-content-bash-smoke.sh
 
 The SEO tests cover clean canonical routes, social images, valid article dates, escaping, duplicate removal and idempotence. Pandoc must be installed.
 
+## RSS, Atom and Schema.org (implemented)
+
+When Blog is enabled, Zeta generates **`public/rss.xml` and `public/atom.xml`**. Feeds contain the published articles' titles, URLs, summaries and publication dates when available. Each HTML page advertises the feeds through `<link rel="alternate">` elements. Sites without a blog do not generate feeds or advertise them.
+
+The shared Pandoc filter `templates/common/filters/publish-extras.lua` also adds **Schema.org JSON-LD** to every published HTML page:
+
+- `WebSite` for the homepage, `WebPage` for static pages and archives
+- `BlogPosting` for articles, with URL, description, language, author and a publication date when present
+
+This structured data uses only metadata that Zeta actually knows. It does not synthesize review scores or claims of rich-result eligibility. The JSON-LD is a data script (`type="application/ld+json"`), not executable browser JavaScript.
+
+### Explicit modification dates
+
+To indicate a genuine editorial update, add `updated` to the Markdown frontmatter:
+
+~~~yaml
+---
+title: "Updated article"
+date: "2026-10-10"
+updated: "2026-10-14"
+description: "A technical article with revised content."
+---
+~~~
+
+Zeta generates `<lastmod>2026-10-14</lastmod>` in the sitemap for that article. Without `updated`, it omits `lastmod` rather than using the current build date. Invalid dates cause the shared publishing stage to fail before replacing the existing `public/`.
+
+Both Bash and PowerShell create a temporary metadata map inside staging; the map is removed before the final site is published. Feeds and JSON-LD are generated from the already-rendered HTML, so they remain independent of themes and work with either engine.
+
 ## Remaining enhancements
 
-Automatic per-post social-image selection, validated Schema.org JSON-LD, RSS/Atom, accurate modification dates in the sitemap, deeper accessibility audits and online link reachability are **not** part of this iteration. Current sitemap generation may still report build-time dates rather than source modification dates; do not treat its `lastmod` values as verified editorial updates.
+Automatic per-post social-image selection, richer Schema.org entity types, deeper accessibility audits and online link reachability are not yet implemented. Sitemap `lastmod` values are emitted only for valid explicit `updated` dates.
