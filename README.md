@@ -135,6 +135,14 @@ Posts are `.md` files with optional YAML frontmatter such as `title`, `date`, `d
 
 All eight themes work with either shell. See the [full theme catalog](docs/theme-catalog.md). The `indie` and `organization` layouts additionally support hero images, CTAs and external project links; see [landing themes](docs/landing-themes.md). Optional self-hosted fonts include Cascadia Code, JetBrains Mono, Fira Code, IBM Plex Mono and Source Code Pro.
 
+## SEO and Doctor quality report
+
+Both Bash and PowerShell automatically normalize SEO metadata in the temporary build: canonical URLs, descriptions, Open Graph and social preview tags for every generated HTML page. Set an optional `site.image` (a published `assets/` file or an HTTPS URL) for social previews. The previous `public/` is preserved if generation fails.
+
+Run `./zeta.sh doctor SITE` or `.\\zeta.ps1 doctor SITE` to check Markdown, published links, sitemap and SEO metadata. Doctor reports a heuristic 0–100 quality score, problem counts by category and concrete corrective steps. It is not a Google ranking or Lighthouse score.
+
+See the [SEO guide](docs/seo.md) and [cross-platform validation](docs/cross-platform-validation.md).
+
 ## Build and publish
 
 `build` converts Markdown and themes to static HTML in `sites/<site>/public/`. **Publish only `public/`**, never `posts/` or `config.yaml`. Generation uses a staging directory before replacing the previous output.
