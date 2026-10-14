@@ -135,6 +135,14 @@ Los artículos son archivos `.md` con frontmatter YAML opcional: `title`, `date`
 
 Todos funcionan en Bash y PowerShell. `indie` y `organization` admiten imágenes de portada, botones y enlaces externos; consulta el [catálogo de temas](docs/theme-catalog.md) y [landings](docs/landing-themes.md). Hay fuentes locales opcionales: Cascadia Code, JetBrains Mono, Fira Code, IBM Plex Mono y Source Code Pro.
 
+## SEO automático y diagnóstico de calidad
+
+Bash y PowerShell normalizan automáticamente los metadatos SEO dentro de la compilación temporal: URLs canonical, descripciones, Open Graph y etiquetas para compartir enlaces. Puedes configurar `site.image` con un recurso local publicado en `assets/` o una URL HTTPS. Si falla la generación, se conserva el `public/` anterior.
+
+Ejecuta `./zeta.sh doctor SITIO` o `.\\zeta.ps1 doctor SITIO` para revisar el Markdown, enlaces publicados, sitemap y SEO. Doctor muestra una puntuación orientativa de 0 a 100, incidencias por categoría y recomendaciones de corrección. No equivale a Lighthouse ni predice el posicionamiento.
+
+Consulta la [guía SEO](docs/seo.md) y la [validación multiplataforma](docs/cross-platform-validation.md).
+
 ## Generar y publicar
 
 `build` convierte Markdown y temas en HTML estático dentro de `sites/<sitio>/public/`. **Publica únicamente `public/`**, nunca `posts/` ni `config.yaml`. El proceso utiliza un directorio temporal antes de sustituir el resultado anterior.
