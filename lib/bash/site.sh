@@ -669,6 +669,15 @@ build_site() {
         fi
     fi
 
+    # Normalize search metadata while the build is staged; never modify live public/.
+    local seo_filter="${TEMPLATES_DIR}/common/filters/seo-publish.lua"
+    if [[ ! -f "$seo_filter" ]] || ! printf '' | pandoc -f markdown -t plain --lua-filter="$seo_filter" \
+        -M "zeta_seo_output=$output_dir" -M "zeta_seo_url=$site_url" \
+        -M "zeta_seo_title=$site_title" -M "zeta_seo_description=$site_desc" -o /dev/null; then
+        msg_error "Shared SEO metadata generation failed."
+        rm -rf -- "$staging_dir"; return 1
+    fi
+
     local previous_output="${final_output_dir}.zeta-previous"
     mkdir -p "$(dirname "$final_output_dir")"
     rm -rf -- "$previous_output"
