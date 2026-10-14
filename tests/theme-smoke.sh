@@ -32,6 +32,8 @@ cat > "$DIR/posts/2026-10-12-example.md" <<'EOF'
 ---
 title: "First project"
 description: "An example repository."
+category: "Godot"
+tags: [plugins, tools]
 date: "2026-10-12"
 updated: "2026-10-13"
 external_url: "https://github.com/example/test"
@@ -53,6 +55,10 @@ grep -Fq '<rss version="2.0"' "$DIR/public/rss.xml"
 grep -Fq '<feed xmlns="http://www.w3.org/2005/Atom">' "$DIR/public/atom.xml"
 grep -Fq '<lastmod>2026-10-13</lastmod>' "$DIR/public/sitemap.xml"
 test "$(grep -c '<lastmod>' "$DIR/public/sitemap.xml")" -eq 1
+test -s "$DIR/public/categories/godot/index.html"
+test -s "$DIR/public/tags/plugins/index.html"
+grep -Fq 'Explore this topic' "$DIR/public/posts/2026/example.html"
+grep -Fq '/categories/godot/' "$DIR/public/sitemap.xml"
 grep -Fq 'Our mission' "$DIR/public/index.html"
 grep -Fq 'href="https://github.com/example/test"' "$DIR/public/posts.html"
 grep -Fq 'https://github.com/example/test?a=1&amp;b=2' "$DIR/public/index.html"
