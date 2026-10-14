@@ -304,7 +304,7 @@ function Build([string]$name){
   if(!(Test-Path -LiteralPath $seoFilter -PathType Leaf)){throw "Missing SEO filter: $seoFilter"}
   $seoTmp=[IO.Path]::GetTempFileName()
   try{
-   $seoArgs=@('-f','markdown','-t','plain',("--lua-filter=$seoFilter"),'-M',("zeta_seo_output=$stage"),'-M',("zeta_seo_url=$($c.url.TrimEnd('/'))"),'-M',("zeta_seo_title=$($c.title)"),'-M',("zeta_seo_description=$($c.description)"),'-o',$seoTmp)
+   $seoArgs=@('-f','markdown','-t','plain',("--lua-filter=$seoFilter"),'-M',("zeta_seo_output=$stage"),'-M',("zeta_seo_url=$($c.url.TrimEnd('/'))"),'-M',("zeta_seo_title=$($c.title)"),'-M',("zeta_seo_description=$($c.description)"),'-M',("zeta_seo_image=$(Yaml (ConfigPath $name) site image '')"),'-o',$seoTmp)
    $null=@('' | & pandoc @seoArgs)
    if($LASTEXITCODE -ne 0){throw 'Shared SEO generation failed; existing public/ was preserved'}
   }finally{Remove-Item -LiteralPath $seoTmp -Force -ErrorAction SilentlyContinue}
