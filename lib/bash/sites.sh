@@ -983,19 +983,21 @@ diagnose_site() {
         for group in Links SEO Publishing Content Configuration; do
             (( doctor_category_counts[$group] > 0 )) && printf '    %-15s %s\n' "$group" "${doctor_category_counts[$group]}"
         done
-        local seen_link=false seen_seo=false seen_content=false seen_publish=false
+        local seen_link=false seen_seo=false seen_content=false seen_publish=false seen_config=false
         for entry in "${doctor_findings[@]}"; do
             case "$(doctor_category "$entry")" in
                 Links) seen_link=true ;;
                 SEO) seen_seo=true ;;
                 Content) seen_content=true ;;
                 Publishing) seen_publish=true ;;
+                Configuration) seen_config=true ;;
             esac
         done
         [[ "$seen_link" == true ]] && printf '  Fix local href/src targets and copy missing assets into the site.\n'
         [[ "$seen_seo" == true ]] && printf '  Review site.url and Markdown title/description; rebuild SEO metadata.\n'
         [[ "$seen_content" == true ]] && printf '  Correct YAML frontmatter and verify pages/index.md.\n'
         [[ "$seen_publish" == true ]] && printf '  Rebuild and check sitemap.xml, robots.txt and public/ contents.\n'
+        [[ "$seen_config" == true ]] && printf '  Check config.yaml, the theme, Pandoc and build directories.\n'
         printf '  Recommended: fix FAIL first, review WARN, then rebuild and rerun Doctor.\n'
         printf '  Commands: ./zeta.sh build %s && ./zeta.sh doctor %s\n' "$site_slug" "$site_slug"
     else
