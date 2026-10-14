@@ -1,6 +1,6 @@
 # Landing themes · indie and organization
 
-[← All themes](../README.md#eight-built-in-themes)
+[← All themes](theme-catalog.md)
 
 Zeta includes **`indie`** for game promotion and development logs and **`organization`** for open-source groups and project catalogs. Both run in **Bash and PowerShell** and reuse standard Markdown articles and site configuration.
 
