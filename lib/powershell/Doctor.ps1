@@ -106,7 +106,7 @@ function Doctor([string]$name){
   foreach($file in $sourceFiles){
    $sourcePath=$file.FullName
    $messages=@()
-   $argument=@($sourcePath,'-f','markdown','-t','plain','--lua-filter='+$doctorFilter,
+   $argument=@($sourcePath,'-f','markdown','-t','plain',("--lua-filter=$doctorFilter"),
       '-M',('zeta_doctor_source='+$sourcePath),'-M',('zeta_doctor_site='+$siteDir),'-o',$([IO.Path]::GetTempFileName()))
    $tempOutput=$argument[-1]
    try{
