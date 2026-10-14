@@ -710,6 +710,7 @@ diagnose_site() {
     fi
 
     local errors=0 warnings=0
+    local -a doctor_findings=()
     local title desc author lang url theme highlight content_rel output_rel
     title=$(get_site_yaml_prop "$config_file" site title "")
     desc=$(get_site_yaml_prop "$config_file" site description "")
@@ -727,8 +728,8 @@ diagnose_site() {
     fi
 
     doctor_ok()   { printf '  %b %-20s %s\n' "${boldGreen}[OK]${endColour}" "$1" "$2"; }
-    doctor_warn() { printf '  %b %-20s %s\n' "${boldYellow}[WARN]${endColour}" "$1" "$2"; ((warnings += 1)); }
-    doctor_fail() { printf '  %b %-20s %s\n' "${boldRed}[FAIL]${endColour}" "$1" "$2"; ((errors += 1)); }
+    doctor_warn() { printf '  %b %-20s %s\n' "${boldYellow}[WARN]${endColour}" "$1" "$2"; ((warnings += 1)); doctor_findings+=("$1"); }
+    doctor_fail() { printf '  %b %-20s %s\n' "${boldRed}[FAIL]${endColour}" "$1" "$2"; ((errors += 1)); doctor_findings+=("$1"); }
 
     [[ "$pages_mode" == true ]] && doctor_ok "Pages" "Markdown homepage present"
     echo -e "${boldWhite}Configuration${endColour}"
@@ -954,6 +955,18 @@ diagnose_site() {
 
     echo ""
     print_separator
+    local quality=$((100-15*errors-3*warnings))
+    (( quality < 0 )) && quality=0
+    printf '  Quality snapshot: %s/100 | %s errors | %s warnings\n' "$quality" "$errors" "$warnings"
+    if (( errors > 0 || warnings > 0 )); then
+        printf '  Priority findings:'
+        local entry
+        for entry in "${doctor_findings[@]}"; do printf ' %s;' "$entry"; done
+        printf '\n  Recommended: fix FAIL first, review WARN, then rebuild and rerun Doctor.\n'
+        printf '  Commands: ./zeta.sh build %s && ./zeta.sh doctor %s\n' "$site_slug" "$site_slug"
+    else
+        printf '  No corrective actions required by current checks.\n'
+    fi
     if (( errors > 0 )); then
         msg_error "Doctor found ${errors} blocking issue(s) and ${warnings} warning(s)."
         return 1
