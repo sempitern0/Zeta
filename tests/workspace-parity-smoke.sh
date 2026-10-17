@@ -6,7 +6,7 @@ command -v pandoc >/dev/null || { echo "Pandoc required" >&2; exit 2; }
 site="zeta-visual-smoke-$$"
 site_dir="${ROOT}/sites/${site}"
 trap 'rm -rf -- "$site_dir"; bash "$ROOT/zeta.sh" dashboard >/dev/null 2>&1 || true' EXIT
-printf 'Visual smoke\nAccessibility and HTML\nQA\nen\n%s\nhttps://example.org\nzen\nzenburn\nY\nY\nY\n' "$site" | bash "$ROOT/zeta.sh" create >/dev/null
+printf 'Visual smoke\nAccessibility and HTML\nQA\nen\n%s\nhttps://example.org\nzen\nzenburn\nN\nY\nY\nY\n' "$site" | bash "$ROOT/zeta.sh" create >/dev/null
 # Templates without placeholders must not be duplicated or receive site metadata.
 for page in about contact; do
  [[ "$(cat "$site_dir/pages/$page.md")" == "$(cat "$ROOT/templates/common/pages/$page.md")" ]]
