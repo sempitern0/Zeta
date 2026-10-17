@@ -9,3 +9,37 @@ body.zeta-static-page{--zeta-surface:#0e1726;--zeta-panel:#172438;--zeta-ink:#f5
 .zeta-static-page .zeta-page-footer{border-top:1px solid #456078;color:var(--zeta-muted);padding:1.4rem 0}.zeta-static-page .zeta-page-footer .zeta-page-inner{display:flex;gap:1rem;justify-content:space-between;flex-wrap:wrap}
 @media(max-width:42rem){.zeta-static-page .zeta-page-header .zeta-page-inner{align-items:flex-start;flex-direction:column}.zeta-static-page .zeta-content{padding:2.5rem 0}}
 @media(prefers-reduced-motion:reduce){.zeta-static-page *{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+/* Page-shell theme parity. Rules are deliberately scoped so Markdown's shared
+   structure remains stable while all eight themes retain their visual identity. */
+body.zeta-static-page{--page-bg:#0e1726;--page-panel:#172438;--page-fg:#f5f8fd;--page-muted:#b7c7d6;--page-link:#8aefd3;--page-border:#456078;--page-font:system-ui,-apple-system,"Segoe UI",sans-serif;--page-focus:#ffce83;color-scheme:dark;background:var(--page-bg);color:var(--page-fg);font-family:var(--page-font)}
+.zeta-static-page .zeta-page-header{background:var(--page-panel);border-color:var(--page-border)}
+.zeta-static-page .zeta-page-footer{border-color:var(--page-border);color:var(--page-muted)}
+.zeta-static-page .zeta-brand{color:var(--page-fg)}
+.zeta-static-page .zeta-summary{color:var(--page-muted)}
+.zeta-static-page a{color:var(--page-link)}
+.zeta-static-page .zeta-kicker{color:var(--page-link)}
+.zeta-static-page a:focus{outline-color:var(--page-focus)}
+.zeta-static-page .zeta-skip{background:var(--page-link);color:var(--page-bg)}
+.zeta-static-page .article-body blockquote{color:var(--page-muted);border-left-color:var(--page-link)}
+.zeta-static-page .article-body pre,.zeta-static-page .article-body div.sourceCode{background:var(--page-panel);border-color:var(--page-border)}
+.zeta-static-page .article-body :not(pre)>code{background:var(--page-panel);border-color:var(--page-border)}
+.zeta-static-page .article-body .table-scroll,.zeta-static-page .article-body th,.zeta-static-page .article-body td{border-color:var(--page-border)}
+body.zeta-theme-zen{--page-bg:#131722;--page-panel:#1d2535;--page-fg:#e2e6f1;--page-muted:#abb5cc;--page-link:#86c8dc;--page-border:#37445a;--page-font:system-ui,-apple-system,"Segoe UI",sans-serif}
+body.zeta-theme-paper{color-scheme:light;--page-bg:#f5f1e8;--page-panel:#ebe5d8;--page-fg:#25221e;--page-muted:#6d655b;--page-link:#a33b20;--page-border:#c9c0af;--page-font:Georgia,"Times New Roman",serif;--page-focus:#315b78}
+body.zeta-theme-console{--page-bg:#07110c;--page-panel:#0b1a12;--page-fg:#d8ffe5;--page-muted:#78a987;--page-link:#53ff87;--page-border:#214d32;--page-font:Consolas,"Liberation Mono",monospace;--page-focus:#55d9ff}
+body.zeta-theme-indie{--page-bg:#101421;--page-panel:#1c2335;--page-fg:#f4f4f8;--page-muted:#bfc4d4;--page-link:#f3c47b;--page-border:#414861;--page-focus:#a7dcff}
+body.zeta-theme-organization{color-scheme:light;--page-bg:#f6f8fc;--page-panel:#e3eff8;--page-fg:#182b3b;--page-muted:#4d6072;--page-link:#15618e;--page-border:#cad8e6;--page-focus:#b34816}
+body.zeta-theme-brutalist{color-scheme:light;--page-bg:#f7f450;--page-panel:#111;--page-fg:#111;--page-muted:#313131;--page-link:#b52c10;--page-border:#111;--page-font:Arial,Helvetica,sans-serif;--page-focus:#004de8}
+body.zeta-theme-folio{color-scheme:light;--page-bg:#f7f6f2;--page-panel:#e9ede6;--page-fg:#26352f;--page-muted:#5c6760;--page-link:#9b5f46;--page-border:#b9c2b9;--page-font:Georgia,"Times New Roman",serif;--page-focus:#194a7e}
+body.zeta-theme-aurora{--page-bg:#090e29;--page-panel:#151e48;--page-fg:#f8f8ff;--page-muted:#b8c4e2;--page-link:#75eece;--page-border:#3b4674;--page-focus:#ffcc70}
+.zeta-theme-paper .zeta-readable h1,.zeta-theme-folio .zeta-readable h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;letter-spacing:-.035em}
+.zeta-theme-console .zeta-kicker{font-family:Consolas,"Liberation Mono",monospace}
+.zeta-theme-brutalist .zeta-page-header{border-bottom:4px solid #111}
+.zeta-theme-brutalist .zeta-brand,.zeta-theme-brutalist .zeta-page-header nav a{color:#fff}
+.zeta-theme-brutalist .zeta-readable h1{font-weight:900;text-transform:uppercase}
+.zeta-theme-brutalist .zeta-readable{background:#fff;padding:1.5rem;border:3px solid #111;box-shadow:7px 7px 0 #111}
+.zeta-theme-folio .zeta-readable{border-top:2px solid var(--page-border)}
+.zeta-theme-indie .zeta-content{background:radial-gradient(circle at 80% 10%,#443352,transparent 52%),var(--page-bg)}
+.zeta-theme-aurora .zeta-content{background:radial-gradient(circle at 85% 20%,#543d8e,transparent 46%),radial-gradient(circle at 20% 75%,#164d75,transparent 55%),var(--page-bg)}
+@media(max-width:42rem){.zeta-theme-brutalist .zeta-readable{padding:1rem;box-shadow:4px 4px 0 #111}}
