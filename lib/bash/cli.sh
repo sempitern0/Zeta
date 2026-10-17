@@ -61,7 +61,7 @@ Content
   new-post <site>                     Create a Markdown article
   pages <site>                        List standalone Markdown pages
   new-page <site> [title] [slug]      Create and build a new page
-  fonts <site>                        Manage optional site-local fonts
+  fonts <site> [recommended]          Manage or install theme-recommended fonts
   doctor <site>                       Check deploy readiness
 
 Build / preview
@@ -196,7 +196,7 @@ parse_args() {
             ;;
         fonts)
             site=$(resolve_site_arg "${1:-}") || exit 1
-            manage_site_fonts "$site"
+            manage_site_fonts "$site" "${2:-}"
             ;;
         doctor|diagnose|check-site)
             site=$(resolve_site_arg "${1:-}") || exit 1
