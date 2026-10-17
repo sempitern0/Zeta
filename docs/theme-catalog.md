@@ -85,10 +85,32 @@ During interactive `create` and interactive theme selection, Zeta asks whether t
 
 ## Consistent theme on every page
 
-The selected theme now determines the palette and typography of the Markdown homepage, About, Contact and other static pages as well as the blog. These pages keep one accessible shared HTML shell for navigation and clean URLs, with eight scoped theme variants in `templates/common/styles/zeta-pages.css`. Both Bash and PowerShell include the selected theme styles in generated HTML; no JavaScript or CSS framework is needed. The static-page shell shares visual identity, but is intentionally not a pixel-identical clone of each theme's dedicated blog landing layout.
+The selected theme now determines the palette and typography of the Markdown homepage, About, Contact and other static pages as well as the blog. These pages keep one accessible shared HTML shell for navigation and clean URLs, with independent per-theme contracts in `templates/<theme>/styles/00-theme-contract.css`. Both Bash and PowerShell include the selected theme styles in generated HTML; no JavaScript or CSS framework is needed. The static-page shell shares visual identity, but is intentionally not a pixel-identical clone of each theme's dedicated blog landing layout.
 
 To refresh existing sites without deleting content, rebuild them using `./zeta.sh build SITE` or `.\\zeta.ps1 build SITE`. Verify `public/index.html`, `public/about/index.html` and `public/posts.html` together. The local page smoke suites check theme class and stylesheet links for all eight themes.
 
 ### Core navigation background token
 
-The common stylesheet (`templates/common/styles/zeta-pages.css`) owns the top-level header surface on Markdown pages, blog archives and articles. A theme may set `--zeta-nav-background` once (for example on `:root` or `body`) to specify its navigation background consistently on every route. Without it, the core falls back to existing palette variables (`--page-panel`, `--surface`, `--panel`, `--bg`) so a new theme does not need route-specific CSS. Existing catalog variants preserve their historical header colors through compatibility tokens. This contract changes only header background color, leaving per-theme typography, responsive sizing and interaction styles intact.
+The common navigation component (`templates/common/styles/zeta-navigation.css`) owns the top-level header surface on Markdown pages, blog archives and articles. A theme may set `--zeta-nav-background` once (for example on `:root` or `body`) to specify its navigation background consistently on every route. Without it, the core falls back to existing palette variables (`--page-panel`, `--surface`, `--panel`, `--bg`) so a new theme does not need route-specific CSS. Existing catalog variants preserve their historical header colors through compatibility tokens. This contract changes only header background color, leaving per-theme typography, responsive sizing and interaction styles intact.
+
+## Theme isolation contract
+
+Each theme owns its palette, typography and visual variants in
+`templates/<theme>/styles/00-theme-contract.css`. This file is included
+automatically by both native build engines. It must define
+`--zeta-nav-background`, `--zeta-nav-ink`, `--zeta-nav-current`
+and `--zeta-nav-type` at `:root`, plus scoped Markdown page tokens
+`--page-bg`, `--page-panel`, `--page-fg`, `--page-muted`,
+`--page-link` and `--page-border` under `body.zeta-static-page`.
+
+For new themes, copy an existing theme folder, update its HTML templates
+and CSS, then run the native smoke tests. Do not add theme-specific selectors
+to `templates/common/styles/`: the common `zeta-pages.css` owns layout
+and `zeta-navigation.css` owns only the top-level navigation. Theme-local CSS
+follows common CSS; per-site CSS has final precedence. The Pandoc variable
+`page_navigation` is generated once per platform, and templates must
+preserve their legacy navigation when that variable is absent.
+
+Validation: `bash tests/theme-isolation-smoke.sh`,
+`bash tests/pages-bash-smoke.sh` and
+`.\\tests\\pages-powershell-smoke.ps1`. No framework or JavaScript required.

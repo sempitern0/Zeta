@@ -421,7 +421,6 @@ function Render-ZetaPages([string]$name,[string]$stage,[hashtable]$c,[bool]$blog
  $site=SiteDir $name
  $pages=Join-Path $site 'pages'
  $sourceFiles=@(Get-ChildItem -LiteralPath $pages -Filter '*.md' -File | Sort-Object Name)
- $nav=[Collections.Generic.List[object]]::new()
  foreach($file in $sourceFiles){
   $slug=$file.BaseName
   if($slug -notmatch '^[a-z0-9]+(-[a-z0-9]+)*$' -or $slug -in @('posts','blog')){throw "Invalid or reserved Markdown page: $slug"}
@@ -448,13 +447,7 @@ function Render-ZetaPages([string]$name,[string]$stage,[hashtable]$c,[bool]$blog
   if(-not $heading){$heading=$slug}
   $desc=Meta $file.FullName description
   if(-not $desc){$desc=$c.description}
-  $items=[Collections.Generic.List[string]]::new()
-  foreach($item in @($nav | Sort-Object Order,Slug)){
-   $href=if($item.Slug -eq 'index'){$root+'index.html'}else{$root+$item.Slug+'/'}
-   $attr=if($item.Slug -eq $slug){' aria-current="page"'}else{''}
-   $items.Add('<a href="'+(Escape $href)+'"'+$attr+'>'+(Escape $item.Label)+'</a>')
-  }
-  if($blogEnabled){$items.Add('<a href="'+(Escape ($root+'posts.html'))+'">Blog</a>')}
+  $pageNavigation=Get-ZetaPageNavigation $name $root $slug $blogEnabled
   $canonical=if($slug -eq 'index'){$c.url.TrimEnd('/')+'/'}else{$c.url.TrimEnd('/')+'/'+$slug+'/'}
   [void](New-Item -ItemType Directory -Path (Split-Path $dest -Parent) -Force)
   $depth=if($slug -eq 'index'){'0'}else{'1'}
@@ -473,7 +466,7 @@ function Render-ZetaPages([string]$name,[string]$stage,[hashtable]$c,[bool]$blog
     '-V',('site_title='+(Escape $c.title)),'-V',('site_author='+(Escape $c.author)),
     '-V',('site_lang='+(Escape $c.language)),'-V',('site_theme='+(Escape $c.theme)),
     '-V',('page_slug='+(Escape $slug)),'-V',('canonical='+(Escape $canonical)),
-    '-V',('rel_root='+$root),'-V',('page_navigation='+($items -join ' ')))
+    '-V',('rel_root='+$root),'-V',('page_navigation='+$pageNavigation))
    $opts+=@(Styles $c.theme $site $root)
    $opts+=@('-o',$dest)
   if($opts -contains '--lua-filter=' -or $opts -contains ''){throw "Pandoc received an empty argument for page: $slug"}

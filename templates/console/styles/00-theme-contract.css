@@ -1,0 +1,9 @@
+/* Theme-scoped design tokens. Do not edit the shared core for theme visuals. */
+:root{
+ --zeta-nav-background:#0b1a12;
+ --zeta-nav-ink:#53ff87;
+ --zeta-nav-current:#53ff87;
+ --zeta-nav-type:Consolas,"Liberation Mono",monospace;
+}
+body.zeta-static-page{--page-bg:#07110c;--page-panel:#0b1a12;--page-fg:#d8ffe5;--page-muted:#78a987;--page-link:#53ff87;--page-border:#214d32;--page-font:Consolas,"Liberation Mono",monospace;--page-focus:#55d9ff}
+body.zeta-static-page .zeta-kicker{font-family:Consolas,"Liberation Mono",monospace}

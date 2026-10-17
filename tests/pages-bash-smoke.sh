@@ -61,6 +61,11 @@ EOF
  test -s "$dir/public/index.html"
  test -s "$dir/public/about/index.html"
  test -s "$dir/public/styles/zeta-pages.css"
+ test -s "$dir/public/styles/zeta-navigation.css"
+ test -s "$dir/public/styles/00-theme-contract.css"
+ grep -Fq -- '--zeta-nav-background' "$dir/public/styles/00-theme-contract.css"
+ ! grep -Eq 'zeta-theme-(zen|paper|console|indie|organization|brutalist|folio|aurora)' "$dir/public/styles/zeta-pages.css"
+
  grep -Fq "zeta-theme-$theme" "$dir/public/index.html"
  grep -Fq "zeta-theme-$theme" "$dir/public/about/index.html"
  grep -Fq 'styles/zeta-pages.css' "$dir/public/index.html"

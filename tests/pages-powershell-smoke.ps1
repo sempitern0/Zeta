@@ -71,6 +71,13 @@ Should not publish.
   foreach($path in @('draft/index.html','posts.html','posts/2026/hidden.html','rss.xml','atom.xml')){
    if(Test-Path (Join-Path $out $path)){throw "$theme unexpectedly published $path"}
   }
+  foreach($cssFile in @('styles/zeta-navigation.css','styles/00-theme-contract.css')){
+   if(!(Test-Path (Join-Path $out $cssFile))){throw "$theme missing $cssFile"}
+  }
+  $themeContract=[IO.File]::ReadAllText((Join-Path $out 'styles/00-theme-contract.css'))
+  if(-not $themeContract.Contains('--zeta-nav-background')){throw "$theme missing navigation contract"}
+  $sharedCss=[IO.File]::ReadAllText((Join-Path $out 'styles/zeta-pages.css'))
+  if($sharedCss -match 'zeta-theme-(zen|paper|console|indie|organization|brutalist|folio|aurora)'){throw "Theme styling leaked into shared core"}
   $index=[IO.File]::ReadAllText((Join-Path $out 'index.html'))
   foreach($pagePath in @('index.html','about/index.html')){
    $pageHtml=[IO.File]::ReadAllText((Join-Path $out $pagePath))

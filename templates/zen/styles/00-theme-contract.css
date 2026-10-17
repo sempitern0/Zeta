@@ -1,0 +1,8 @@
+/* Theme-scoped design tokens. Do not edit the shared core for theme visuals. */
+:root{
+ --zeta-nav-background:#161b22;
+ --zeta-nav-ink:#86c8dc;
+ --zeta-nav-current:#86c8dc;
+ --zeta-nav-type:system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+body.zeta-static-page{--page-bg:#131722;--page-panel:#1d2535;--page-fg:#e2e6f1;--page-muted:#abb5cc;--page-link:#86c8dc;--page-border:#37445a;--page-font:system-ui,-apple-system,"Segoe UI",sans-serif}

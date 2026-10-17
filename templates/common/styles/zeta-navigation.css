@@ -1,0 +1,21 @@
+/* Shared top-level navigation; unrelated article TOCs are never targeted.
+ * Theme-specific tokens are supplied by styles/00-theme-contract.css. */
+body[class] > header[class] {
+ background-color:var(--zeta-nav-background,var(--surface,var(--panel,var(--page-panel,var(--bg,transparent)))));
+}
+body[class] > header[class] nav[aria-label] {
+ display:flex;align-items:center;flex-wrap:wrap;gap:.5rem 1.25rem;
+}
+body[class] > header[class] nav[aria-label] a {
+ color:var(--zeta-nav-ink,var(--page-link,currentColor));
+ font-family:var(--zeta-nav-type,inherit);
+ font-size:1rem;font-weight:400;text-decoration:none;text-underline-offset:.28em;
+}
+body[class] > header[class] nav[aria-label] a:hover,
+body[class] > header[class] nav[aria-label] a[aria-current="page"] {
+ color:var(--zeta-nav-current,var(--zeta-nav-ink,currentColor));
+ text-decoration:underline;text-decoration-thickness:2px;
+}
+@media(max-width:42rem){
+ body[class] > header[class] nav[aria-label]{row-gap:.65rem;}
+}

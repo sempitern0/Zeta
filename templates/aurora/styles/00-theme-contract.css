@@ -1,0 +1,9 @@
+/* Theme-scoped design tokens. Do not edit the shared core for theme visuals. */
+:root{
+ --zeta-nav-background:#151e48;
+ --zeta-nav-ink:#75eece;
+ --zeta-nav-current:#75eece;
+ --zeta-nav-type:system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+body.zeta-static-page{--page-bg:#090e29;--page-panel:#151e48;--page-fg:#f8f8ff;--page-muted:#b8c4e2;--page-link:#75eece;--page-border:#3b4674;--page-focus:#ffcc70}
+body.zeta-static-page .zeta-content{background:radial-gradient(circle at 85% 20%,#543d8e,transparent 46%),radial-gradient(circle at 20% 75%,#164d75,transparent 55%),var(--page-bg)}

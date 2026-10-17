@@ -1,0 +1,13 @@
+/* Theme-scoped design tokens. Do not edit the shared core for theme visuals. */
+:root{
+ --zeta-nav-background:#111;
+ --zeta-nav-ink:#fff;
+ --zeta-nav-current:#f7f450;
+ --zeta-nav-type:Arial,Helvetica,sans-serif;
+}
+body.zeta-static-page{color-scheme:light;--page-bg:#f7f450;--page-panel:#111;--page-fg:#111;--page-muted:#313131;--page-link:#b52c10;--page-border:#111;--page-font:Arial,Helvetica,sans-serif;--page-focus:#004de8}
+body.zeta-static-page .zeta-page-header{border-bottom:4px solid #111}
+body.zeta-static-page .zeta-brand{color:#fff}
+body.zeta-static-page .zeta-readable h1{font-weight:900;text-transform:uppercase}
+body.zeta-static-page .zeta-readable{background:#fff;padding:1.5rem;border:3px solid #111;box-shadow:7px 7px 0 #111}
+@media(max-width:42rem){body.zeta-static-page .zeta-readable{padding:1rem;box-shadow:4px 4px 0 #111}}
