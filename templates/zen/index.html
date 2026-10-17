@@ -15,10 +15,10 @@
     <header class="site-header">
       <div class="header-container">
         <a href="./index.html" class="site-title">$site_title$</a>
-        <nav class="site-nav" aria-label="Primary navigation">
+        <nav class="site-nav" aria-label="Primary navigation">$if(page_navigation)$page_navigation$else$
           <a href="./index.html" aria-current="page">Home</a>
           <a href="./posts.html">Posts</a>
-        </nav>
+        $endif$</nav>
       </div>
     </header>
 
