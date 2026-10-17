@@ -175,10 +175,10 @@ function Layer([string]$from,[string]$to){
  foreach($item in (Get-ChildItem $from -Force)){Copy-Item -LiteralPath $item.FullName -Destination $to -Recurse -Force}
 }
 function Styles([string]$theme,[string]$dir,[string]$prefix){
- $names=@('normalize.css','markdown.css')
+ $names=@('normalize.css')
  foreach($where in @((Join-Path $Templates 'common/styles'),(Join-Path $Templates "$theme/styles"),(Join-Path $dir 'styles'))){
   if(Test-Path $where){foreach($f in (Get-ChildItem $where -Filter '*.css' -File | Sort-Object Name)){
-   if($where -eq (Join-Path $Templates 'common/styles') -and $f.Name -in @('normalize.css','markdown.css')){continue}
+   if($where -eq (Join-Path $Templates 'common/styles') -and $f.Name -eq 'normalize.css'){continue}
    $names+= $f.Name
   }}
  }
