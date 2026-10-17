@@ -92,6 +92,8 @@ Should not publish.
  Save $navConfig ([IO.File]::ReadAllText($navConfig).Replace('blog: false','blog: true'))
  Build 'pages-paper'
  $archive=[IO.File]::ReadAllText((Join-Path $navSite 'public/posts.html'))
+ $article=[IO.File]::ReadAllText((Join-Path $navSite 'public/posts/2026/hidden.html'))
+ if(-not $article.Contains('href="../../about/"')){throw "Article lost About navigation"}
  foreach($token in @('href="./index.html"','href="./about/"','aria-current="page"')){
   if(-not $archive.Contains($token)){throw "Blog lost navigation: $token"}
  }
