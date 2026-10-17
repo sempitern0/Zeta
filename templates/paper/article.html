@@ -20,10 +20,10 @@ $styles.html()$
     <header class="paper-header">
       <div class="paper-shell paper-header-inner">
         <a class="paper-brand" href="$rel_root$index.html">$site_title$</a>
-        <nav class="paper-nav" aria-label="Primary navigation">
+        <nav class="paper-nav" aria-label="Primary navigation">$if(page_navigation)$page_navigation$else$
           <a href="$rel_root$index.html">Home</a>
           <a href="$rel_root$posts.html">Archive</a>
-        </nav>
+        $endif$</nav>
       </div>
     </header>
 
