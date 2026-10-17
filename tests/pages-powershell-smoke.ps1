@@ -86,6 +86,15 @@ Should not publish.
   if($sitemap.Contains('/posts/')){throw "$theme blog is disabled but post URLs remain"}
   Write-Host "[OK] $theme pages without blog" -ForegroundColor Green
  }
+ # Regression: blog navigation must keep all visible Markdown pages.
+ $navSite=Join-Path $Sites 'pages-paper'
+ $navConfig=Join-Path $navSite 'config.yaml'
+ Save $navConfig ([IO.File]::ReadAllText($navConfig).Replace('blog: false','blog: true'))
+ Build 'pages-paper'
+ $archive=[IO.File]::ReadAllText((Join-Path $navSite 'public/posts.html'))
+ foreach($token in @('href="./index.html"','href="./about/"','aria-current="page"')){
+  if(-not $archive.Contains($token)){throw "Blog lost navigation: $token"}
+ }
  # Regression: new page must bootstrap a missing homepage and preserve it.
  . (Join-Path $Root 'lib/powershell/Workspace.ps1')
  $target=Join-Path $Sites 'pages-zen'
