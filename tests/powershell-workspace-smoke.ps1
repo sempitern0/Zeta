@@ -41,6 +41,12 @@ build:
  }
  if($html.Contains('<script>demo</script>')){throw 'Unescaped site content in dashboard'}
  if(!(Test-Path (Join-Path $Sites 'workspace.css'))){throw 'Shared stylesheet missing'}
+  foreach($theme in @('zen','paper','console','indie','organization','brutalist','folio','aurora')){
+   if(-not $html.Contains('id="theme-'+$theme+'"')){throw "Missing theme preview: $theme"}
+  }
+  if(-not $html.Contains('id="theme-gallery"')){throw 'Missing theme gallery'}
+  if((Recommended-ZetaFont 'console') -ne 'cascadia'){throw 'Incorrect console font'}
+  if((Recommended-ZetaFont 'folio') -ne 'source-code'){throw 'Incorrect folio font'}
  Write-Host '[OK] PowerShell workspace dashboard, escaping, statuses and shared CSS.'
 }finally{
  if(Test-Path $Sites){Remove-Item -LiteralPath $Sites -Recurse -Force}
