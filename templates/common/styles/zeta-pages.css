@@ -134,7 +134,7 @@ body.zeta-catalog .site-header nav a[aria-current="page"] {
  */
 body > header {
   background-color: var(--zeta-nav-background,
-    var(--page-panel, var(--surface, var(--panel, var(--bg, transparent)))));
+    var(--surface, var(--panel, var(--page-panel, var(--bg, transparent)))));
 }
 /* Explicitly outrank legacy theme-specific header backgrounds, without
    changing their typography, borders, layouts or unrelated headers. */
@@ -145,7 +145,7 @@ body > header.paper-header,
 body > header.console-bar,
 body > header.site-header {
   background-color: var(--zeta-nav-background,
-    var(--page-panel, var(--surface, var(--panel, var(--bg, transparent)))));
+    var(--surface, var(--panel, var(--page-panel, var(--bg, transparent)))));
 }
 /* Catalog themes used hard-coded header surfaces rather than a CSS palette
    token; bridge their existing page-header colors in the shared core. */
