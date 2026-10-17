@@ -84,6 +84,8 @@ for html in "$dir/public/posts.html"; do
  grep -Fq 'href="./about/"' "$html"
  grep -Fq 'href="./index.html"' "$html"
  grep -Fq 'aria-current="page"' "$html"
+ grep -Fq 'href="../../about/"' "$dir/public/posts/2026/hidden.html"
+ grep -Fq 'href="../../index.html"' "$dir/public/posts/2026/hidden.html"
 done
 
 # Regression: creating a page in a site with a missing homepage auto-bootstraps index.md.
