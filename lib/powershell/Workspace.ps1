@@ -379,6 +379,15 @@ function RemoveSite([string]$name){
  Dashboard
  Write-Host "Deleted $name" -ForegroundColor Yellow
 }
+function Recommended-ZetaFont([string]$theme){
+ switch($theme){
+  {$_ -in @('zen','aurora')}{return 'jetbrains'}
+  'console'{return 'cascadia'}
+  'indie'{return 'fira'}
+  'brutalist'{return 'ibm-plex'}
+  default{return 'source-code'}
+ }
+}
 function FontSite([string]$name,[string]$choice=''){
  $dir=SiteDir $name
  [void](ConfigPath $name)
