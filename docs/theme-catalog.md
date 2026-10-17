@@ -80,3 +80,5 @@ bash tests/catalog-smoke.sh
 ~~~
 
 The tests build all eight themes using Pandoc without running GitHub Actions.
+
+During interactive `create` and interactive theme selection, Zeta asks whether to install the recommended open-source coding font. The default is **No**. Files already present in `.zeta-cache/fonts` are reused before attempting downloads; the site retains its system font fallbacks if the download fails.
