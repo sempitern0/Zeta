@@ -593,6 +593,13 @@ change_site_appearance() {
         "$theme" "$highlight" "$content_rel" "$output_rel"
 
     msg_success "Appearance updated: theme='${theme}', highlight='${highlight}'."
+    if [[ -t 0 ]]; then
+        local font_reply
+        read -rp "Install suggested open-source font ($(recommended_theme_font "$theme"))? [y/N]: " font_reply
+        if [[ "$font_reply" =~ ^[Yy] ]]; then
+            install_open_font "$site_slug" "$(recommended_theme_font "$theme")" || msg_warn "Font setup failed; using fallback fonts."
+        fi
+    fi
     msg_info "Regenerating public/ with the new appearance."
     build_site "$site_slug" && update_sites_index
 }
@@ -1075,6 +1082,9 @@ create_new_site() {
     local selected_theme selected_pandoc_theme
     selected_theme=$(choose_theme_interactive "zen")
     selected_pandoc_theme=$(choose_highlight_interactive "zenburn")
+    local install_suggested_font=false font_reply
+    read -rp "Install suggested open-source font ($(recommended_theme_font "$selected_theme"))? [y/N]: " font_reply
+    [[ "$font_reply" =~ ^[Yy] ]] && install_suggested_font=true
 
     local enable_blog=true enable_about=true enable_contact=false reply
     read -rp "Include a blog with Markdown posts? [Y/n]: " reply
@@ -1106,6 +1116,9 @@ create_new_site() {
         printf '%s\n' "$page_body" > "${site_path}/pages/${page_template}.md"
     done
     if [[ "$enable_blog" == true ]]; then create_example_posts "$site_slug" || return 1; fi
+    if [[ "$install_suggested_font" == true ]]; then
+        install_open_font "$site_slug" "$(recommended_theme_font "$selected_theme")" || msg_warn "Font unavailable; theme fallbacks remain enabled."
+    fi
 
     msg_success "Site '${site_slug}' created."
     msg_info "Markdown homepage: ${site_path}/pages/index.md"
