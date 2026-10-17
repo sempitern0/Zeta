@@ -551,6 +551,11 @@ build_site() {
             pandoc_opts+=(--lua-filter="$table_filter")
         fi
 
+        if [[ "$pages_mode" == true ]]; then
+            local article_nav
+            article_nav=$(zeta_pages_navigation "$site_dir" "$rel_root" blog "$blog_enabled")
+            pandoc_opts+=(-V "page_navigation=${article_nav}")
+        fi
         append_css_vars pandoc_opts "$rel_root" "${theme_dir}/styles" "${site_dir}/styles"
 
         if [[ -n "${post[tags]}" ]]; then
@@ -615,6 +620,11 @@ build_site() {
             -V "hero_alt=$(html_escape "$landing_hero_alt")"
             -V "landing_content=${landing_content}"
         )
+        if [[ "$pages_mode" == true && "$base_html" == posts.html ]]; then
+            local archive_nav
+            archive_nav=$(zeta_pages_navigation "$site_dir" "" blog "$blog_enabled")
+            page_opts+=(-V "page_navigation=${archive_nav}")
+        fi
         append_css_vars page_opts "" "${theme_dir}/styles" "${site_dir}/styles"
         if ! pandoc /dev/null "${page_opts[@]}" -o "${output_dir}/${base_html}"; then
             msg_error "Pandoc failed while rendering page template: ${base_html}"
