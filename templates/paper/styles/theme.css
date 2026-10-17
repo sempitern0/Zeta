@@ -258,3 +258,19 @@ textarea:focus-visible {
     transition-duration: 0.01ms !important;
   }
 }
+
+
+/* Keep the blog's navigation visually consistent with the Markdown page shell. */
+.paper-header .paper-nav a {
+  color: #a33b20;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1rem;
+  text-decoration: none;
+  text-underline-offset: .28em;
+}
+.paper-header .paper-nav a:hover,
+.paper-header .paper-nav a[aria-current="page"] {
+  color: #a33b20;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+}
