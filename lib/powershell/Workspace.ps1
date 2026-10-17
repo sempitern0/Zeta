@@ -154,6 +154,423 @@ function NewSite{
   }
  }
 }
+# Update only requested YAML scalars; keep custom sections and build.blog.
+function Set-ZetaConfigFields([string]$yaml,[hashtable]$fields) {
+ $newline=if($yaml.Contains("`r`n")){"`r`n"}else{"`n"}
+ $sections=@{site=@('title','description','author','language','url');theme=@('name','pandoc_theme')}
+ $values=@{site=@{title=$fields.title;description=$fields.description;author=$fields.author;language=$fields.language;url=$fields.url};theme=@{name=$fields.theme;pandoc_theme=$fields.highlight}}
+ $lines=$yaml -split '\r?\n'
+ $result=[Collections.Generic.List[string]]::new()
+ $current='';$seen=@{};$sectionSeen=@{}
+ foreach($line in $lines){
+  if($line -match '^([A-Za-z][A-Za-z0-9_-]*):\s*(?:#.*)?
+ $c=Config $name
+ foreach($key in @('title','description','author','language','url')){$c[$key]=Ask $key $c[$key]}
+ if($c.language -notmatch '^[A-Za-z]{2,3}([_-][A-Za-z0-9]{2,8})*$'){
+  throw "Invalid language '$($c.language)'."
+ }
+ if($c.url -notmatch '^https?://[^\s?#]+$'){throw "Invalid production URL '$($c.url)'."}
+ $c.url=$c.url.TrimEnd('/')
+ $c.theme=SelectItem 'Theme' @(Themes) $c.theme
+ $c.highlight=SelectItem 'Pandoc highlight style' @(Get-ZetaHighlightStyles) $c.highlight
+ Save (ConfigPath $name) (Set-ZetaConfigFields ([IO.File]::ReadAllText((ConfigPath $name))) $c)
+ Dashboard
+ Write-Host "[OK] Configuration updated for $name" -ForegroundColor Green
+}
+# Only modify the two theme keys: never serialize away custom YAML or build paths.
+function Set-ZetaThemeFields([string]$yaml,[string]$theme,[string]$style) {
+ $newline=if($yaml.Contains("`r`n")){"`r`n"}else{"`n"}
+ $lines=$yaml -split '\r?\n'
+ $result=[Collections.Generic.List[string]]::new()
+ $inside=$false;$sectionFound=$false
+ $nameFound=$false;$styleFound=$false
+ foreach($line in $lines){
+  if($line -match '^theme:\s*(?:#.*)?$'){
+   if($sectionFound){throw 'Duplicate theme sections in site configuration'}
+   $inside=$true;$sectionFound=$true
+   $result.Add($line)
+   continue
+  }
+  if($inside -and $line -match '^[^\s#]'){
+   if(-not $nameFound){$result.Add('  name: '+(Quote $theme))}
+   if(-not $styleFound){$result.Add('  pandoc_theme: '+(Quote $style))}
+   $inside=$false
+  }
+  if($inside -and $line -match '^\s+name:\s*'){
+   $result.Add('  name: '+(Quote $theme))
+   $nameFound=$true
+   continue
+  }
+  if($inside -and $line -match '^\s+pandoc_theme:\s*'){
+   $result.Add('  pandoc_theme: '+(Quote $style))
+   $styleFound=$true
+   continue
+  }
+  $result.Add($line)
+ }
+ if($inside){
+  if(-not $nameFound){$result.Add('  name: '+(Quote $theme))}
+  if(-not $styleFound){$result.Add('  pandoc_theme: '+(Quote $style))}
+ }
+ if(-not $sectionFound){
+  $result.Add('theme:')
+  $result.Add('  name: '+(Quote $theme))
+  $result.Add('  pandoc_theme: '+(Quote $style))
+ }
+ $result.ToArray() -join $newline
+}
+function ThemeSite([string]$name,[string]$theme,[string]$style=''){
+ $c=Config $name
+ $configPath=ConfigPath $name
+ if(-not (SafeDir $c.content)){
+  throw "Unsafe build.content_dir '$($c.content)' in $configPath. Use a relative directory, e.g. posts."
+ }
+ if(-not (SafeDir $c.output)){
+  throw "Unsafe build.output_dir '$($c.output)' in $configPath. Use a relative directory, e.g. public."
+ }
+ if(!$theme){$theme=SelectItem 'Theme' @(Themes) $c.theme}
+ if(@(Themes) -notcontains $theme){throw "Unknown theme '$theme'."}
+ if(!$style){$style=SelectItem 'Pandoc highlight style' @(Get-ZetaHighlightStyles) $c.highlight}
+ if(@(Get-ZetaHighlightStyles) -notcontains $style){throw "Unknown highlight style '$style'."}
+ $fontReply=Ask ("Install suggested open-source font ({0})? (y/N)" -f (Recommended-ZetaFont $theme)) 'N'
+ $installFont=$fontReply -match '^[Yy]'
+ $originalBytes=[IO.File]::ReadAllBytes($configPath)
+ try{
+  $newYaml=Set-ZetaThemeFields ([IO.File]::ReadAllText($configPath)) $theme $style
+  Save $configPath $newYaml
+  $check=Config $name
+  if($check.theme -ne $theme -or $check.highlight -ne $style){
+   throw 'Theme selection was not saved correctly.'
+  }
+  if($installFont){Install-ZetaSiteFont $name (Recommended-ZetaFont $theme)}
+  Build $name
+ }catch{
+  [IO.File]::WriteAllBytes($configPath,$originalBytes)
+  throw
+ }
+ Dashboard
+ Write-Host "[OK] Theme changed to '$theme' with '$style' highlighting." -ForegroundColor Green
+}
+function NewPost([string]$name){
+ $c=Config $name
+ $title=Ask 'Title';if(!$title){throw 'Title required'}
+ $slug=Slug (Ask 'Slug' (Slug $title))
+ $date=Get-Date -Format yyyy-MM-dd
+ $file=Join-Path (Join-Path (SiteDir $name) $c.content) "$date-$slug.md"
+ if((Test-Path $file) -and !$Force){throw 'Article exists'}
+ $desc=Ask 'Description' $title
+ $category=Ask 'Category (optional)' ''
+ $tags=Ask 'Tags (comma-separated)' ''
+ $body=@(
+  '---'
+  ('title: {0}' -f (Quote $title))
+  ('author: {0}' -f (Quote $c.author))
+  ('date: {0}' -f (Quote $date))
+  ('description: {0}' -f (Quote $desc))
+  ('slug: {0}' -f (Quote $slug))
+  ('category: {0}' -f (Quote $category))
+  'tags: []'
+  '---'
+  ''
+  'Write your introduction here.'
+  ''
+  '## First section'
+  ''
+ )
+ if($tags){
+  $body=@($body[0..6])+@('tags:')+@(foreach($t in ($tags -split ',')){if($t.Trim()){'  - '+(Quote $t.Trim())}})+@($body[8..($body.Length-1)])
+ }
+ Save $file ($body -join [Environment]::NewLine)
+ Write-Host "Created $file" -ForegroundColor Green
+}
+function ListSites{
+ foreach($name in (SiteNames)){
+  try{
+   $c=Config $name
+   if(-not (SafeDir $c.content)){throw "Invalid content_dir '$($c.content)' in $(ConfigPath $name)"}
+   if(-not (SafeDir $c.output)){throw "Invalid output_dir '$($c.output)' in $(ConfigPath $name)"}
+   $status=if(Test-Path (Join-Path (SiteDir $name) "$($c.output)/index.html")){'built'}else{'draft'}
+   Write-Host ("{0,-24} {1,3} posts  {2,-15} {3}" -f $name,@(Posts $name).Count,$c.theme,$status)
+  }catch{
+   Write-Host ("{0,-24} CONFIG ERROR: {1}" -f $name,$_.Exception.Message) -ForegroundColor Yellow
+  }
+ }
+}
+function Clean([string]$name){
+ $c=Config $name
+ if(!(SafeDir $c.output) -or !(SafeDir $c.content)){throw 'Unsafe output directory'}
+ $out=$c.output.Replace('\','/').Trim('/');$input=$c.content.Replace('\','/').Trim('/')
+ if($out -eq $input -or $out.StartsWith("$input/") -or $input.StartsWith("$out/")){throw 'Overlapping output and content directories'}
+ $p=Join-Path (SiteDir $name) $c.output
+ if(Test-Path $p){Remove-Item $p -Recurse -Force}
+}
+function Preview([string]$name,[int]$serverPort){
+ Build $name
+ $c=Config $name
+ $dir=Join-Path (SiteDir $name) $c.output
+ Serve $dir $serverPort
+}
+function Serve([string]$dir,[int]$serverPort){
+ if($serverPort -lt 1 -or $serverPort -gt 65535){throw "Invalid preview port: $serverPort"}
+ if(-not (Test-Path -LiteralPath $dir -PathType Container)){
+  throw "Cannot serve missing directory: $dir"
+ }
+ $listener=[Net.HttpListener]::new()
+ $listener.Prefixes.Add("http://localhost:$serverPort/")
+ $started=$false
+ $interactiveConsole=$false
+ try{
+  try{
+   $interactiveConsole=($Host.Name -eq 'ConsoleHost' -and -not [Console]::IsInputRedirected)
+  }catch [System.InvalidOperationException]{
+   # Windows Terminal, IDE hosts, and redirected input can differ.
+  }
+  $listener.Start()
+  $started=$true
+  Write-Host "http://localhost:$serverPort/  (Ctrl+C or Q to stop)" -ForegroundColor Cyan
+  $running=$true
+  while($running -and $listener.IsListening){
+   # A synchronous GetContext() blocks PowerShell's Ctrl+C pipeline stop.
+   # Poll an asynchronous accept instead, yielding to the host every 100 ms.
+   $pending=$listener.GetContextAsync()
+   while(-not $pending.IsCompleted){
+    Start-Sleep -Milliseconds 100
+    if($interactiveConsole){
+     try{
+      if([Console]::KeyAvailable){
+       $key=[Console]::ReadKey($true)
+       if($key.Key -eq [ConsoleKey]::Q){
+        $running=$false
+        break
+       }
+      }
+     }catch [System.InvalidOperationException]{
+      $interactiveConsole=$false
+     }catch [System.IO.IOException]{
+      $interactiveConsole=$false
+     }
+    }
+   }
+   if(-not $running){break}
+   # Preserve the existing request routing and media types.
+   $ctx=$pending.GetAwaiter().GetResult()
+   try{
+    $rel=[uri]::UnescapeDataString($ctx.Request.Url.AbsolutePath.TrimStart('/'))
+    if(!$rel -or $rel.EndsWith('/')){$rel+='index.html'}
+    $full=[IO.Path]::GetFullPath((Join-Path $dir $rel))
+    $base=[IO.Path]::GetFullPath($dir).TrimEnd([IO.Path]::DirectorySeparatorChar)+[IO.Path]::DirectorySeparatorChar
+    $comparison=if($IsWindows){[StringComparison]::OrdinalIgnoreCase}else{[StringComparison]::Ordinal}
+    if(!$full.StartsWith($base,$comparison) -or !(Test-Path -LiteralPath $full -PathType Leaf)){
+     $ctx.Response.StatusCode=404
+    }else{
+     $ext=[IO.Path]::GetExtension($full).ToLowerInvariant()
+     $type=@{'.html'='text/html';'.css'='text/css';'.js'='text/javascript';'.svg'='image/svg+xml';
+       '.png'='image/png';'.jpg'='image/jpeg';'.webp'='image/webp';'.xml'='application/xml'}
+     $ctx.Response.ContentType=if($type.ContainsKey($ext)){$type[$ext]}else{'application/octet-stream'}
+     $bytes=[IO.File]::ReadAllBytes($full)
+     $ctx.Response.ContentLength64=$bytes.Length
+     $ctx.Response.OutputStream.Write($bytes,0,$bytes.Length)
+    }
+   }finally{
+    $ctx.Response.Close()
+   }
+  }
+ }finally{
+  if($started){
+   $listener.Stop()
+  }
+  $listener.Close()
+  if($started){Write-Host 'Zeta local server stopped. Port released.' -ForegroundColor Green}
+ }
+}
+
+
+function RemoveSite([string]$name){
+ $path=SiteDir $name
+ [void](ConfigPath $name)
+ if(!$Force){
+  $confirmation=Read-Host "Type '$name' to delete the entire site"
+  if($confirmation -cne $name){Write-Host 'Cancelled';return}
+ }
+ Remove-Item -LiteralPath $path -Recurse -Force
+ Dashboard
+ Write-Host "Deleted $name" -ForegroundColor Yellow
+}
+function Recommended-ZetaFont([string]$theme){
+ switch($theme){
+  {$_ -in @('zen','aurora')}{return 'jetbrains'}
+  'console'{return 'cascadia'}
+  'indie'{return 'fira'}
+  'brutalist'{return 'ibm-plex'}
+  default{return 'source-code'}
+ }
+}
+
+function Get-ZetaFontSources {
+ return @{
+  'cascadia'=@{id='CascadiaCode';family='Cascadia Code';license='https://raw.githubusercontent.com/microsoft/cascadia-code/main/LICENSE';files=@(
+   ,@('CascadiaCode.woff2','normal','200 700','https://raw.githubusercontent.com/sempitern0/Zeta/main/templates/common/assets/fonts/CascadiaCode/CascadiaCode.woff2'))}
+  'jetbrains'=@{id='JetBrainsMono';family='JetBrains Mono';license='https://raw.githubusercontent.com/JetBrains/JetBrainsMono/master/OFL.txt';files=@(
+   @('JetBrainsMono-Regular.woff2','normal','400','https://raw.githubusercontent.com/JetBrains/JetBrainsMono/master/fonts/webfonts/JetBrainsMono-Regular.woff2'),
+   @('JetBrainsMono-Bold.woff2','normal','700','https://raw.githubusercontent.com/JetBrains/JetBrainsMono/master/fonts/webfonts/JetBrainsMono-Bold.woff2'))}
+  'fira'=@{id='FiraCode';family='Fira Code';license='https://raw.githubusercontent.com/tonsky/FiraCode/master/LICENSE';files=@(
+   ,@('FiraCode-Regular.woff2','normal','400','https://raw.githubusercontent.com/sempitern0/Zeta/main/templates/common/assets/fonts/FiraCode/FiraCode-Regular.woff2'))}
+  'ibm-plex'=@{id='IBMPlexMono';family='IBM Plex Mono';license='https://raw.githubusercontent.com/IBM/plex/master/LICENSE.txt';files=@(
+   ,@('IBMPlexMono-Regular.woff2','normal','400','https://raw.githubusercontent.com/IBM/plex/master/packages/plex-mono/fonts/complete/woff2/IBMPlexMono-Regular.woff2'))}
+  'source-code'=@{id='SourceCodePro';family='Source Code Pro';license='https://raw.githubusercontent.com/adobe-fonts/source-code-pro/release/LICENSE.md';files=@(
+   ,@('SourceCodePro-Regular.woff2','normal','400','https://raw.githubusercontent.com/adobe-fonts/source-code-pro/release/WOFF2/TTF/SourceCodePro-Regular.ttf.woff2'))}
+ } 
+}
+function Install-ZetaSiteFont([string]$name,[string]$choice){
+ $dir=SiteDir $name
+ [void](ConfigPath $name)
+ $sources=Get-ZetaFontSources
+ if(!$sources.ContainsKey($choice)){throw "Unknown font: $choice"}
+ $spec=$sources[$choice]
+ $cache=Join-Path $Root ".zeta-cache/fonts/$($spec.id)"
+ $assets=Join-Path $dir 'assets/fonts'
+ $styles=Join-Path $dir 'styles'
+ $fontdir=Join-Path $assets $spec.id
+ $stage=Join-Path $dir ('.zeta-font-ps-'+[guid]::NewGuid().ToString('N'))
+ try{
+  [void](New-Item -ItemType Directory -Path $cache,$stage -Force)
+  $downloads=[Collections.Generic.List[object]]::new()
+  foreach($fileSpec in $spec.files){$downloads.Add($fileSpec)}
+  $downloads.Add(@('LICENSE.txt','','',$spec.license))
+  foreach($entry in $downloads){
+   $dest=Join-Path $cache $entry[0]
+   if((Test-Path -LiteralPath $dest -PathType Leaf) -and (Get-Item -LiteralPath $dest).Length -gt 0){
+    Write-Host "[CACHE] $($spec.id)/$($entry[0])"
+   }else{
+    $partial=Join-Path $stage ('download-'+$entry[0])
+    Invoke-WebRequest -Uri $entry[3] -OutFile $partial -ErrorAction Stop
+    if(!(Test-Path -LiteralPath $partial) -or (Get-Item -LiteralPath $partial).Length -le 0){throw "Empty font download: $($entry[0])"}
+    Move-Item -LiteralPath $partial -Destination $dest -Force
+   }
+   Copy-Item -LiteralPath $dest -Destination $stage -Force
+  }
+  $cssParts=[Collections.Generic.List[string]]::new()
+  foreach($entry in $spec.files){
+   $cssParts.Add(('@font-face { font-family: "{0}"; src: url("../assets/fonts/{1}/{2}") format("woff2"); font-style: {3}; font-weight: {4}; font-display: swap; }' -f $spec.family,$spec.id,$entry[0],$entry[1],$entry[2]))
+  }
+  $cssParts.Add((':root { --font-mono: "{0}", ui-monospace, Consolas, monospace; }' -f $spec.family))
+  [void](New-Item -ItemType Directory -Path $assets,$styles -Force)
+  if(Test-Path -LiteralPath $fontdir){Remove-Item -LiteralPath $fontdir -Recurse -Force}
+  [void](New-Item -ItemType Directory -Path $fontdir -Force)
+  foreach($entry in $downloads){Copy-Item -LiteralPath (Join-Path $stage $entry[0]) -Destination $fontdir -Force}
+  Save (Join-Path $styles '90-font.css') ($cssParts -join [Environment]::NewLine)
+ }finally{
+  if(Test-Path -LiteralPath $stage){Remove-Item -LiteralPath $stage -Recurse -Force}
+ }
+}
+function FontSite([string]$name,[string]$choice=''){
+ $dir=SiteDir $name
+ [void](ConfigPath $name)
+
+ $suggested=Recommended-ZetaFont ((Config $name).theme)
+ Write-Host "Suggested font for this theme: $suggested (optional)"
+ if($choice -eq 'recommended'){$choice=$suggested}
+ if(!$choice){
+  $choice=SelectItem 'Font' @('recommended','cascadia','jetbrains','fira','ibm-plex','source-code','remove') 'recommended'
+  if($choice -eq 'recommended'){$choice=$suggested}
+ }
+ $assets=Join-Path $dir 'assets/fonts';$styles=Join-Path $dir 'styles'
+ if($choice -eq 'remove'){
+  if(Test-Path $assets){Remove-Item -LiteralPath $assets -Recurse -Force}
+  $css=Join-Path $styles '90-font.css'
+  if(Test-Path $css){Remove-Item -LiteralPath $css -Force}
+  Write-Host 'Theme default fonts restored'
+  Build $name;Dashboard;return
+ }
+ Install-ZetaSiteFont $name $choice
+ Build $name
+ Dashboard
+}
+
+function ListPosts([string]$name){
+ $c=Config $name
+ foreach($file in @(Posts $name)){
+  $p=PostInfo $file $c.author
+  Write-Host ('{0,-12} {1,-40} {2}' -f $p.date,$p.title,$file.Name)
+ }
+}
+
+
+function ListPages([string]$name) {
+ $dir=SiteDir $name
+ [void](ConfigPath $name)
+ $pageDir=Join-Path $dir 'pages'
+ if(!(Test-Path -LiteralPath $pageDir -PathType Container)){
+  Write-Host "No Markdown pages in $name";return
+ }
+ foreach($file in @(Get-ChildItem -LiteralPath $pageDir -Filter '*.md' -File | Sort-Object Name)){
+  $title=Meta $file.FullName title
+  Write-Host ("  {0,-20} {1}" -f $file.BaseName,$title)
+ }
+}
+function NewPage([string]$name,[string]$title='', [string]$slug='') {
+ $site=SiteDir $name
+ [void](ConfigPath $name)
+ if(!$title){$title=Read-Host 'Page title'}
+ if([string]::IsNullOrWhiteSpace($title)){throw 'Page title cannot be empty'}
+ if(!$slug){$slug=Slug $title}
+ if($slug -notmatch '^[a-z0-9]+(-[a-z0-9]+)*$' -or $slug -in @('posts','blog','index')){
+  throw "Invalid page slug: $slug"
+ }
+ $target=Join-Path $site "pages/$slug.md"
+ if(Test-Path -LiteralPath $target){throw "Page already exists: $target"}
+ if(-not (Test-Path -LiteralPath (Join-Path $site 'pages') -PathType Container)){
+  [void](New-Item -ItemType Directory -Path (Join-Path $site 'pages') -Force)
+ }
+ Ensure-ZetaPageHome $name
+ $desc="Information about $title"
+ $text=@(
+  '---'
+  ('title: {0}' -f (Quote $title))
+  ('description: {0}' -f (Quote $desc))
+  'nav: true'
+  'nav_order: 50'
+  'draft: false'
+  '---'
+  ''
+  ('## '+$title)
+  ''
+  'Write your page here in Markdown.'
+ ) -join [Environment]::NewLine
+ Save $target $text
+ Write-Host "[OK] Markdown page created: $target" -ForegroundColor Green
+ if(Test-ZetaPandoc){Build $name;Dashboard}
+}
+){
+   $next=$Matches[1]
+   if($current -in @('site','theme')){
+    foreach($key in $sections[$current]){if(-not $seen.ContainsKey("$current.$key")){$result.Add("  ${key}: "+(Quote $values[$current][$key]));$seen["$current.$key"]=$true}}
+   }
+   $current=$next
+   if($current -in @('site','theme')){if($sectionSeen.ContainsKey($current)){throw "Duplicate section: $current"};$sectionSeen[$current]=$true}
+   $result.Add($line);continue
+  }
+  if($current -in @('site','theme') -and $line -match '^\s{2}([A-Za-z][A-Za-z0-9_-]*):'){
+   $key=$Matches[1]
+   if($sections[$current] -contains $key){
+    if($seen.ContainsKey("$current.$key")){throw "Duplicate configuration key: $current.$key"}
+    $result.Add("  ${key}: "+(Quote $values[$current][$key]))
+    $seen["$current.$key"]=$true;continue
+   }
+  }
+  $result.Add($line)
+ }
+ if($current -in @('site','theme')){
+  foreach($key in $sections[$current]){if(-not $seen.ContainsKey("$current.$key")){$result.Add("  ${key}: "+(Quote $values[$current][$key]))}}
+ }
+ foreach($section in @('site','theme')){
+  if(-not $sectionSeen.ContainsKey($section)){
+   $result.Add("$section"+':')
+   foreach($key in $sections[$section]){$result.Add("  ${key}: "+(Quote $values[$section][$key]))}
+  }
+ }
+ return ($result.ToArray() -join $newline)
+}
 function EditSite([string]$name){
  $c=Config $name
  foreach($key in @('title','description','author','language','url')){$c[$key]=Ask $key $c[$key]}
