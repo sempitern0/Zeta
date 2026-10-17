@@ -3,6 +3,14 @@
 Set-StrictMode -Version Latest
 $ErrorActionPreference='Stop'
 $Root=Split-Path -Parent $PSScriptRoot
+# Fail before dot-sourcing a malformed module, including files not exercised by this test.
+foreach($relative in @('zeta.ps1','lib/powershell/Core.ps1','lib/powershell/Workspace.ps1','lib/powershell/Console.ps1','lib/powershell/Dependencies.ps1','lib/powershell/Doctor.ps1')){
+ $source=Join-Path $Root $relative
+ $tokens=$null;$errors=$null
+ [void][System.Management.Automation.Language.Parser]::ParseFile($source,[ref]$tokens,[ref]$errors)
+ if($errors.Count -gt 0){throw ("PowerShell parse failed in {0}: {1}" -f $relative,($errors | ForEach-Object Message) -join '; ')}
+}
+
 $Templates=Join-Path $Root 'templates'
 $Utf8=[Text.UTF8Encoding]::new($false)
 $Sites=Join-Path ([IO.Path]::GetTempPath()) ('zeta-workspace-'+[Guid]::NewGuid().ToString('N'))
