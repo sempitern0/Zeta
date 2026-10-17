@@ -37,6 +37,8 @@ itself does not require Pandoc. Run `deps` to inspect available dependencies.
 Preview uses localhost port 8000. Stop it with Ctrl+C. Run either entry point
 without arguments for the menu, or with `help` for all commands.
 
+The workspace index (`dashboard` / `serve`) now includes a visual gallery of all eight themes without creating sample site directories. Run `fonts SITE recommended` to optionally download a coding font selected for the theme. No client-side framework or remote font loading is required.
+
 ## Write → build → check → publish
 
 | Edit | Purpose |
@@ -83,7 +85,7 @@ build preserves the previous published output. See [deployment](docs/deployment.
 | `edit SITE` | Configure metadata and appearance |
 | `pages SITE` / `new-page SITE "Privacy policy" privacy` | List or create static pages |
 | `posts SITE` / `new-post SITE` | List or create articles |
-| `theme SITE THEME STYLE` / `fonts SITE` | Theme, highlighting and local fonts |
+| `theme SITE THEME STYLE` / `fonts SITE [recommended]` | Theme, highlighting and optional open-source coding font |
 | `build SITE` / `build-all` | Generate one/all sites |
 | `doctor SITE` | Diagnose source, links, metadata and sitemap |
 | `preview SITE` / `dashboard` | Preview one site / refresh the workspace catalog |
