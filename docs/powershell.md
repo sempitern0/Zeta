@@ -69,3 +69,5 @@ Site creation on either shell copies two Markdown demonstrations from `templates
 ~~~
 
 These tests use temporary workspaces. They do **not** require GitHub Actions. See [cross-platform validation](cross-platform-validation.md).
+
+On site creation and interactive theme changes, PowerShell offers the theme's recommended open-source coding font (default: No). The installer checks `.zeta-cache/fonts` first and downloads only missing files. After updating Zeta, an existing site affected by the old TSV replacement error can be rebuilt using `.\zeta.ps1 build SITE` without recreating its Markdown sources.
