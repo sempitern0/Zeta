@@ -74,6 +74,18 @@ EOF
  grep -Fq 'href="../index.html#content"' "$dir/public/about/index.html"
  grep -Fq 'https://example.org/about/' "$dir/public/sitemap.xml"
  ! grep -Fq '/posts/' "$dir/public/sitemap.xml"
+ # Verify the enabled blog and its article preserve the same full menu for every theme.
+ sed -i 's/blog: false/blog: true/' "$dir/config.yaml"
+ bash "$ROOT/zeta.sh" build "$name" >/dev/null
+ for html in "$dir/public/posts.html" "$dir/public/posts/2026/hidden.html"; do
+   test -s "$html"
+   grep -Fq 'aria-current="page"' "$html"
+   ! grep -Fq '>page_navigation<' "$html"
+ done
+ grep -Fq 'href="./about/"' "$dir/public/posts.html"
+ grep -Fq 'href="../../about/"' "$dir/public/posts/2026/hidden.html"
+ grep -Fq -- '--zeta-nav-background' "$dir/public/styles/zeta-pages.css"
+ sed -i 's/blog: true/blog: false/' "$dir/config.yaml"
  echo "[OK] $theme: Markdown pages, links, sitemap, blog disabled"
 done
 
