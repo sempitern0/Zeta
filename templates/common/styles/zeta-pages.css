@@ -122,3 +122,38 @@ body.zeta-catalog .site-header nav a[aria-current="page"] {
   text-decoration: underline;
   text-decoration-thickness: 2px;
 }
+
+
+/*
+ * Core navigation surface contract.
+ *
+ * Every page's top-level <header> uses --zeta-nav-background. Define this
+ * variable in the theme's :root rules to customize new themes consistently.
+ * Legacy themes are adapted through their established semantic palette tokens;
+ * no generated HTML rewriting or JavaScript is needed.
+ */
+body > header {
+  background-color: var(--zeta-nav-background,
+    var(--page-panel, var(--surface, var(--panel, var(--bg, transparent)))));
+}
+/* Explicitly outrank legacy theme-specific header backgrounds, without
+   changing their typography, borders, layouts or unrelated headers. */
+body.zeta-static-page > header.zeta-page-header,
+body.zeta-landing > header.header,
+body.zeta-catalog > header.site-header,
+body > header.paper-header,
+body > header.console-bar,
+body > header.site-header {
+  background-color: var(--zeta-nav-background,
+    var(--page-panel, var(--surface, var(--panel, var(--bg, transparent)))));
+}
+/* Catalog themes used hard-coded header surfaces rather than a CSS palette
+   token; bridge their existing page-header colors in the shared core. */
+body.zeta-catalog.theme-brutalist { --zeta-nav-background: #111; }
+body.zeta-catalog.theme-folio { --zeta-nav-background: #e9ede6; }
+body.zeta-catalog.theme-aurora { --zeta-nav-background: #151e48; }
+/* Organization's old Markdown header used a different blue than its white
+   landing header. Match the existing white header without altering panels. */
+body.zeta-theme-organization > header.zeta-page-header {
+  --zeta-nav-background: #fff;
+}
