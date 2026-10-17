@@ -37,6 +37,8 @@ puedes crear sitios antes de instalarlo. El comando `deps` comprueba dependencia
 La previsualización usa localhost y el puerto 8000. Detén el servidor con Ctrl+C.
 Ejecuta la entrada sin argumentos para abrir el menú o con `help` para ver comandos.
 
+El índice del espacio de trabajo (`dashboard` / `serve`) incluye una galería visual de los ocho temas sin crear sitios de demostración. `fonts SITE recommended` permite instalar opcionalmente una fuente de código abierto sugerida para el tema.
+
 ## Escribir → generar → comprobar → publicar
 
 | Edita | Contenido |
@@ -83,7 +85,7 @@ la generación, se conserva la salida anterior. Consulta [publicación](docs/dep
 | `edit SITE` | Metadatos y apariencia |
 | `pages SITE` / `new-page SITE "Privacidad" privacidad` | Listar o crear páginas |
 | `posts SITE` / `new-post SITE` | Listar o crear artículos |
-| `theme SITE THEME STYLE` / `fonts SITE` | Tema, resaltado y fuentes locales |
+| `theme SITE THEME STYLE` / `fonts SITE [recommended]` | Tema, resaltado y fuentes abiertas opcionales |
 | `build SITE` / `build-all` | Generar uno/todos los sitios |
 | `doctor SITE` | Diagnosticar fuentes, enlaces, metadatos y sitemap |
 | `preview SITE` / `dashboard` | Previsualizar / actualizar el catálogo local |
