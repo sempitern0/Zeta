@@ -16,10 +16,10 @@
       <a class="console-brand" href="./index.html" aria-label="$site_title$ home">
         <span aria-hidden="true">root@zeta:~&#36;</span> $site_title$
       </a>
-      <nav class="console-nav" aria-label="Primary navigation">
+      <nav class="console-nav" aria-label="Primary navigation">$if(page_navigation)$page_navigation$else$
         <a href="./index.html" aria-current="page">./home</a>
         <a href="./posts.html">./posts</a>
-      </nav>
+      $endif$</nav>
     </div>
   </header>
 
