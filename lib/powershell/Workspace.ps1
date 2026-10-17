@@ -93,6 +93,8 @@ function NewSite{
  if($themes.Count -eq 0){throw 'No compatible themes available in templates/'}
  $theme=SelectItem 'Theme' $themes $(if($themes -contains 'zen'){'zen'}else{$themes[0]})
  $highlight=SelectItem 'Pandoc highlight style' @(Get-ZetaHighlightStyles) 'zenburn'
+ $fontReply=Ask ("Install suggested open-source font ({0})? (y/N)" -f (Recommended-ZetaFont $theme)) 'N'
+ $installFont=$fontReply -match '^[Yy]'
  $blogReply=Ask 'Include a blog? (Y/n)' 'Y'
  $aboutReply=Ask 'Include an About page? (Y/n)' 'Y'
  $contactReply=Ask 'Include a Contact page? (y/N)' 'N'
@@ -133,6 +135,9 @@ function NewSite{
   throw
  }
  Write-Host "[OK] Site created: $dir ($($withBlog ? 2 : 0) sample posts, Markdown pages)" -ForegroundColor Green
+ if($installFont){
+  try{Install-ZetaSiteFont $slug (Recommended-ZetaFont $theme)}catch{Write-Warning "Font setup failed: $($_.Exception.Message). Theme system fonts remain available."}
+ }
  try{Dashboard}catch{Write-Warning "Workspace index update failed: $($_.Exception.Message)"}
  if(-not (Test-ZetaPandoc)){
   Write-Host 'Site sources are ready; Pandoc is needed for HTML generation.' -ForegroundColor Yellow
@@ -218,6 +223,8 @@ function ThemeSite([string]$name,[string]$theme,[string]$style=''){
  if(@(Themes) -notcontains $theme){throw "Unknown theme '$theme'."}
  if(!$style){$style=SelectItem 'Pandoc highlight style' @(Get-ZetaHighlightStyles) $c.highlight}
  if(@(Get-ZetaHighlightStyles) -notcontains $style){throw "Unknown highlight style '$style'."}
+ $fontReply=Ask ("Install suggested open-source font ({0})? (y/N)" -f (Recommended-ZetaFont $theme)) 'N'
+ $installFont=$fontReply -match '^[Yy]'
  $originalBytes=[IO.File]::ReadAllBytes($configPath)
  try{
   $newYaml=Set-ZetaThemeFields ([IO.File]::ReadAllText($configPath)) $theme $style
@@ -226,6 +233,7 @@ function ThemeSite([string]$name,[string]$theme,[string]$style=''){
   if($check.theme -ne $theme -or $check.highlight -ne $style){
    throw 'Theme selection was not saved correctly.'
   }
+  if($installFont){Install-ZetaSiteFont $name (Recommended-ZetaFont $theme)}
   Build $name
  }catch{
   [IO.File]::WriteAllBytes($configPath,$originalBytes)
@@ -388,10 +396,9 @@ function Recommended-ZetaFont([string]$theme){
   default{return 'source-code'}
  }
 }
-function FontSite([string]$name,[string]$choice=''){
- $dir=SiteDir $name
- [void](ConfigPath $name)
- $sources=@{
+
+function Get-ZetaFontSources {
+ return @{
   'cascadia'=@{id='CascadiaCode';family='Cascadia Code';license='https://raw.githubusercontent.com/microsoft/cascadia-code/main/LICENSE';files=@(
    @('CascadiaCode.woff2','normal','200 700','https://raw.githubusercontent.com/sempitern0/Zeta/main/templates/common/assets/fonts/CascadiaCode/CascadiaCode.woff2'))}
   'jetbrains'=@{id='JetBrainsMono';family='JetBrains Mono';license='https://raw.githubusercontent.com/JetBrains/JetBrainsMono/master/OFL.txt';files=@(
@@ -403,7 +410,53 @@ function FontSite([string]$name,[string]$choice=''){
    @('IBMPlexMono-Regular.woff2','normal','400','https://raw.githubusercontent.com/IBM/plex/master/packages/plex-mono/fonts/complete/woff2/IBMPlexMono-Regular.woff2'))}
   'source-code'=@{id='SourceCodePro';family='Source Code Pro';license='https://raw.githubusercontent.com/adobe-fonts/source-code-pro/release/LICENSE.md';files=@(
    @('SourceCodePro-Regular.woff2','normal','400','https://raw.githubusercontent.com/adobe-fonts/source-code-pro/release/WOFF2/TTF/SourceCodePro-Regular.ttf.woff2'))}
+ } 
+}
+function Install-ZetaSiteFont([string]$name,[string]$choice){
+ $dir=SiteDir $name
+ [void](ConfigPath $name)
+ $sources=Get-ZetaFontSources
+ if(!$sources.ContainsKey($choice)){throw "Unknown font: $choice"}
+ $spec=$sources[$choice]
+ $cache=Join-Path $Root ".zeta-cache/fonts/$($spec.id)"
+ $assets=Join-Path $dir 'assets/fonts'
+ $styles=Join-Path $dir 'styles'
+ $fontdir=Join-Path $assets $spec.id
+ $stage=Join-Path $dir ('.zeta-font-ps-'+[guid]::NewGuid().ToString('N'))
+ try{
+  [void](New-Item -ItemType Directory -Path $cache,$stage -Force)
+  $downloads=@($spec.files)
+  $downloads+=,@('LICENSE.txt','','',$spec.license)
+  foreach($entry in $downloads){
+   $dest=Join-Path $cache $entry[0]
+   if((Test-Path -LiteralPath $dest -PathType Leaf) -and (Get-Item -LiteralPath $dest).Length -gt 0){
+    Write-Host "[CACHE] $($spec.id)/$($entry[0])"
+   }else{
+    $partial=Join-Path $stage ('download-'+$entry[0])
+    Invoke-WebRequest -Uri $entry[3] -OutFile $partial -ErrorAction Stop
+    if(!(Test-Path -LiteralPath $partial) -or (Get-Item -LiteralPath $partial).Length -le 0){throw "Empty font download: $($entry[0])"}
+    Move-Item -LiteralPath $partial -Destination $dest -Force
+   }
+   Copy-Item -LiteralPath $dest -Destination $stage -Force
+  }
+  $cssParts=[Collections.Generic.List[string]]::new()
+  foreach($entry in $spec.files){
+   $cssParts.Add(('@font-face { font-family: "{0}"; src: url("../assets/fonts/{1}/{2}") format("woff2"); font-style: {3}; font-weight: {4}; font-display: swap; }' -f $spec.family,$spec.id,$entry[0],$entry[1],$entry[2]))
+  }
+  $cssParts.Add((':root { --font-mono: "{0}", ui-monospace, Consolas, monospace; }' -f $spec.family))
+  [void](New-Item -ItemType Directory -Path $assets,$styles -Force)
+  if(Test-Path -LiteralPath $fontdir){Remove-Item -LiteralPath $fontdir -Recurse -Force}
+  [void](New-Item -ItemType Directory -Path $fontdir -Force)
+  foreach($entry in $downloads){Copy-Item -LiteralPath (Join-Path $stage $entry[0]) -Destination $fontdir -Force}
+  Save (Join-Path $styles '90-font.css') ($cssParts -join [Environment]::NewLine)
+ }finally{
+  if(Test-Path -LiteralPath $stage){Remove-Item -LiteralPath $stage -Recurse -Force}
  }
+}
+function FontSite([string]$name,[string]$choice=''){
+ $dir=SiteDir $name
+ [void](ConfigPath $name)
+
  $suggested=Recommended-ZetaFont ((Config $name).theme)
  Write-Host "Suggested font for this theme: $suggested (optional)"
  if($choice -eq 'recommended'){$choice=$suggested}
@@ -420,34 +473,9 @@ function FontSite([string]$name,[string]$choice=''){
   Build $name;Dashboard;return
  }
  if(!$sources.ContainsKey($choice)){throw "Unknown font: $choice"}
- $spec=$sources[$choice]
- $cache=Join-Path $Root ".zeta-cache/fonts/$($spec.id)"
- $fontdir=Join-Path $assets $spec.id
- $stage=Join-Path $dir ('.zeta-font-ps-'+[guid]::NewGuid().ToString('N'))
- try{
-  [void](New-Item -ItemType Directory -Path $cache,$stage -Force)
-  $downloads=@($spec.files)
-  $downloads+=,@('LICENSE.txt','','',$spec.license)
-  foreach($entry in $downloads){
-   $dest=Join-Path $cache $entry[0]
-   if(!(Test-Path $dest)){Invoke-WebRequest -Uri $entry[3] -OutFile $dest -ErrorAction Stop}
-   if((Get-Item $dest).Length -le 0){throw 'Empty font download'}
-   Copy-Item -LiteralPath $dest -Destination $stage -Force
-  }
-  $cssParts=[Collections.Generic.List[string]]::new()
-  foreach($entry in $spec.files){
-   $cssParts.Add(('@font-face { font-family: "{0}"; src: url("../assets/fonts/{1}/{2}") format("woff2"); font-style: {3}; font-weight: {4}; font-display: swap; }' -f $spec.family,$spec.id,$entry[0],$entry[1],$entry[2]))
-  }
-  $cssParts.Add((':root { --font-mono: "{0}", ui-monospace, Consolas, monospace; }' -f $spec.family))
-  [void](New-Item -ItemType Directory -Path $assets,$styles -Force)
-  if(Test-Path $assets){Remove-Item -LiteralPath $assets -Recurse -Force}
-  [void](New-Item -ItemType Directory -Path $assets -Force)
-  Copy-Item -LiteralPath $stage -Destination $fontdir -Recurse -Force
-  Save (Join-Path $styles '90-font.css') ($cssParts -join [Environment]::NewLine)
-  Build $name;Dashboard
- } finally{
-  if(Test-Path $stage){Remove-Item -LiteralPath $stage -Recurse -Force}
- }
+ Install-ZetaSiteFont $name $choice
+ Build $name
+ Dashboard
 }
 
 function ListPosts([string]$name){
