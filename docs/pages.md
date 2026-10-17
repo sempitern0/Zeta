@@ -54,3 +54,7 @@ Bash: `bash tests/pages-bash-smoke.sh`.
 PowerShell: `.\tests\pages-powershell-smoke.ps1`.
 
 Both local smoke tests create temporary sites with all eight themes, test draft exclusion, blog-free output, generated links and sitemap entries. They do not invoke GitHub Actions.
+
+## Consistent global navigation
+
+When a site has `pages/index.md`, the visible Markdown pages (`nav: true`, `menu_title`, `nav_order`, excluding drafts) define a single global navigation for the homepage, all static pages, the blog archive and individual articles. The Blog entry is included when the blog is enabled; its current-page state is set on the archive and articles. Links use relative paths appropriate to each page depth. The eight theme templates retain their built-in Home/Archive navigation as a fallback for legacy blog-only sites without `pages/`. Rebuild with `./zeta.sh build SITE` or `.\\zeta.ps1 build SITE` after updating.
