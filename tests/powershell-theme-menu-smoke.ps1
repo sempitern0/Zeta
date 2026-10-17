@@ -32,6 +32,7 @@ build:
  $script:choices=[Collections.Generic.Queue[string]]::new()
  $script:choices.Enqueue('2')
  $script:choices.Enqueue('1')
+ $script:choices.Enqueue('N')
  function Read-Host {
   param([string]$Prompt)
   if(-not $script:choices.Count){throw "Unexpected prompt: $Prompt"}
