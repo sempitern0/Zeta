@@ -274,7 +274,7 @@ function Build([string]$name){
    $pandocOptions=@('-f','markdown','-t','html5','--standalone','--quiet','--template',$pageTemplate)
    foreach($k in $vars.Keys){$pandocOptions+=@('-V',('{0}={1}' -f $k,$vars[$k]))}
    if($pagesMode -and $tpl.Name -eq 'posts.html'){
-    $pandocOptions+=@('-V',('page_navigation='+(Get-ZetaPageNavigation $name '' 'blog' $blogEnabled)))
+    $pandocOptions+=@('-V',('page_navigation='+(Get-ZetaPageNavigation $name './' 'blog' $blogEnabled)))
    }
    $pandocOptions+=@(Styles $c.theme $dir '')
    $pandocOptions+=@('-o',(Join-Path $stage $tpl.Name))
