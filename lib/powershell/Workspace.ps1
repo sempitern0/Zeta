@@ -220,6 +220,7 @@ function Set-ZetaThemeFields([string]$yaml,[string]$theme,[string]$style) {
  $result.ToArray() -join $newline
 }
 function ThemeSite([string]$name,[string]$theme,[string]$style=''){
+ $fullySpecified=([bool]$theme -and [bool]$style)
  $c=Config $name
  $configPath=ConfigPath $name
  if(-not (SafeDir $c.content)){
@@ -232,8 +233,11 @@ function ThemeSite([string]$name,[string]$theme,[string]$style=''){
  if(@(Themes) -notcontains $theme){throw "Unknown theme '$theme'."}
  if(!$style){$style=SelectItem 'Pandoc highlight style' @(Get-ZetaHighlightStyles) $c.highlight}
  if(@(Get-ZetaHighlightStyles) -notcontains $style){throw "Unknown highlight style '$style'."}
- $fontReply=Ask ("Install suggested open-source font ({0})? (y/N)" -f (Recommended-ZetaFont $theme)) 'N'
- $installFont=$fontReply -match '^[Yy]'
+ $installFont=$false
+ if(-not $fullySpecified){
+  $fontReply=Ask ("Install suggested open-source font ({0})? (y/N)" -f (Recommended-ZetaFont $theme)) 'N'
+  $installFont=$fontReply -match '^[Yy]'
+ }
  $originalBytes=[IO.File]::ReadAllBytes($configPath)
  try{
   $newYaml=Set-ZetaThemeFields ([IO.File]::ReadAllText($configPath)) $theme $style
