@@ -77,6 +77,15 @@ EOF
  echo "[OK] $theme: Markdown pages, links, sitemap, blog disabled"
 done
 
+# Regression: blog and article must retain all Markdown navigation entries.
+sed -i 's/blog: false/blog: true/' "$dir/config.yaml"
+bash "$ROOT/zeta.sh" build "$name" >/dev/null
+for html in "$dir/public/posts.html"; do
+ grep -Fq 'href="./about/"' "$html"
+ grep -Fq 'href="./index.html"' "$html"
+ grep -Fq 'aria-current="page"' "$html"
+done
+
 # Regression: creating a page in a site with a missing homepage auto-bootstraps index.md.
 rm -rf -- "$dir/pages"
 mkdir -p "$dir/pages"
