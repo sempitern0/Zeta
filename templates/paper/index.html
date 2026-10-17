@@ -16,10 +16,10 @@
     <header class="paper-header">
       <div class="paper-shell paper-header-inner">
         <a class="paper-brand" href="./index.html">$site_title$</a>
-        <nav class="paper-nav" aria-label="Primary navigation">
+        <nav class="paper-nav" aria-label="Primary navigation">$if(page_navigation)$page_navigation$else$
           <a href="./index.html" aria-current="page">Home</a>
           <a href="./posts.html">Archive</a>
-        </nav>
+        $endif$</nav>
       </div>
     </header>
 
