@@ -423,20 +423,7 @@ function Render-ZetaPages([string]$name,[string]$stage,[hashtable]$c,[bool]$blog
  $sourceFiles=@(Get-ChildItem -LiteralPath $pages -Filter '*.md' -File | Sort-Object Name)
  foreach($file in $sourceFiles){
   $slug=$file.BaseName
-  if($slug -notmatch '^[a-z0-9]+(-[a-z0-9]+)*$' -or $slug -in @('posts','blog')){throw "Invalid or reserved Markdown page: $slug"}
-  if((Meta $file.FullName draft) -eq 'true'){continue}
-  $label=Meta $file.FullName menu_title
-  if(-not $label){$label=Meta $file.FullName title}
-  if(-not $label){$label=$slug}
-  if((Meta $file.FullName nav) -ne 'false'){
-   $order=50; $raw=Meta $file.FullName nav_order
-   if($raw -match '^\d{1,3}$'){$order=[int]$raw}
-   if($slug -eq 'index'){$order=0}
-   $nav.Add([pscustomobject]@{Slug=$slug;Label=$label;Order=$order})
-  }
- }
- foreach($file in $sourceFiles){
-  $slug=$file.BaseName
+  if($slug -notmatch '^[a-z0-9]+(-[a-z0-9]+)* $file.FullName draft) -eq 'true'){ -or $slug -in @('posts','blog')){throw "Invalid or reserved Markdown page: $slug"}
   if((Meta $file.FullName draft) -eq 'true'){
    if($slug -eq 'index'){throw 'The homepage cannot be a draft'}
    continue
@@ -484,7 +471,7 @@ function Ensure-ZetaPageHome([string]$name){
  $homepagePath=Join-Path $pages 'index.md'
  if(Test-Path -LiteralPath $homepagePath){
   if((Get-Item -LiteralPath $homepagePath -Force).Attributes -band [IO.FileAttributes]::ReparsePoint){throw "Unsafe homepage: $homepagePath"}
-  Repair-ZetaGeneratedHomepageYaml $homepagePath
+  [void](Repair-ZetaGeneratedHomepageYaml $homepagePath)
   return
  }
  $template=Join-Path $Templates 'common/pages/index.md'
