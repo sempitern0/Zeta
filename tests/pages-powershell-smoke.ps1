@@ -84,6 +84,19 @@ Should not publish.
   if(-not $about.Contains('href="../index.html#content"')){throw "$theme did not rewrite index.md"}
   if(-not $sitemap.Contains('https://example.org/about/')){throw "$theme sitemap missing About"}
   if($sitemap.Contains('/posts/')){throw "$theme blog is disabled but post URLs remain"}
+  # Blog and article navigation must remain functional in every theme.
+  $configPath=Join-Path $site 'config.yaml'
+  $originalConfig=[IO.File]::ReadAllText($configPath)
+  Save $configPath ($originalConfig.Replace('blog: false','blog: true'))
+  Build $name
+  $blogHtml=[IO.File]::ReadAllText((Join-Path $out 'posts.html'))
+  $postHtml=[IO.File]::ReadAllText((Join-Path $out 'posts/2026/hidden.html'))
+  foreach($token in @('href="./about/"','href="./index.html"','aria-current="page"')){
+   if(-not $blogHtml.Contains($token)){throw "$theme blog navigation missing $token"}
+  }
+  if(-not $postHtml.Contains('href="../../about/"')){throw "$theme article navigation missing About"}
+  if($blogHtml.Contains('>page_navigation<') -or $postHtml.Contains('>page_navigation<')){throw "$theme has literal navigation placeholder"}
+  Save $configPath $originalConfig
   Write-Host "[OK] $theme pages without blog" -ForegroundColor Green
  }
  # Regression: blog navigation must keep all visible Markdown pages.
