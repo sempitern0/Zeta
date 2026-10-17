@@ -43,3 +43,82 @@ body.zeta-theme-aurora{--page-bg:#090e29;--page-panel:#151e48;--page-fg:#f8f8ff;
 .zeta-theme-indie .zeta-content{background:radial-gradient(circle at 80% 10%,#443352,transparent 52%),var(--page-bg)}
 .zeta-theme-aurora .zeta-content{background:radial-gradient(circle at 85% 20%,#543d8e,transparent 46%),radial-gradient(circle at 20% 75%,#164d75,transparent 55%),var(--page-bg)}
 @media(max-width:42rem){.zeta-theme-brutalist .zeta-readable{padding:1rem;box-shadow:4px 4px 0 #111}}
+
+
+/*
+ * Shared global navigation: the Markdown page shell and themed blog templates
+ * now render the same menu, with the same theme-specific typography and color.
+ *
+ * These rules intentionally target only the primary header navigation. The
+ * article table of contents, article links and theme-specific body layout must
+ * retain their original styles. No modern selector features or JS are needed.
+ */
+body.zeta-static-page .zeta-page-header {
+  --zeta-nav-ink: var(--page-link);
+  --zeta-nav-type: var(--page-font);
+}
+.paper-header {
+  --zeta-nav-ink: #a33b20;
+  --zeta-nav-type: Georgia, "Times New Roman", serif;
+}
+.console-bar {
+  --zeta-nav-ink: #53ff87;
+  --zeta-nav-type: Consolas, "Liberation Mono", monospace;
+}
+body.zeta-landing .header {
+  --zeta-nav-ink: var(--accent);
+  --zeta-nav-type: var(--font-sans, system-ui, sans-serif);
+}
+body.zeta-catalog .site-header {
+  --zeta-nav-ink: var(--accent);
+  --zeta-nav-type: var(--font-ui, system-ui, sans-serif);
+}
+/* The brutalist header stays black: yellow/white text has enough contrast. */
+body.zeta-theme-brutalist .zeta-page-header,
+body.zeta-catalog.theme-brutalist .site-header {
+  --zeta-nav-ink: #fff;
+  --zeta-nav-current: #f7f450;
+}
+body.zeta-theme-brutalist .zeta-page-header nav a[aria-current="page"] {
+  color: #f7f450;
+}
+.zeta-static-page .zeta-page-header nav,
+.paper-header .paper-nav,
+.console-bar .console-nav,
+.site-header .site-nav,
+body.zeta-landing .header nav,
+body.zeta-catalog .site-header nav {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: .5rem 1.25rem;
+}
+body.zeta-static-page .zeta-page-header nav a,
+.paper-header .paper-nav a,
+.console-bar .console-nav a,
+.site-header .site-nav a,
+body.zeta-landing .header nav a,
+body.zeta-catalog .site-header nav a {
+  color: var(--zeta-nav-ink, currentColor);
+  font-family: var(--zeta-nav-type, inherit);
+  font-size: 1rem;
+  font-weight: 400;
+  text-decoration: none;
+  text-underline-offset: .28em;
+}
+body.zeta-static-page .zeta-page-header nav a:hover,
+body.zeta-static-page .zeta-page-header nav a[aria-current="page"],
+.paper-header .paper-nav a:hover,
+.paper-header .paper-nav a[aria-current="page"],
+.console-bar .console-nav a:hover,
+.console-bar .console-nav a[aria-current="page"],
+.site-header .site-nav a:hover,
+.site-header .site-nav a[aria-current="page"],
+body.zeta-landing .header nav a:hover,
+body.zeta-landing .header nav a[aria-current="page"],
+body.zeta-catalog .site-header nav a:hover,
+body.zeta-catalog .site-header nav a[aria-current="page"] {
+  color: var(--zeta-nav-current, var(--zeta-nav-ink, currentColor));
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+}
