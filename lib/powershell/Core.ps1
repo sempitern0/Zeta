@@ -384,6 +384,280 @@ function Build([string]$name){
 
 
 # Shared Markdown pages are compiled inside Build's staging directory.
+function Get-ZetaPageNavigation([string]$name,[string]$prefix,[string]$active,[bool]$blogEnabled){
+ $pages=Join-Path (SiteDir $name) 'pages'
+ $items=[Collections.Generic.List[object]]::new()
+ foreach($file in @(Get-ChildItem -LiteralPath $pages -Filter '*.md' -File)){
+  $slug=$file.BaseName
+  if($slug -notmatch '^[a-z0-9]+(-[a-z0-9]+)*[string]$name,[string]$stage,[hashtable]$c,[bool]$blogEnabled){
+ $site=SiteDir $name
+ $pages=Join-Path $site 'pages'
+ $sourceFiles=@(Get-ChildItem -LiteralPath $pages -Filter '*.md' -File | Sort-Object Name)
+ $nav=[Collections.Generic.List[object]]::new()
+ foreach($file in $sourceFiles){
+  $slug=$file.BaseName
+  if($slug -notmatch '^[a-z0-9]+(-[a-z0-9]+)*$' -or $slug -in @('posts','blog')){throw "Invalid or reserved Markdown page: $slug"}
+  if((Meta $file.FullName draft) -eq 'true'){continue}
+  $label=Meta $file.FullName menu_title
+  if(-not $label){$label=Meta $file.FullName title}
+  if(-not $label){$label=$slug}
+  if((Meta $file.FullName nav) -ne 'false'){
+   $order=50; $raw=Meta $file.FullName nav_order
+   if($raw -match '^\d{1,3}$'){$order=[int]$raw}
+   if($slug -eq 'index'){$order=0}
+   $nav.Add([pscustomobject]@{Slug=$slug;Label=$label;Order=$order})
+  }
+ }
+ foreach($file in $sourceFiles){
+  $slug=$file.BaseName
+  if((Meta $file.FullName draft) -eq 'true'){
+   if($slug -eq 'index'){throw 'The homepage cannot be a draft'}
+   continue
+  }
+  $root=if($slug -eq 'index'){''}else{'../'}
+  $dest=if($slug -eq 'index'){Join-Path $stage 'index.html'}else{Join-Path $stage "$slug/index.html"}
+  $heading=Meta $file.FullName title
+  if(-not $heading){$heading=$slug}
+  $desc=Meta $file.FullName description
+  if(-not $desc){$desc=$c.description}
+  $items=[Collections.Generic.List[string]]::new()
+  foreach($item in @($nav | Sort-Object Order,Slug)){
+   $href=if($item.Slug -eq 'index'){$root+'index.html'}else{$root+$item.Slug+'/'}
+   $attr=if($item.Slug -eq $slug){' aria-current="page"'}else{''}
+   $items.Add('<a href="'+(Escape $href)+'"'+$attr+'>'+(Escape $item.Label)+'</a>')
+  }
+  if($blogEnabled){$items.Add('<a href="'+(Escape ($root+'posts.html'))+'">Blog</a>')}
+  $canonical=if($slug -eq 'index'){$c.url.TrimEnd('/')+'/'}else{$c.url.TrimEnd('/')+'/'+$slug+'/'}
+  [void](New-Item -ItemType Directory -Path (Split-Path $dest -Parent) -Force)
+  $depth=if($slug -eq 'index'){'0'}else{'1'}
+  $pageTemplate=Join-Path $Templates 'common/pages/page.html'
+  $pageFilter=Join-Path $Templates 'common/filters/page-links.lua'
+  if(-not (Test-Path -LiteralPath $pageTemplate -PathType Leaf)){throw "Page template missing: $pageTemplate"}
+  if(-not (Test-Path -LiteralPath $pageFilter -PathType Leaf)){throw "Page Lua filter missing: $pageFilter"}
+  # Construct each Pandoc argument as a *complete* string. Concatenating
+  # an expression directly inside @() can produce a bare --lua-filter=.
+  $filterArgument="--lua-filter=$pageFilter"
+  $opts=@($file.FullName,'-f','markdown-raw_html','-t','html5','--standalone','--wrap=none',
+    '--template',$pageTemplate,
+    $filterArgument,
+    '-M',('zeta_page_depth='+$depth),
+    '-V',('title='+(Escape $heading)),'-V',('description='+(Escape $desc)),
+    '-V',('site_title='+(Escape $c.title)),'-V',('site_author='+(Escape $c.author)),
+    '-V',('site_lang='+(Escape $c.language)),'-V',('site_theme='+(Escape $c.theme)),
+    '-V',('page_slug='+(Escape $slug)),'-V',('canonical='+(Escape $canonical)),
+    '-V',('rel_root='+$root),'-V',('page_navigation='+($items -join ' ')))
+   $opts+=@(Styles $c.theme $site $root)
+   $opts+=@('-o',$dest)
+  if($opts -contains '--lua-filter=' -or $opts -contains ''){throw "Pandoc received an empty argument for page: $slug"}
+  Invoke-ZetaPandoc $opts
+ }
+}
+
+# Supply an initial Markdown homepage for an existing/partially-created pages folder.
+function Ensure-ZetaPageHome([string]$name){
+ $site=SiteDir $name
+ $pages=Join-Path $site 'pages'
+ if(-not (Test-Path -LiteralPath $pages -PathType Container)){return}
+ $pageInfo=Get-Item -LiteralPath $pages -Force
+ if($pageInfo.Attributes -band [IO.FileAttributes]::ReparsePoint){throw "Unsafe pages directory: $pages"}
+ $homepagePath=Join-Path $pages 'index.md'
+ if(Test-Path -LiteralPath $homepagePath){
+  if((Get-Item -LiteralPath $homepagePath -Force).Attributes -band [IO.FileAttributes]::ReparsePoint){throw "Unsafe homepage: $homepagePath"}
+  Repair-ZetaGeneratedHomepageYaml $homepagePath
+  return
+ }
+ $template=Join-Path $Templates 'common/pages/index.md'
+ if(-not (Test-Path -LiteralPath $template -PathType Leaf)){throw "Missing homepage template: $template"}
+ $c=Config $name
+ $body=[IO.File]::ReadAllText($template)
+ if(-not $body.Contains('__ZETA_SITE_TITLE__') -or -not $body.Contains('__ZETA_SITE_DESCRIPTION__')){throw 'Homepage template has invalid placeholders'}
+ $body=$body.Replace('__ZETA_SITE_TITLE__',(Quote $c.title)).Replace('__ZETA_SITE_DESCRIPTION__',(Quote $c.description))
+ try {
+  $writer=[IO.StreamWriter]::new([IO.FileStream]::new($homepagePath,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::None),$Utf8)
+  try{$writer.Write($body)}finally{$writer.Dispose()}
+ }catch [IO.IOException]{
+  if(-not (Test-Path -LiteralPath $homepagePath -PathType Leaf)){throw}
+ }
+ Write-Host "[INFO] Initialized Markdown homepage: $homepagePath" -ForegroundColor Cyan
+}
+
+
+# Historical Zeta builds wrote title: ""Title"" in pages/index.md.
+# Repair only that precise invalid frontmatter pattern, preserving article
+# content, YAML ordering, existing single quotes and line endings.
+function Repair-ZetaGeneratedHomepageYaml([string]$homepagePath){
+ if(-not (Test-Path -LiteralPath $homepagePath -PathType Leaf)){return $false}
+ $original=[IO.File]::ReadAllText($homepagePath)
+ if($original -notmatch '\A---\r?\n'){return $false}
+ $closing=[regex]::Match($original,'(?m)^---\r?$',[Text.RegularExpressions.RegexOptions]::None,[TimeSpan]::FromSeconds(1))
+ # Find the delimiter after the opening --- (not the delimiter at offset zero).
+ $tail=[regex]::Match($original.Substring(4),'(?m)^---\r?$',[Text.RegularExpressions.RegexOptions]::None,[TimeSpan]::FromSeconds(1))
+ if(-not $tail.Success){return $false}
+ $frontmatterEnd=4+$tail.Index
+ $frontmatter=$original.Substring(0,$frontmatterEnd)
+ $body=$original.Substring($frontmatterEnd)
+ $pattern='(?m)^(title|description):[ \t]*""([^"\r\n]*)""(?=\r?$)'
+ $fixed=[regex]::Replace($frontmatter,$pattern,[Text.RegularExpressions.MatchEvaluator]{
+  param($m)
+  return $m.Groups[1].Value+': "'+$m.Groups[2].Value+'"'
+ })
+ if($fixed -ceq $frontmatter){return $false}
+ $backup="$homepagePath.zeta-backup-$([guid]::NewGuid().ToString('N')).bak"
+ Copy-Item -LiteralPath $homepagePath -Destination $backup -ErrorAction Stop
+ try{
+  [IO.File]::WriteAllText($homepagePath,($fixed+$body),$Utf8)
+ }catch{
+  Copy-Item -LiteralPath $backup -Destination $homepagePath -Force
+  throw
+ }
+ Write-Warning "Repaired duplicate-quote YAML in $homepagePath. Original saved to $backup"
+ return $true
+}
+ -or (Meta $file.FullName draft) -eq 'true' -or (Meta $file.FullName nav) -eq 'false'){continue}
+  $title=Meta $file.FullName menu_title
+  if(!$title){$title=Meta $file.FullName title}
+  if(!$title){$title=$slug}
+  $order=50;$raw=Meta $file.FullName nav_order
+  if($raw -match '^\d{1,3}[string]$name,[string]$stage,[hashtable]$c,[bool]$blogEnabled){
+ $site=SiteDir $name
+ $pages=Join-Path $site 'pages'
+ $sourceFiles=@(Get-ChildItem -LiteralPath $pages -Filter '*.md' -File | Sort-Object Name)
+ $nav=[Collections.Generic.List[object]]::new()
+ foreach($file in $sourceFiles){
+  $slug=$file.BaseName
+  if($slug -notmatch '^[a-z0-9]+(-[a-z0-9]+)*$' -or $slug -in @('posts','blog')){throw "Invalid or reserved Markdown page: $slug"}
+  if((Meta $file.FullName draft) -eq 'true'){continue}
+  $label=Meta $file.FullName menu_title
+  if(-not $label){$label=Meta $file.FullName title}
+  if(-not $label){$label=$slug}
+  if((Meta $file.FullName nav) -ne 'false'){
+   $order=50; $raw=Meta $file.FullName nav_order
+   if($raw -match '^\d{1,3}$'){$order=[int]$raw}
+   if($slug -eq 'index'){$order=0}
+   $nav.Add([pscustomobject]@{Slug=$slug;Label=$label;Order=$order})
+  }
+ }
+ foreach($file in $sourceFiles){
+  $slug=$file.BaseName
+  if((Meta $file.FullName draft) -eq 'true'){
+   if($slug -eq 'index'){throw 'The homepage cannot be a draft'}
+   continue
+  }
+  $root=if($slug -eq 'index'){''}else{'../'}
+  $dest=if($slug -eq 'index'){Join-Path $stage 'index.html'}else{Join-Path $stage "$slug/index.html"}
+  $heading=Meta $file.FullName title
+  if(-not $heading){$heading=$slug}
+  $desc=Meta $file.FullName description
+  if(-not $desc){$desc=$c.description}
+  $items=[Collections.Generic.List[string]]::new()
+  foreach($item in @($nav | Sort-Object Order,Slug)){
+   $href=if($item.Slug -eq 'index'){$root+'index.html'}else{$root+$item.Slug+'/'}
+   $attr=if($item.Slug -eq $slug){' aria-current="page"'}else{''}
+   $items.Add('<a href="'+(Escape $href)+'"'+$attr+'>'+(Escape $item.Label)+'</a>')
+  }
+  if($blogEnabled){$items.Add('<a href="'+(Escape ($root+'posts.html'))+'">Blog</a>')}
+  $canonical=if($slug -eq 'index'){$c.url.TrimEnd('/')+'/'}else{$c.url.TrimEnd('/')+'/'+$slug+'/'}
+  [void](New-Item -ItemType Directory -Path (Split-Path $dest -Parent) -Force)
+  $depth=if($slug -eq 'index'){'0'}else{'1'}
+  $pageTemplate=Join-Path $Templates 'common/pages/page.html'
+  $pageFilter=Join-Path $Templates 'common/filters/page-links.lua'
+  if(-not (Test-Path -LiteralPath $pageTemplate -PathType Leaf)){throw "Page template missing: $pageTemplate"}
+  if(-not (Test-Path -LiteralPath $pageFilter -PathType Leaf)){throw "Page Lua filter missing: $pageFilter"}
+  # Construct each Pandoc argument as a *complete* string. Concatenating
+  # an expression directly inside @() can produce a bare --lua-filter=.
+  $filterArgument="--lua-filter=$pageFilter"
+  $opts=@($file.FullName,'-f','markdown-raw_html','-t','html5','--standalone','--wrap=none',
+    '--template',$pageTemplate,
+    $filterArgument,
+    '-M',('zeta_page_depth='+$depth),
+    '-V',('title='+(Escape $heading)),'-V',('description='+(Escape $desc)),
+    '-V',('site_title='+(Escape $c.title)),'-V',('site_author='+(Escape $c.author)),
+    '-V',('site_lang='+(Escape $c.language)),'-V',('site_theme='+(Escape $c.theme)),
+    '-V',('page_slug='+(Escape $slug)),'-V',('canonical='+(Escape $canonical)),
+    '-V',('rel_root='+$root),'-V',('page_navigation='+($items -join ' ')))
+   $opts+=@(Styles $c.theme $site $root)
+   $opts+=@('-o',$dest)
+  if($opts -contains '--lua-filter=' -or $opts -contains ''){throw "Pandoc received an empty argument for page: $slug"}
+  Invoke-ZetaPandoc $opts
+ }
+}
+
+# Supply an initial Markdown homepage for an existing/partially-created pages folder.
+function Ensure-ZetaPageHome([string]$name){
+ $site=SiteDir $name
+ $pages=Join-Path $site 'pages'
+ if(-not (Test-Path -LiteralPath $pages -PathType Container)){return}
+ $pageInfo=Get-Item -LiteralPath $pages -Force
+ if($pageInfo.Attributes -band [IO.FileAttributes]::ReparsePoint){throw "Unsafe pages directory: $pages"}
+ $homepagePath=Join-Path $pages 'index.md'
+ if(Test-Path -LiteralPath $homepagePath){
+  if((Get-Item -LiteralPath $homepagePath -Force).Attributes -band [IO.FileAttributes]::ReparsePoint){throw "Unsafe homepage: $homepagePath"}
+  Repair-ZetaGeneratedHomepageYaml $homepagePath
+  return
+ }
+ $template=Join-Path $Templates 'common/pages/index.md'
+ if(-not (Test-Path -LiteralPath $template -PathType Leaf)){throw "Missing homepage template: $template"}
+ $c=Config $name
+ $body=[IO.File]::ReadAllText($template)
+ if(-not $body.Contains('__ZETA_SITE_TITLE__') -or -not $body.Contains('__ZETA_SITE_DESCRIPTION__')){throw 'Homepage template has invalid placeholders'}
+ $body=$body.Replace('__ZETA_SITE_TITLE__',(Quote $c.title)).Replace('__ZETA_SITE_DESCRIPTION__',(Quote $c.description))
+ try {
+  $writer=[IO.StreamWriter]::new([IO.FileStream]::new($homepagePath,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::None),$Utf8)
+  try{$writer.Write($body)}finally{$writer.Dispose()}
+ }catch [IO.IOException]{
+  if(-not (Test-Path -LiteralPath $homepagePath -PathType Leaf)){throw}
+ }
+ Write-Host "[INFO] Initialized Markdown homepage: $homepagePath" -ForegroundColor Cyan
+}
+
+
+# Historical Zeta builds wrote title: ""Title"" in pages/index.md.
+# Repair only that precise invalid frontmatter pattern, preserving article
+# content, YAML ordering, existing single quotes and line endings.
+function Repair-ZetaGeneratedHomepageYaml([string]$homepagePath){
+ if(-not (Test-Path -LiteralPath $homepagePath -PathType Leaf)){return $false}
+ $original=[IO.File]::ReadAllText($homepagePath)
+ if($original -notmatch '\A---\r?\n'){return $false}
+ $closing=[regex]::Match($original,'(?m)^---\r?$',[Text.RegularExpressions.RegexOptions]::None,[TimeSpan]::FromSeconds(1))
+ # Find the delimiter after the opening --- (not the delimiter at offset zero).
+ $tail=[regex]::Match($original.Substring(4),'(?m)^---\r?$',[Text.RegularExpressions.RegexOptions]::None,[TimeSpan]::FromSeconds(1))
+ if(-not $tail.Success){return $false}
+ $frontmatterEnd=4+$tail.Index
+ $frontmatter=$original.Substring(0,$frontmatterEnd)
+ $body=$original.Substring($frontmatterEnd)
+ $pattern='(?m)^(title|description):[ \t]*""([^"\r\n]*)""(?=\r?$)'
+ $fixed=[regex]::Replace($frontmatter,$pattern,[Text.RegularExpressions.MatchEvaluator]{
+  param($m)
+  return $m.Groups[1].Value+': "'+$m.Groups[2].Value+'"'
+ })
+ if($fixed -ceq $frontmatter){return $false}
+ $backup="$homepagePath.zeta-backup-$([guid]::NewGuid().ToString('N')).bak"
+ Copy-Item -LiteralPath $homepagePath -Destination $backup -ErrorAction Stop
+ try{
+  [IO.File]::WriteAllText($homepagePath,($fixed+$body),$Utf8)
+ }catch{
+  Copy-Item -LiteralPath $backup -Destination $homepagePath -Force
+  throw
+ }
+ Write-Warning "Repaired duplicate-quote YAML in $homepagePath. Original saved to $backup"
+ return $true
+}
+){$order=[int]$raw}
+  if($slug -eq 'index'){$order=0}
+  $items.Add([pscustomobject]@{Slug=$slug;Label=$title;Order=$order})
+ }
+ $links=[Collections.Generic.List[string]]::new()
+ foreach($item in @($items | Sort-Object Order,Slug)){
+  $href=if($item.Slug -eq 'index'){$prefix+'index.html'}else{$prefix+$item.Slug+'/'}
+  $current=if($item.Slug -eq $active){' aria-current="page"'}else{''}
+  $links.Add('<a href="'+(Escape $href)+'"'+$current+'>'+(Escape $item.Label)+'</a>')
+ }
+ if($blogEnabled){
+  $current=if($active -eq 'blog'){' aria-current="page"'}else{''}
+  $links.Add('<a href="'+(Escape ($prefix+'posts.html'))+'"'+$current+'>Blog</a>')
+ }
+ return ($links -join ' ')
+}
 function Render-ZetaPages([string]$name,[string]$stage,[hashtable]$c,[bool]$blogEnabled){
  $site=SiteDir $name
  $pages=Join-Path $site 'pages'
