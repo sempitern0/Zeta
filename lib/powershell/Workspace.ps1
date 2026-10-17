@@ -404,7 +404,13 @@ function FontSite([string]$name,[string]$choice=''){
   'source-code'=@{id='SourceCodePro';family='Source Code Pro';license='https://raw.githubusercontent.com/adobe-fonts/source-code-pro/release/LICENSE.md';files=@(
    @('SourceCodePro-Regular.woff2','normal','400','https://raw.githubusercontent.com/adobe-fonts/source-code-pro/release/WOFF2/TTF/SourceCodePro-Regular.ttf.woff2'))}
  }
- if(!$choice){$choice=SelectItem 'Font' @('cascadia','jetbrains','fira','ibm-plex','source-code','remove') 'remove'}
+ $suggested=Recommended-ZetaFont ((Config $name).theme)
+ Write-Host "Suggested font for this theme: $suggested (optional)"
+ if($choice -eq 'recommended'){$choice=$suggested}
+ if(!$choice){
+  $choice=SelectItem 'Font' @('recommended','cascadia','jetbrains','fira','ibm-plex','source-code','remove') 'recommended'
+  if($choice -eq 'recommended'){$choice=$suggested}
+ }
  $assets=Join-Path $dir 'assets/fonts';$styles=Join-Path $dir 'styles'
  if($choice -eq 'remove'){
   if(Test-Path $assets){Remove-Item -LiteralPath $assets -Recurse -Force}
