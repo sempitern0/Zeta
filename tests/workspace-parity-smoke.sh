@@ -28,4 +28,11 @@ grep -Fq 'aria-labelledby="sites-heading"' "$ROOT/sites/index.html"
 grep -Fq 'Visual smoke' "$ROOT/sites/index.html"
 grep -Fq 'Ready' "$ROOT/sites/index.html"
 grep -Fq 'Accessibility and HTML' "$ROOT/sites/index.html"
-echo '[OK] Bash shared examples and workspace dashboard.'
+# Verify all eight theme samples in the generated static dashboard.
+for theme in zen paper console indie organization brutalist folio aurora; do
+ grep -Fq "id=\"theme-$theme\"" "$ROOT/sites/index.html"
+ grep -Fq ".sample--$theme{" "$ROOT/sites/workspace.css"
+done
+grep -Fq 'id="theme-gallery"' "$ROOT/sites/index.html"
+grep -Fq 'Open-source font suggestion:' "$ROOT/sites/index.html"
+echo '[OK] Bash workspace and theme gallery.'
