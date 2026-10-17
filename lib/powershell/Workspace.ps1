@@ -432,7 +432,7 @@ function FontSite([string]$name,[string]$choice=''){
   foreach($entry in $spec.files){
    $cssParts.Add(('@font-face { font-family: "{0}"; src: url("../assets/fonts/{1}/{2}") format("woff2"); font-style: {3}; font-weight: {4}; font-display: swap; }' -f $spec.family,$spec.id,$entry[0],$entry[1],$entry[2]))
   }
-  $cssParts.Add((':root { --font-mono: "{0}", ui-monospace, Consolas, monospace; --font-sans: "{0}", system-ui, sans-serif; }' -f $spec.family))
+  $cssParts.Add((':root { --font-mono: "{0}", ui-monospace, Consolas, monospace; }' -f $spec.family))
   [void](New-Item -ItemType Directory -Path $assets,$styles -Force)
   if(Test-Path $assets){Remove-Item -LiteralPath $assets -Recurse -Force}
   [void](New-Item -ItemType Directory -Path $assets -Force)
