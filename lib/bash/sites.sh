@@ -462,8 +462,30 @@ remove_site_font() {
     msg_success "Custom web font removed. '${site_slug}' will use the theme fallback stack."
 }
 
+recommended_theme_font() {
+    case "$1" in
+        zen|aurora) printf "%s\n" jetbrains ;;
+        console) printf "%s\n" cascadia ;;
+        indie) printf "%s\n" fira ;;
+        brutalist) printf "%s\n" ibm-plex ;;
+        paper|organization|folio) printf "%s\n" source-code ;;
+        *) printf "%s\n" source-code ;;
+    esac
+}
+
 manage_site_fonts() {
     local site_slug="$1"
+    local font_choice="${2:-}"
+    local config_file theme suggested
+    config_file=$(find_site_config "${SITES_DIR}/${site_slug}") || { msg_error "Unknown site: $site_slug"; return 1; }
+    theme=$(get_site_yaml_prop "$config_file" theme name zen)
+    suggested=$(recommended_theme_font "$theme")
+    if [[ "$font_choice" == recommended ]]; then
+        install_open_font "$site_slug" "$suggested" && build_site "$site_slug" && update_sites_index
+        return $?
+    fi
+    [[ -z "$font_choice" ]] || { msg_error "Unknown font selection: $font_choice"; return 1; }
+    printf "  Suggested for %s: %s (optional; downloads only if selected).\n" "$theme" "$suggested"
 
     echo ""
     echo -e "${boldWhite}Open web fonts${endColour}"
@@ -472,6 +494,7 @@ manage_site_fonts() {
     echo -e "  ${boldGreen}[3]${endColour} Fira Code        ${grayColour}(OFL; programming ligatures)${endColour}"
     echo -e "  ${boldGreen}[4]${endColour} IBM Plex Mono    ${grayColour}(OFL; regular/italic/bold)${endColour}"
     echo -e "  ${boldGreen}[5]${endColour} Source Code Pro  ${grayColour}(OFL; regular/italic/bold)${endColour}"
+    echo -e "  ${boldGreen}[7]${endColour} Install theme suggestion: ${suggested}"
     echo -e "  ${boldYellow}[6]${endColour} Use theme defaults / remove custom font"
     echo -e "  ${boldGreen}[0]${endColour} Back"
     echo ""
@@ -485,6 +508,7 @@ manage_site_fonts() {
         3) install_open_font "$site_slug" fira || action_rc=$? ;;
         4) install_open_font "$site_slug" ibm-plex || action_rc=$? ;;
         5) install_open_font "$site_slug" source-code || action_rc=$? ;;
+        7) install_open_font "$site_slug" "$suggested" || action_rc=$? ;;
         6) remove_site_font "$site_slug" || action_rc=$? ;;
         0|b|back) return 0 ;;
         *)
