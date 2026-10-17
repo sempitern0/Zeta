@@ -351,7 +351,7 @@ function Build([string]$name){
     if(!$updated){continue}
     if($updated -notmatch '^\d{4}-\d{2}-\d{2}$'){throw "Invalid updated date in $($file.FullName)"}
     $route=if($file.BaseName -eq 'index'){'index.html'}else{$file.BaseName+'/index.html'}
-    $dateRows.Add($route+"@t"+$updated)
+    $dateRows.Add(($route,$updated -join [char]9))
    }
   }
   if($blogEnabled){
@@ -360,10 +360,10 @@ function Build([string]$name){
     if(!$updated){continue}
     if($updated -notmatch '^\d{4}-\d{2}-\d{2}$'){throw "Invalid updated date in $($file.FullName)"}
     $post=PostInfo $file $c.author
-    $dateRows.Add(("posts/{0}/{1}.html" -f $post.year,$post.slug)+"@t"+$updated)
+    $dateRows.Add((("posts/{0}/{1}.html" -f $post.year,$post.slug),$updated -join [char]9))
    }
   }
-  Save $updates (($dateRows -join [Environment]::NewLine).Replace('@t',([char]9)))
+  Save $updates ($dateRows -join [Environment]::NewLine)
   $extrasFilter=Join-Path $Templates 'common/filters/publish-extras.lua'
   if(!(Test-Path -LiteralPath $extrasFilter -PathType Leaf)){throw "Missing publishing filter: $extrasFilter"}
   $extrasTemp=[IO.Path]::GetTempFileName()
