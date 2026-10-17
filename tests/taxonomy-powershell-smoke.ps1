@@ -10,6 +10,10 @@ try{
   $html='<html lang="en"><head><title>'+$name+'</title></head><body><main><h1>'+$name+'</h1></main></body></html>'
   [IO.File]::WriteAllText((Join-Path $dir "posts/2026/$name.html"),$html,$utf8)
  }
+ [void](New-Item -ItemType Directory -Path (Join-Path $dir 'styles') -Force)
+ [IO.File]::WriteAllText((Join-Path $dir 'styles/zeta-pages.css'),'body.zeta-static-page{display:flex}',$utf8)
+ [IO.File]::WriteAllText((Join-Path $dir 'styles/00-theme-contract.css'),'body.zeta-static-page{background:#101421}',$utf8)
+ [IO.File]::WriteAllText((Join-Path $dir 'index.html'),'<html><head><link rel="stylesheet" href="styles/zeta-pages.css"><link rel="stylesheet" href="styles/00-theme-contract.css"></head><body><nav aria-label="Primary navigation"><a href="index.html">Home</a> <a href="about/">About</a></nav></body></html>',$utf8)
  [IO.File]::WriteAllText((Join-Path $dir 'sitemap.xml'),'<urlset><url><loc>https://example.org/</loc></url></urlset>',$utf8)
  $rows=@(
   (@('posts/2026/one.html','category','godot','Godot') -join [char]9)
@@ -27,6 +31,9 @@ try{
  foreach($item in @('categories/index.html','categories/godot/index.html','tags/index.html','tags/plugins/index.html')){
   if(!(Test-Path (Join-Path $dir $item))){throw "Missing $item"}
  }
+ $archive=[IO.File]::ReadAllText((Join-Path $dir 'tags/plugins/index.html'))
+ if(-not $archive.Contains('href="../../styles/00-theme-contract.css"')){throw 'Missing theme CSS in tag archive'}
+ if(-not $archive.Contains('href="../../about/"')){throw 'Missing global navigation in tag archive'}
  $post=[IO.File]::ReadAllText((Join-Path $dir 'posts/2026/one.html'))
  if(!$post.Contains('Related articles')){throw 'Related article links missing'}
  Write-Host '[OK] PowerShell taxonomy validation' -ForegroundColor Green
