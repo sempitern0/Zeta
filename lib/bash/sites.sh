@@ -432,7 +432,6 @@ EOF_FONT_FACE
     cat >> "$css_file" <<EOF_FONT_VARS
 :root {
   --font-mono: "${family}", ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace;
-  --font-sans: "${family}", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 EOF_FONT_VARS
 
