@@ -9,6 +9,9 @@ $Sites=Join-Path ([IO.Path]::GetTempPath()) ('zeta-parity-'+[guid]::NewGuid().To
 try {
  [void](New-Item -ItemType Directory -Path (Join-Path $Sites 'demo') -Force)
  . (Join-Path $Root 'lib/powershell/Core.ps1')
+ $tokens=$null;$parseErrors=$null
+ [void][Management.Automation.Language.Parser]::ParseFile((Join-Path $Root 'lib/powershell/Workspace.ps1'),[ref]$tokens,[ref]$parseErrors)
+ if($parseErrors.Count -gt 0){throw "Workspace parser errors: $($parseErrors -join '; ')"}
  . (Join-Path $Root 'lib/powershell/Workspace.ps1')
  $config=Join-Path $Sites 'demo/config.yaml'
  Save $config @'
