@@ -103,11 +103,44 @@ local function validate_seo(html, rel)
     report('WARN', 'HTML_LANG', rel..': missing HTML language')
   end
 end
+-- A route can have valid HTML and no CSS at all. Require the common page
+-- shell and the active theme contract for every Zeta static page, including
+-- nested tag/category archives. No hardcoded theme names or new dependencies.
+local function validate_styles(html, rel)
+  local taxonomy = rel:match('^tags/.*/index%.html$') or
+                   rel:match('^categories/.*/index%.html$')
+  local themed = html:match('<[Bb][Oo][Dd][Yy][^>]*[Cc][Ll][Aa][Ss][Ss]%s*=%s*"[^"]*zeta%-static%-page') or
+                 html:match("<[Bb][Oo][Dd][Yy][^>]*[Cc][Ll][Aa][Ss][Ss]%s*=%s*'[^']*zeta%-static%-page")
+  if not taxonomy and not themed then return end
+
+  local found = {}
+  -- Check actual <link rel="stylesheet"> elements, not incidental text.
+  for raw in html:gmatch('<[Ll][Ii][Nn][Kk]%f[%s/>][^>]*>') do
+    local relationship = raw:match('[Rr][Ee][Ll]%s*=%s*"([^"]*)"') or
+                         raw:match("[Rr][Ee][Ll]%s*=%s*'([^']*)'") or ''
+    if relationship:lower():match('%f[%a]stylesheet%f[%A]') then
+      local href = raw:match('[Hh][Rr][Ee][Ff]%s*=%s*"([^"]+)"') or
+                   raw:match("[Hh][Rr][Ee][Ff]%s*=%s*'([^']+)'")
+      if href then
+        local path = url_path(xml_unescape(href), rel)
+        local normalized = path and normpath(path)
+        if normalized then found[normalized] = true end
+      end
+    end
+  end
+  for _,required in ipairs({'styles/zeta-pages.css', 'styles/00-theme-contract.css'}) do
+    if not found[required] then
+      report('FAIL', 'THEME_STYLES', rel..': missing stylesheet '..required)
+    end
+  end
+end
+
 local function inspect_html(rel)
   local html = read(output..'/'..rel)
   if not html then return end
   inspected[rel] = true
   validate_seo(html, rel)
+  validate_styles(html, rel)
   for _,tag in ipairs({'a','img','link','script','source'}) do
     local attr = (tag == 'a' or tag == 'link') and 'href' or 'src'
     for _,target in ipairs(attributes(html, tag, attr)) do
