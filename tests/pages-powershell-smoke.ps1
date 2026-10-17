@@ -72,6 +72,12 @@ Should not publish.
    if(Test-Path (Join-Path $out $path)){throw "$theme unexpectedly published $path"}
   }
   $index=[IO.File]::ReadAllText((Join-Path $out 'index.html'))
+  foreach($pagePath in @('index.html','about/index.html')){
+   $pageHtml=[IO.File]::ReadAllText((Join-Path $out $pagePath))
+   if(-not $pageHtml.Contains('zeta-theme-'+$theme)){throw "$theme missing page theme identity: $pagePath"}
+   if(-not $pageHtml.Contains('styles/theme.css') -and $theme -ne 'zen'){throw "$theme missing theme stylesheet: $pagePath"}
+   if(-not $pageHtml.Contains('styles/zeta-pages.css')){throw "$theme missing shared page CSS: $pagePath"}
+  }
   $about=[IO.File]::ReadAllText((Join-Path $out 'about/index.html'))
   $sitemap=[IO.File]::ReadAllText((Join-Path $out 'sitemap.xml'))
   if(-not $index.Contains('href="./about/"')){throw "$theme did not rewrite about.md"}
