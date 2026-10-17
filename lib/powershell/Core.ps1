@@ -423,7 +423,7 @@ function Render-ZetaPages([string]$name,[string]$stage,[hashtable]$c,[bool]$blog
  $sourceFiles=@(Get-ChildItem -LiteralPath $pages -Filter '*.md' -File | Sort-Object Name)
  foreach($file in $sourceFiles){
   $slug=$file.BaseName
-  if($slug -notmatch '^[a-z0-9]+(-[a-z0-9]+)* $file.FullName draft) -eq 'true'){ -or $slug -in @('posts','blog')){throw "Invalid or reserved Markdown page: $slug"}
+  if($slug -notmatch '^[a-z0-9]+(-[a-z0-9]+)*$' -or $slug -in @('posts','blog')){throw "Invalid or reserved Markdown page: $slug"}
   if((Meta $file.FullName draft) -eq 'true'){
    if($slug -eq 'index'){throw 'The homepage cannot be a draft'}
    continue
