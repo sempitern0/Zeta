@@ -84,6 +84,7 @@ for html in "$dir/public/posts.html"; do
  grep -Fq 'href="./about/"' "$html"
  grep -Fq 'href="./index.html"' "$html"
  grep -Fq 'aria-current="page"' "$html"
+ ! grep -Fq '>page_navigation<' "$html"
  grep -Fq 'href="../../about/"' "$dir/public/posts/2026/hidden.html"
  grep -Fq 'href="../../index.html"' "$dir/public/posts/2026/hidden.html"
 done
