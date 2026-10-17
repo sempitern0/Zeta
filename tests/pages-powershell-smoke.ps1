@@ -63,7 +63,8 @@ date: "2026-10-13"
 ---
 Should not publish.
 '@
-  Build $name
+  $buildOutput=@(Build $name)
+  if($buildOutput.Count -ne 0){throw "$theme build unexpectedly emitted pipeline output: $($buildOutput -join ', ')"}
   $out=Join-Path $site 'public'
   foreach($path in @('index.html','about/index.html','styles/zeta-pages.css','sitemap.xml')){
    if(!(Test-Path (Join-Path $out $path))){throw "$theme missing $path"}
