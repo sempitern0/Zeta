@@ -425,8 +425,9 @@ function Install-ZetaSiteFont([string]$name,[string]$choice){
  $stage=Join-Path $dir ('.zeta-font-ps-'+[guid]::NewGuid().ToString('N'))
  try{
   [void](New-Item -ItemType Directory -Path $cache,$stage -Force)
-  $downloads=@($spec.files)
-  $downloads+=,@('LICENSE.txt','','',$spec.license)
+  $downloads=[Collections.Generic.List[object]]::new()
+  foreach($fileSpec in $spec.files){$downloads.Add($fileSpec)}
+  $downloads.Add(@('LICENSE.txt','','',$spec.license))
   foreach($entry in $downloads){
    $dest=Join-Path $cache $entry[0]
    if((Test-Path -LiteralPath $dest -PathType Leaf) -and (Get-Item -LiteralPath $dest).Length -gt 0){
@@ -472,7 +473,6 @@ function FontSite([string]$name,[string]$choice=''){
   Write-Host 'Theme default fonts restored'
   Build $name;Dashboard;return
  }
- if(!$sources.ContainsKey($choice)){throw "Unknown font: $choice"}
  Install-ZetaSiteFont $name $choice
  Build $name
  Dashboard
