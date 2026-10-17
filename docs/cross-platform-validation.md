@@ -43,6 +43,10 @@ The PowerShell tests use temporary fixtures; the build test needs Pandoc. On an 
 
 These tests run **locally**, with no GitHub Actions minutes or Docker required.
 
+## Gallery and font verification
+
+Both assistants render the same shared, responsive workspace gallery via `templates/common/workspace/`. All eight samples are static HTML/CSS, requiring no JavaScript or network requests. Optional font recommendations are mapped by theme in each native shell; installation downloads a local licensed coding font only when requested. Validate generated output in Firefox, Chromium and Safari (desktop/mobile) for final visual confirmation; command-line smoke tests cannot establish pixel-perfect browser behavior.
+
 ## Source layout
 
 ~~~text
