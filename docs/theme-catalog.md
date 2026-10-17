@@ -114,3 +114,7 @@ preserve their legacy navigation when that variable is absent.
 Validation: `bash tests/theme-isolation-smoke.sh`,
 `bash tests/pages-bash-smoke.sh` and
 `.\\tests\\pages-powershell-smoke.ps1`. No framework or JavaScript required.
+
+## Taxonomy pages follow the theme
+
+The taxonomy publisher now inherits the ordered local stylesheet links and primary navigation from the already-rendered homepage. Both `tags/` and `categories/`, including nested term pages, rewrite asset and menu links for their output depth. `content-taxonomy.css` provides layout only and inherits foreground, background and accent tokens rather than overriding a site's light/dark appearance. Bash and PowerShell use the same Pandoc Lua filter. Run `bash tests/taxonomy-bash-smoke.sh` or `.\\tests\\taxonomy-powershell-smoke.ps1` to check CSS links, relative paths and navigation.
