@@ -1,5 +1,8 @@
-name: Landing themes
+name: Bash regression
 on:
+  push:
+    branches: [main]
+  pull_request:
   workflow_dispatch:
 jobs:
   test:
@@ -7,5 +10,4 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - run: sudo apt-get update && sudo apt-get install -y pandoc
-      - run: make syntax && bash -n tests/theme-smoke.sh
-      - run: bash tests/theme-smoke.sh
+      - run: make test

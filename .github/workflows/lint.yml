@@ -1,16 +1,15 @@
 name: Lint
-
 on:
+  push:
+    branches: [main]
+  pull_request:
   workflow_dispatch:
 jobs:
   shellcheck:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
-
+      - uses: actions/checkout@v5
       - name: Install ShellCheck
         run: sudo apt-get update && sudo apt-get install -y shellcheck
-
-      - name: Run Makefile Lint
-        run: make lint
+      - run: make syntax
+      - run: make lint
