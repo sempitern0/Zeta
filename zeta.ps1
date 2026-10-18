@@ -48,7 +48,7 @@ try {
   'diagnose'{Doctor $Site}
   'check-site'{Doctor $Site}
   'preview'{Preview $Site $Port}
-  'serve'{if($Site){if($Site -notmatch '^\d{1,5}
+  'serve'{if($Site){if($Site -notmatch '^[0-9]{1,5}$'){throw 'Invalid server port'};$Port=[int]$Site};foreach($n in (SiteNames)){Build $n};Dashboard;Serve $Sites $Port}
   'dashboard'{Dashboard}
   'index'{Dashboard}
   'clean'{Clean $Site}
@@ -58,15 +58,3 @@ try {
   default{throw "Unknown command: $Command"}
  }
 }catch{Write-Host "[ERROR] $($_.Exception.Message)" -ForegroundColor Red;exit 1}
-
-){throw "Invalid server port: $Site"};$Port=[int]$Site};foreach($n in (SiteNames)){Build $n};Dashboard;Serve $Sites $Port}
-  'dashboard'{Dashboard}
-  'index'{Dashboard}
-  'clean'{Clean $Site}
-  'delete'{RemoveSite $Site}
-  'rm'{RemoveSite $Site}
-  'fonts'{FontSite $Site $Value}
-  default{throw "Unknown command: $Command"}
- }
-}catch{Write-Host "[ERROR] $($_.Exception.Message)" -ForegroundColor Red;exit 1}
-
