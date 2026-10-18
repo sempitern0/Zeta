@@ -41,14 +41,25 @@ try {
   'new-post'{NewPost $Site}
   'pages'{ListPages $Site}
   'new-page'{NewPage $Site $Value $Highlight}
-  'build'{Build $Site;Dashboard}
-  'update'{Build $Site;Dashboard}
+  'build'{if($Site){Build $Site}else{foreach($n in (SiteNames)){Build $n}};Dashboard}
+  'update'{if($Site){Build $Site}else{foreach($n in (SiteNames)){Build $n}};Dashboard}
   'build-all'{foreach($n in (SiteNames)){Build $n};Dashboard}
   'doctor'{Doctor $Site}
   'diagnose'{Doctor $Site}
   'check-site'{Doctor $Site}
   'preview'{Preview $Site $Port}
-  'serve'{foreach($n in (SiteNames)){Build $n};Dashboard;Serve $Sites $Port}
+  'serve'{if($Site){if($Site -notmatch '^\d{1,5}
+  'dashboard'{Dashboard}
+  'index'{Dashboard}
+  'clean'{Clean $Site}
+  'delete'{RemoveSite $Site}
+  'rm'{RemoveSite $Site}
+  'fonts'{FontSite $Site $Value}
+  default{throw "Unknown command: $Command"}
+ }
+}catch{Write-Host "[ERROR] $($_.Exception.Message)" -ForegroundColor Red;exit 1}
+
+){throw "Invalid server port: $Site"};$Port=[int]$Site};foreach($n in (SiteNames)){Build $n};Dashboard;Serve $Sites $Port}
   'dashboard'{Dashboard}
   'index'{Dashboard}
   'clean'{Clean $Site}

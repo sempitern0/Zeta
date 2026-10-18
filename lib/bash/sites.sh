@@ -541,7 +541,15 @@ manage_site_fonts() {
         install_open_font "$site_slug" "$suggested" && build_site "$site_slug" && update_sites_index
         return $?
     fi
-    [[ -z "$font_choice" ]] || { msg_error "Unknown font selection: $font_choice"; return 1; }
+    if [[ -n "$font_choice" ]]; then
+        case "$font_choice" in
+            remove) remove_site_font "$site_slug" ;;
+            cascadia|jetbrains|fira|ibm-plex|source-code) install_open_font "$site_slug" "$font_choice" ;;
+            *) msg_error "Unknown font selection: $font_choice"; return 1 ;;
+        esac || return $?
+        build_site "$site_slug" && update_sites_index
+        return $?
+    fi
     printf "  Suggested for %s: %s (optional; downloads only if selected).\n" "$theme" "$suggested"
 
     echo ""
