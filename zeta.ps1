@@ -41,14 +41,14 @@ try {
   'new-post'{NewPost $Site}
   'pages'{ListPages $Site}
   'new-page'{NewPage $Site $Value $Highlight}
-  'build'{if($Site){Build $Site}else{foreach($n in (SiteNames)){Build $n}};Dashboard}
-  'update'{if($Site){Build $Site}else{foreach($n in (SiteNames)){Build $n}};Dashboard}
+  'build'{Build $Site;Dashboard}
+  'update'{Build $Site;Dashboard}
   'build-all'{foreach($n in (SiteNames)){Build $n};Dashboard}
   'doctor'{Doctor $Site}
   'diagnose'{Doctor $Site}
   'check-site'{Doctor $Site}
   'preview'{Preview $Site $Port}
-  'serve'{if($Site){if($Site -notmatch '^[0-9]{1,5}$'){throw 'Invalid server port'};$Port=[int]$Site};foreach($n in (SiteNames)){Build $n};Dashboard;Serve $Sites $Port}
+  'serve'{foreach($n in (SiteNames)){Build $n};Dashboard;Serve $Sites $Port}
   'dashboard'{Dashboard}
   'index'{Dashboard}
   'clean'{Clean $Site}
@@ -58,3 +58,4 @@ try {
   default{throw "Unknown command: $Command"}
  }
 }catch{Write-Host "[ERROR] $($_.Exception.Message)" -ForegroundColor Red;exit 1}
+

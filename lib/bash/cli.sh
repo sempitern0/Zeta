@@ -292,18 +292,18 @@ manage_site_menu() {
         local option
         read -rp "$(printf '%b' "${boldCyan}zeta / ${site} > ${endColour}")" option
         case "${option,,}" in
-            1) { edit_site "$site"; } || msg_warn "Action failed. Choose another option."; pause_menu ;;
-            2) { change_site_appearance "$site"; } || msg_warn "Action failed. Choose another option."; pause_menu ;;
-            3) { list_posts "$site"; } || msg_warn "Action failed. Choose another option."; pause_menu ;;
-            4) { create_post "$site"; } || msg_warn "Action failed. Choose another option."; pause_menu ;;
-            5) { manage_site_fonts "$site"; } || msg_warn "Action failed. Choose another option."; pause_menu ;;
-            11) { list_site_pages "$site"; } || msg_warn "Action failed. Choose another option."; pause_menu ;;
-            12) { create_site_page "$site"; } || msg_warn "Action failed. Choose another option."; pause_menu ;;
-            6) { diagnose_site "$site"; } || msg_warn "Action failed. Choose another option."; pause_menu ;;
-            7) { build_site "$site" && update_sites_index; } || msg_warn "Action failed. Choose another option."; pause_menu ;;
-            8) { preview_site "$site" "$PREVIEW_PORT"; } || msg_warn "Action failed. Choose another option."; pause_menu ;;
-            9) { clean_site "$site"; } || msg_warn "Action failed. Choose another option."; pause_menu ;;
-            10) { delete_site "$site"; } || msg_warn "Action failed. Choose another option."; [[ -d "${SITES_DIR}/${site}" ]] || return 0; pause_menu ;;
+            1) edit_site "$site"; pause_menu ;;
+            2) change_site_appearance "$site"; pause_menu ;;
+            3) list_posts "$site"; pause_menu ;;
+            4) create_post "$site"; pause_menu ;;
+            5) manage_site_fonts "$site"; pause_menu ;;
+            11) list_site_pages "$site"; pause_menu ;;
+            12) create_site_page "$site"; pause_menu ;;
+            6) diagnose_site "$site"; pause_menu ;;
+            7) build_site "$site" && update_sites_index; pause_menu ;;
+            8) preview_site "$site" "$PREVIEW_PORT"; pause_menu ;;
+            9) clean_site "$site"; pause_menu ;;
+            10) delete_site "$site"; [[ -d "${SITES_DIR}/${site}" ]] || return 0; pause_menu ;;
             0|b|back) return 0 ;;
             *) msg_warn "Unknown option: '$option'"; sleep 0.4 ;;
         esac
@@ -350,14 +350,14 @@ show_menu() {
         local option
         read -rp "$(printf '%b' "${boldCyan}zeta > ${endColour}")" option
         case "${option,,}" in
-            1) { list_sites; } || msg_warn "Action failed. Returning to menu."; pause_menu ;;
-            2) { create_new_site; } || msg_warn "Action failed. Returning to menu."; pause_menu ;;
-            3) { manage_site_menu; } || msg_warn "Action failed. Returning to menu." ;;
-            4) { select_and_build_site; } || msg_warn "Action failed. Returning to menu."; pause_menu ;;
-            5) { build_all_sites; } || msg_warn "Action failed. Returning to menu."; pause_menu ;;
-            6) { select_and_preview_site; } || msg_warn "Action failed. Returning to menu."; pause_menu ;;
-            7) { serve_workspace "$PREVIEW_PORT"; } || msg_warn "Action failed. Returning to menu."; pause_menu ;;
-            '?'|h|help) { show_help; } || msg_warn "Action failed. Returning to menu."; pause_menu ;;
+            1) list_sites; pause_menu ;;
+            2) create_new_site; pause_menu ;;
+            3) manage_site_menu ;;
+            4) select_and_build_site; pause_menu ;;
+            5) build_all_sites; pause_menu ;;
+            6) select_and_preview_site; pause_menu ;;
+            7) serve_workspace "$PREVIEW_PORT"; pause_menu ;;
+            '?'|h|help) show_help; pause_menu ;;
             0|q|quit|exit) msg_info "Goodbye."; exit 0 ;;
             *) msg_warn "Unknown option: '$option'"; sleep 0.4 ;;
         esac

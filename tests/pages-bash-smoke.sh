@@ -75,7 +75,7 @@ EOF
  test ! -e "$dir/public/atom.xml"
  test ! -e "$dir/public/draft"
  test ! -e "$dir/public/posts/2026/hidden.html"
- grep -Fq 'href="about/"' "$dir/public/index.html"
+ grep -Fq 'href="./about/"' "$dir/public/index.html"
  grep -Fq 'href="../index.html#content"' "$dir/public/about/index.html"
  grep -Fq 'https://example.org/about/' "$dir/public/sitemap.xml"
  ! grep -Fq '/posts/' "$dir/public/sitemap.xml"
@@ -87,7 +87,7 @@ EOF
    grep -Fq 'aria-current="page"' "$html"
    ! grep -Fq '>page_navigation<' "$html"
  done
- grep -Fq 'href="about/"' "$dir/public/posts.html"
+ grep -Fq 'href="./about/"' "$dir/public/posts.html"
  grep -Fq 'href="../../about/"' "$dir/public/posts/2026/hidden.html"
  grep -Fq -- '--zeta-nav-background' "$dir/public/styles/zeta-pages.css"
  sed -i 's/blog: true/blog: false/' "$dir/config.yaml"
@@ -98,7 +98,7 @@ done
 sed -i 's/blog: false/blog: true/' "$dir/config.yaml"
 bash "$ROOT/zeta.sh" build "$name" >/dev/null
 for html in "$dir/public/posts.html"; do
- grep -Fq 'href="about/"' "$html"
+ grep -Fq 'href="./about/"' "$html"
  grep -Fq 'href="./index.html"' "$html"
  grep -Fq 'aria-current="page"' "$html"
  ! grep -Fq '>page_navigation<' "$html"

@@ -115,8 +115,8 @@ function Doctor([string]$name){
   foreach($sourceFile in $sourceFiles){
    $tmp=[IO.Path]::GetTempFileName()
    try{
-    $pandocArgs=@($sourceFile.FullName,'-f','markdown','-t','plain',("--lua-filter=$filter"),'-M',("zeta_doctor_source=$($sourceFile.FullName)"),'-M',("zeta_doctor_site=$siteDir"),'-o',$tmp)
-    $lines=@(& pandoc @pandocArgs 2>&1 | ForEach-Object {[string]$_})
+    $args=@($sourceFile.FullName,'-f','markdown','-t','plain',("--lua-filter=$filter"),'-M',("zeta_doctor_source=$($sourceFile.FullName)"),'-M',("zeta_doctor_site=$siteDir"),'-o',$tmp)
+    $lines=@(& pandoc @args 2>&1 | ForEach-Object {[string]$_})
     $rc=$LASTEXITCODE
     foreach($line in $lines){
      if($line -match '^ZETA_DOCTOR\|(FAIL|WARN)\|([^|]+)\|(.*)$'){
@@ -164,8 +164,8 @@ function Doctor([string]$name){
    elseif($validUrl){
     $tmp=[IO.Path]::GetTempFileName()
     try{
-     $pandocArgs=@('-f','markdown','-t','plain',("--lua-filter=$filter"),'-M',("zeta_doctor_output=$outputDir"),'-M',("zeta_doctor_url=$($url.TrimEnd('/'))"),'-o',$tmp)
-     $lines=@('' | & pandoc @pandocArgs 2>&1 | ForEach-Object {[string]$_})
+     $args=@('-f','markdown','-t','plain',("--lua-filter=$filter"),'-M',("zeta_doctor_output=$outputDir"),'-M',("zeta_doctor_url=$($url.TrimEnd('/'))"),'-o',$tmp)
+     $lines=@('' | & pandoc @args 2>&1 | ForEach-Object {[string]$_})
      $rc=$LASTEXITCODE
      foreach($line in $lines){
       if($line -match '^ZETA_DOCTOR\|(FAIL|WARN|OK)\|([^|]+)\|(.*)$'){

@@ -137,63 +137,6 @@ build:
 EOF_CONFIG
 }
 
-
-# Update selected flat YAML keys without dropping user-owned settings (e.g.
-# build.blog, site.image, custom options or comments). Existing config is
-# replaced only after the complete updated file has been written.
-zeta_patch_yaml_section() {
-    local file="$1" section="$2"
-    shift 2
-    [[ -f "$file" && $# -gt 0 && $(( $# % 2 )) -eq 0 ]] || return 1
-    local -A replacements=() present=()
-    local -a order=()
-    local key value
-    while (( $# )); do
-        key="$1"; value="$2"; shift 2
-        [[ "$key" =~ ^[a-z_]+$ ]] || return 1
-        order+=("$key")
-        replacements["$key"]="$(yaml_quote "$value")"
-    done
-    local tmp="${file}.zeta-patch-${BASHPID:-$}"
-    local current="" line name
-    local -i found=0
-    {
-        while IFS= read -r line || [[ -n "$line" ]]; do
-            if [[ "$line" =~ ^([[:alnum:]_-]+):([[:space:]]*#.*)?[[:space:]]*$ ]]; then
-                if [[ "$current" == "$section" ]]; then
-                    for key in "${order[@]}"; do
-                        [[ -n "${present[$key]+yes}" ]] || printf '  %s: %s\n' "$key" "${replacements[$key]}"
-                    done
-                fi
-                current="${BASH_REMATCH[1]}"
-                [[ "$current" == "$section" ]] && found=1
-                printf '%s\n' "$line"
-                continue
-            fi
-            if [[ "$current" == "$section" && "$line" =~ ^[[:space:]][[:space:]]([a-z_]+): ]]; then
-                name="${BASH_REMATCH[1]}"
-                if [[ -n "${replacements[$name]+yes}" ]]; then
-                    [[ -z "${present[$name]+yes}" ]] || { rm -f -- "$tmp"; return 1; }
-                    present["$name"]=1
-                    printf '  %s: %s\n' "$name" "${replacements[$name]}"
-                    continue
-                fi
-            fi
-            printf '%s\n' "$line"
-        done < "$file"
-        if [[ "$current" == "$section" ]]; then
-            for key in "${order[@]}"; do
-                [[ -n "${present[$key]+yes}" ]] || printf '  %s: %s\n' "$key" "${replacements[$key]}"
-            done
-        fi
-        if (( ! found )); then
-            printf '%s:\n' "$section"
-            for key in "${order[@]}"; do printf '  %s: %s\n' "$key" "${replacements[$key]}"; done
-        fi
-    } > "$tmp" || { rm -f -- "$tmp"; return 1; }
-    mv -f -- "$tmp" "$file"
-}
-
 available_themes() {
     [[ -d "$TEMPLATES_DIR" ]] || return 0
     local dir name
@@ -398,10 +341,10 @@ install_open_font() {
         cascadia)
             font_id="CascadiaCode"
             family="Cascadia Code"
-            license_url="https://raw.githubusercontent.com/google/fonts/3dd78844021e948ceb633d1dcee3f7885561b5d9/ofl/cascadiacode/OFL.txt"
+            license_url="https://raw.githubusercontent.com/microsoft/cascadia-code/main/LICENSE"
             faces=(
-                "CascadiaCode.ttf|normal|200 700|https://raw.githubusercontent.com/google/fonts/3dd78844021e948ceb633d1dcee3f7885561b5d9/ofl/cascadiacode/CascadiaCode[wght].ttf"
-                "CascadiaCodeItalic.ttf|italic|200 700|https://raw.githubusercontent.com/google/fonts/3dd78844021e948ceb633d1dcee3f7885561b5d9/ofl/cascadiacode/CascadiaCode-Italic[wght].ttf"
+                "CascadiaCode.woff2|normal|200 700|https://raw.githubusercontent.com/sempitern0/Zeta/main/templates/common/assets/fonts/CascadiaCode/CascadiaCode.woff2"
+                "CascadiaCodeItalic.woff2|italic|200 700|https://raw.githubusercontent.com/sempitern0/Zeta/main/templates/common/assets/fonts/CascadiaCode/CascadiaCodeItalic.woff2"
             )
             ;;
         jetbrains)
@@ -418,9 +361,10 @@ install_open_font() {
         fira)
             font_id="FiraCode"
             family="Fira Code"
-            license_url="https://raw.githubusercontent.com/google/fonts/5020a98352f1909554697e1da4132da253727138/ofl/firacode/OFL.txt"
+            license_url="https://raw.githubusercontent.com/tonsky/FiraCode/master/LICENSE"
             faces=(
-                "FiraCode.ttf|normal|300 700|https://raw.githubusercontent.com/google/fonts/5020a98352f1909554697e1da4132da253727138/ofl/firacode/FiraCode[wght].ttf"
+                "FiraCode-Regular.woff2|normal|400|https://raw.githubusercontent.com/sempitern0/Zeta/main/templates/common/assets/fonts/FiraCode/FiraCode-Regular.woff2"
+                "FiraCode-Bold.woff2|normal|700|https://raw.githubusercontent.com/sempitern0/Zeta/main/templates/common/assets/fonts/FiraCode/FiraCode-Bold.woff2"
             )
             ;;
         ibm-plex)
@@ -473,12 +417,10 @@ install_open_font() {
     local face filename font_style font_weight url
     for face in "${faces[@]}"; do
         IFS='|' read -r filename font_style font_weight url <<< "$face"
-        local font_format=woff2
-        [[ "$filename" == *.ttf ]] && font_format=truetype
         cat >> "$css_file" <<EOF_FONT_FACE
 @font-face {
   font-family: "${family}";
-  src: url("../assets/fonts/${font_id}/${filename}") format("${font_format}");
+  src: url("../assets/fonts/${font_id}/${filename}") format("woff2");
   font-style: ${font_style};
   font-weight: ${font_weight};
   font-display: swap;
@@ -541,15 +483,7 @@ manage_site_fonts() {
         install_open_font "$site_slug" "$suggested" && build_site "$site_slug" && update_sites_index
         return $?
     fi
-    if [[ -n "$font_choice" ]]; then
-        case "$font_choice" in
-            remove) remove_site_font "$site_slug" ;;
-            cascadia|jetbrains|fira|ibm-plex|source-code) install_open_font "$site_slug" "$font_choice" ;;
-            *) msg_error "Unknown font selection: $font_choice"; return 1 ;;
-        esac || return $?
-        build_site "$site_slug" && update_sites_index
-        return $?
-    fi
+    [[ -z "$font_choice" ]] || { msg_error "Unknown font selection: $font_choice"; return 1; }
     printf "  Suggested for %s: %s (optional; downloads only if selected).\n" "$theme" "$suggested"
 
     echo ""
@@ -655,7 +589,8 @@ change_site_appearance() {
         highlight=$(choose_highlight_interactive "$highlight")
     fi
 
-    zeta_patch_yaml_section "$config_file" theme name "$theme" pandoc_theme "$highlight" || return 1
+    write_site_config "$config_file" "$title" "$desc" "$author" "$lang" "$url" \
+        "$theme" "$highlight" "$content_rel" "$output_rel"
 
     msg_success "Appearance updated: theme='${theme}', highlight='${highlight}'."
     if [[ -t 0 ]]; then
@@ -855,7 +790,7 @@ diagnose_site() {
         doctor_fail "site.language" "${lang:-missing} (expected e.g. en, es, es-ES)"
     fi
 
-    if [[ "$url" =~ ^https?://[^[:space:]?#]+$ ]]; then
+    if [[ "$url" =~ ^https?://[^[:space:]]+$ ]]; then
         if [[ "$url" == "https://example.com"* || "$url" == "http://example.com"* ]]; then
             doctor_warn "site.url" "$url (placeholder)"
         elif [[ "$url" == http://* ]]; then
@@ -1226,9 +1161,8 @@ edit_site() {
     theme=$(choose_theme_interactive "$theme")
     highlight=$(choose_highlight_interactive "$highlight")
 
-    zeta_patch_yaml_section "$config_file" site \
-        title "$title" description "$desc" author "$author" language "$lang" url "$url" || return 1
-    zeta_patch_yaml_section "$config_file" theme name "$theme" pandoc_theme "$highlight" || return 1
+    write_site_config "$config_file" "$title" "$desc" "$author" "$lang" "$url" \
+        "$theme" "$highlight" "$content_rel" "$output_rel"
 
     msg_success "Configuration updated for '${site_slug}'."
     msg_info "Run './main.sh build ${site_slug}' to regenerate public/."

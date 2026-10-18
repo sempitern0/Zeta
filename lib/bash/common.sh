@@ -43,12 +43,13 @@ die() {
 
 slugify() {
     local value="${1:-}"
-    # Normalize diacritics before ASCII filtering, independently of LC_ALL.
-    # iconv is available on standard Linux/macOS installations.
-    if command -v iconv >/dev/null 2>&1; then
-        value=$(printf '%s' "$value" | iconv -f UTF-8 -t ASCII//TRANSLIT 2>/dev/null) || value=""
-    fi
-    value=$(printf '%s' "$value" | LC_ALL=C tr '[:upper:]' '[:lower:]' |
-        LC_ALL=C sed -E 's/[^a-z0-9]+/-/g; s/^-+//; s/-+$//; s/-+/-/g')
-    printf '%s\n' "${value:-post}"
+    value="${value,,}"
+    value="${value//á/a}"
+    value="${value//é/e}"
+    value="${value//í/i}"
+    value="${value//ó/o}"
+    value="${value//ú/u}"
+    value="${value//ñ/n}"
+    value=$(printf '%s' "$value" | sed -E 's/[^a-z0-9]+/-/g; s/^-+//; s/-+$//; s/-+/-/g')
+    printf '%s\n' "$value"
 }
