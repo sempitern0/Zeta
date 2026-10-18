@@ -398,10 +398,10 @@ install_open_font() {
         cascadia)
             font_id="CascadiaCode"
             family="Cascadia Code"
-            license_url="https://raw.githubusercontent.com/microsoft/cascadia-code/main/LICENSE"
+            license_url="https://raw.githubusercontent.com/google/fonts/3dd78844021e948ceb633d1dcee3f7885561b5d9/ofl/cascadiacode/OFL.txt"
             faces=(
-                "CascadiaCode.woff2|normal|200 700|https://raw.githubusercontent.com/sempitern0/Zeta/main/templates/common/assets/fonts/CascadiaCode/CascadiaCode.woff2"
-                "CascadiaCodeItalic.woff2|italic|200 700|https://raw.githubusercontent.com/sempitern0/Zeta/main/templates/common/assets/fonts/CascadiaCode/CascadiaCodeItalic.woff2"
+                "CascadiaCode.ttf|normal|200 700|https://raw.githubusercontent.com/google/fonts/3dd78844021e948ceb633d1dcee3f7885561b5d9/ofl/cascadiacode/CascadiaCode[wght].ttf"
+                "CascadiaCodeItalic.ttf|italic|200 700|https://raw.githubusercontent.com/google/fonts/3dd78844021e948ceb633d1dcee3f7885561b5d9/ofl/cascadiacode/CascadiaCode-Italic[wght].ttf"
             )
             ;;
         jetbrains)
@@ -418,10 +418,9 @@ install_open_font() {
         fira)
             font_id="FiraCode"
             family="Fira Code"
-            license_url="https://raw.githubusercontent.com/tonsky/FiraCode/master/LICENSE"
+            license_url="https://raw.githubusercontent.com/google/fonts/5020a98352f1909554697e1da4132da253727138/ofl/firacode/OFL.txt"
             faces=(
-                "FiraCode-Regular.woff2|normal|400|https://raw.githubusercontent.com/sempitern0/Zeta/main/templates/common/assets/fonts/FiraCode/FiraCode-Regular.woff2"
-                "FiraCode-Bold.woff2|normal|700|https://raw.githubusercontent.com/sempitern0/Zeta/main/templates/common/assets/fonts/FiraCode/FiraCode-Bold.woff2"
+                "FiraCode.ttf|normal|300 700|https://raw.githubusercontent.com/google/fonts/5020a98352f1909554697e1da4132da253727138/ofl/firacode/FiraCode[wght].ttf"
             )
             ;;
         ibm-plex)
@@ -474,10 +473,12 @@ install_open_font() {
     local face filename font_style font_weight url
     for face in "${faces[@]}"; do
         IFS='|' read -r filename font_style font_weight url <<< "$face"
+        local font_format=woff2
+        [[ "$filename" == *.ttf ]] && font_format=truetype
         cat >> "$css_file" <<EOF_FONT_FACE
 @font-face {
   font-family: "${family}";
-  src: url("../assets/fonts/${font_id}/${filename}") format("woff2");
+  src: url("../assets/fonts/${font_id}/${filename}") format("${font_format}");
   font-style: ${font_style};
   font-weight: ${font_weight};
   font-display: swap;
