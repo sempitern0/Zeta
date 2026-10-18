@@ -88,6 +88,8 @@ This is an **article**.
   if(-not $article.Contains('rel="canonical" href="https://example.org/zeta/posts/2026/smoke.html"')){throw "$theme article canonical incorrect"}
   if(-not $article.Contains('og:type" content="article"')){throw "$theme missing article metadata"}
 
+  if(-not (Test-Path (Join-Path $public 'styles/article-toc.css'))){throw "$theme missing TOC CSS"}
+  if(-not (Test-Path (Join-Path $public 'assets/zeta-toc.js'))){throw "$theme missing TOC JS"}
   Write-Host "[OK] $theme rendered with absolute templates" -ForegroundColor Green
  }
  Write-Host '[OK] All eight themes generated on PowerShell.' -ForegroundColor Green

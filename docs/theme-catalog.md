@@ -118,3 +118,22 @@ Validation: `bash tests/theme-isolation-smoke.sh`,
 ## Taxonomy pages follow the theme
 
 The taxonomy publisher now inherits the ordered local stylesheet links and primary navigation from the already-rendered homepage. Both `tags/` and `categories/`, including nested term pages, rewrite asset and menu links for their output depth. `content-taxonomy.css` provides layout only and inherits foreground, background and accent tokens rather than overriding a site's light/dark appearance. Bash and PowerShell use the same Pandoc Lua filter. Run `bash tests/taxonomy-bash-smoke.sh` or `.\\tests\\taxonomy-powershell-smoke.ps1` to check CSS links, relative paths and navigation.
+
+## Responsive article table of contents
+
+Blog posts use Pandoc's existing `--table-of-contents --toc-depth=3` heading anchors. On wide screens (at least 70rem), Zeta displays the index in a sticky right column while keeping the article text in a readable left column. On narrow screens the index appears before the body, with no horizontal overflow or missing content. Articles with no headings and no Pandoc index retain the original single-column layout.
+
+The shared geometry, nested lists, keyboard focus and active-section state live in `templates/common/styles/article-toc.css`. Each theme customizes only its appearance in `templates/<theme>/styles/article.css`. A small local, deferred `assets/zeta-toc.js` progressively marks the active heading link with `aria-current="location"`; links work normally with JavaScript disabled. None of these assets uses a CDN or external framework. Site-specific `styles/article.css` can override the default.
+
+| Theme | Index treatment |
+| --- | --- |
+| zen | Dashed developer panel and shell prompt |
+| paper | Quiet serif editorial outline |
+| console | Terminal read-only index in a framed panel |
+| indie | Dark game-dev card |
+| organization | Clean documentation navigation |
+| brutalist | Yellow box, strong border and offset shadow |
+| folio | Airy, restrained serif list |
+| aurora | Rounded gradient panel with mint accents |
+
+For regression coverage run `bash tests/article-toc-smoke.sh` (requires Pandoc) and, on Windows, `./tests/powershell-build-smoke.ps1`. Rebuild an existing site to include the new styles and local script.

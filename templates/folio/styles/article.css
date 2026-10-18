@@ -1,1 +1,4 @@
 /* Folio article styles live in theme.css and common/markdown.css. */
+
+/* Theme-specific responsive table of contents. */
+.zeta-catalog .article-shell.zeta-has-toc{max-width:var(--width)}.theme-folio .zeta-has-toc .article-toc{background:transparent;border:0;border-top:1px solid var(--rule);border-radius:0;padding:1.2rem 0;font-family:Georgia,"Times New Roman",serif}.theme-folio .zeta-has-toc .zeta-toc-label{color:var(--muted);font-style:italic;text-transform:none;letter-spacing:.03em;font-size:.94rem}.theme-folio .zeta-has-toc .article-toc a[aria-current="location"]{color:var(--accent)}

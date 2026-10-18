@@ -25,7 +25,7 @@ $styles.html()$
     </div>
   </header>
 
-  <main id="content" class="console-shell console-article-shell">
+  <main id="content" class="console-shell console-article-shell$if(toc)$ zeta-has-toc$endif$">
     <article class="console-article">
       <header class="article-header console-article-header">
         <div class="status-line"><span class="status-dot" aria-hidden="true"></span><span>read-only</span></div>
@@ -39,7 +39,7 @@ $styles.html()$
       </header>
 
       $if(toc)$
-      <nav class="article-toc" aria-label="Table of contents">
+      <nav class="article-toc" aria-label="Table of contents"><span class="zeta-toc-label">Contents</span>
         <strong>TABLE_OF_CONTENTS</strong>
         $toc$
       </nav>
@@ -56,5 +56,5 @@ $styles.html()$
       <span>exit=0</span>
     </div>
   </footer>
-</body>
+$if(toc)$<script src="$rel_root$assets/zeta-toc.js" defer></script>$endif$</body>
 </html>

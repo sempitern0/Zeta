@@ -27,7 +27,7 @@ $styles.html()$
       </div>
     </header>
 
-    <main id="content" class="container">
+    <main id="content" class="container$if(toc)$ zeta-has-toc$endif$">
       <article>
         <header class="article-header">
           <h1 class="article-title">$title$</h1>
@@ -44,7 +44,7 @@ $styles.html()$
         </header>
 
         $if(toc)$
-        <nav class="article-toc" aria-label="Table of contents">$toc$</nav>
+        <nav class="article-toc" aria-label="Table of contents"><span class="zeta-toc-label">On this page</span>$toc$</nav>
         $endif$
 
         <div class="article-body">$body$</div>
@@ -54,5 +54,5 @@ $styles.html()$
     <footer class="site-footer">
       <p><a href="#top">Back to top</a></p>
     </footer>
-  </body>
+  $if(toc)$<script src="$rel_root$assets/zeta-toc.js" defer></script>$endif$</body>
 </html>
