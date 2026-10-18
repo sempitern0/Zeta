@@ -29,3 +29,13 @@ for theme in zen paper console indie organization brutalist folio aurora; do
   fi
 done
 echo '[OK] Eight isolated theme contracts and shared navigation.'
+
+# The Aurora backdrop is owned by the page canvas, never the centered content or hero.
+aurora_contract="$ROOT/templates/aurora/styles/00-theme-contract.css"
+aurora_theme="$ROOT/templates/aurora/styles/theme.css"
+grep -Fq -- '--zeta-aurora-page-background:' "$aurora_contract"
+grep -Fq 'body.zeta-static-page.zeta-theme-aurora{background-image:var(--zeta-aurora-page-background)}' "$aurora_contract"
+grep -Fq 'body.zeta-static-page.zeta-theme-aurora .zeta-content{background:transparent;' "$aurora_contract"
+grep -Fq 'background-image:var(--zeta-aurora-page-background)' "$aurora_theme"
+grep -Fq '.theme-aurora .hero{position:relative;overflow:hidden;background:transparent}' "$aurora_theme"
+echo '[OK] Aurora full-page gradient and transparent content layout.'

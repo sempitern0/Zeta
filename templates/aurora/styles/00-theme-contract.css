@@ -4,9 +4,14 @@
  --zeta-nav-ink:#75eece;
  --zeta-nav-current:#75eece;
  --zeta-nav-type:system-ui,-apple-system,"Segoe UI",sans-serif;
+ --zeta-aurora-page-background:
+  radial-gradient(circle at 20% 20%,rgba(38,117,255,.18),transparent 34%),
+  radial-gradient(circle at 78% 18%,rgba(138,92,255,.22),transparent 38%),
+  linear-gradient(100deg,#07122d 0%,#0e2d55 38%,#1a2558 62%,#4a357f 100%);
 }
 body.zeta-static-page{--page-bg:#090e29;--page-panel:#151e48;--page-fg:#f8f8ff;--page-muted:#b8c4e2;--page-link:#75eece;--page-border:#3b4674;--page-focus:#ffcc70}
-body.zeta-static-page .zeta-content{background:radial-gradient(circle at 85% 20%,#543d8e,transparent 46%),radial-gradient(circle at 20% 75%,#164d75,transparent 55%),var(--page-bg)}
+/* Paint the whole viewport, not only the centered Markdown content shell. */
+body.zeta-static-page.zeta-theme-aurora{background-image:var(--zeta-aurora-page-background)}
 
 /* Keep Aurora's gradient as a spacious reading surface instead of flush content. */
-body.zeta-static-page.zeta-theme-aurora .zeta-content{padding-block:clamp(3rem,6vw,5rem);}
+body.zeta-static-page.zeta-theme-aurora .zeta-content{background:transparent;padding-block:clamp(3rem,6vw,5rem);}
