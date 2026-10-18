@@ -264,7 +264,17 @@ function Build([string]$name){
    $links.Add($item)
   }
   $vars=@{site_lang=(Escape $c.language);site_title=(Escape $c.title);site_desc=(Escape $c.description);
-    site_author=(Escape $c.author);posts_list=($links -join [Environment]::NewLine);landing_content=$body}
+    site_author=(Escape $c.author);landing_content=$body}
+  # Avoid Windows' 32767-character process argument limit for long archives.
+  # Pandoc reads the (possibly large) list of post cards from a local YAML file.
+  $postsMeta=Join-Path $stage '.zeta-posts-list.yaml'
+  $cardMarkup=$links.ToArray() -join [Environment]::NewLine
+  $yamlLines=[Collections.Generic.List[string]]::new()
+  if($cardMarkup){
+   $yamlLines.Add('posts_list: |')
+   foreach($line in ($cardMarkup -split "\r?\n")){$yamlLines.Add('  '+$line)}
+  }else{$yamlLines.Add("posts_list: ''")}
+  Save $postsMeta ($yamlLines.ToArray() -join [Environment]::NewLine)
   foreach($k in $extra.Keys){$vars[$k]=Escape $extra[$k]}
   $pagesDir=Join-Path $dir 'pages'
   $pagesMode=Test-Path -LiteralPath (Join-Path $pagesDir 'index.md') -PathType Leaf
@@ -273,7 +283,7 @@ function Build([string]$name){
    if($pagesMode -and ($tpl.Name -eq 'index.html' -or (-not $blogEnabled -and $tpl.Name -eq 'posts.html'))){continue}
    if($tpl.Name -in @('article.html','post_link.html')){continue}
    $pageTemplate=Get-ZetaTemplate $theme $tpl.Name
-   $pandocOptions=@('-f','markdown','-t','html5','--standalone','--quiet','--template',$pageTemplate)
+   $pandocOptions=@('-f','markdown','-t','html5','--standalone','--quiet','--template',$pageTemplate,'--metadata-file',$postsMeta)
    foreach($k in $vars.Keys){$pandocOptions+=@('-V',('{0}={1}' -f $k,$vars[$k]))}
    if($pagesMode -and $tpl.Name -eq 'posts.html'){
     $pandocOptions+=@('-V',('page_navigation='+(Get-ZetaPageNavigation $name './' 'blog' $blogEnabled)))
@@ -282,6 +292,7 @@ function Build([string]$name){
    $pandocOptions+=@('-o',(Join-Path $stage $tpl.Name))
    Invoke-ZetaPandoc $pandocOptions
   }
+  Remove-Item -LiteralPath $postsMeta -Force
   if($pagesMode){Render-ZetaPages $name $stage $c $blogEnabled}
   if(!(Test-Path (Join-Path $stage 'index.html'))){throw 'Theme did not generate index'}
   $base=$c.url.TrimEnd('/')
