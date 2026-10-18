@@ -84,3 +84,6 @@
 .article-body thead th {
   background: var(--surface-2);
 }
+
+/* Theme-specific responsive table of contents. */
+.console-article-shell.zeta-has-toc{grid-template-columns:minmax(0,1fr);justify-content:stretch}.zeta-has-toc .article-toc{border:1px solid var(--border);background:var(--surface);border-radius:0}.zeta-has-toc .zeta-toc-label{color:var(--accent);font-family:var(--font-mono)}.zeta-has-toc .zeta-toc-label::before{content:"> ";color:var(--accent-cyan)}.zeta-has-toc .article-toc a{font-family:var(--font-mono)}.zeta-has-toc .article-toc a[aria-current="location"]{color:var(--accent)}

@@ -1,1 +1,4 @@
 /* Brutalist: article styles in theme.css and common/markdown.css. */
+
+/* Theme-specific responsive table of contents. */
+.zeta-catalog .article-shell.zeta-has-toc{max-width:var(--width)}.theme-brutalist .zeta-has-toc .article-toc{background:#f7f450;border:3px solid #111;border-radius:0;box-shadow:6px 6px 0 #111;color:#111}.theme-brutalist .zeta-has-toc .zeta-toc-label{background:#111;color:#fff;padding:.45rem .6rem}.theme-brutalist .zeta-has-toc .article-toc a[aria-current="location"]{color:#a32609;border-color:#a32609}
