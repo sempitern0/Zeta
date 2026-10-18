@@ -1,0 +1,53 @@
+/* Shared responsive article TOC layout. Only articles with a Pandoc index use two columns.\n * The index is a grid item in its own right-hand column, not nested into readable text width. */
+.zeta-has-toc > article {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
+}
+.zeta-has-toc > article > .article-toc { min-width: 0; }
+.zeta-has-toc > article > .article-body { min-width: 0; }
+.article-toc { font-size: .88rem; line-height: 1.5; }
+.article-toc .zeta-toc-label {
+  display: block;
+  margin: 0 0 .85rem;
+  font-size: .75rem;
+  font-weight: 800;
+  line-height: 1.3;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+.zeta-has-toc .article-toc ul { list-style: none; margin: 0; padding: 0; }
+.zeta-has-toc .article-toc ul ul { padding-inline-start: .9rem; margin-block: .35rem; border-inline-start: 1px solid var(--border, var(--rule, currentColor)); }
+.article-toc li { margin: 0; padding: 0; }
+.article-toc li + li { margin-top: .25rem; }
+.article-toc a { display: block; padding: .3rem .4rem; border-inline-start: 2px solid transparent; color: inherit; text-decoration: none; overflow-wrap: anywhere; }
+.article-toc a:hover, .article-toc a:focus-visible { color: var(--accent, var(--link, currentColor)); text-decoration: underline; }
+.article-toc a[aria-current="location"] { border-inline-start-color: var(--accent, currentColor); color: var(--accent, var(--link, currentColor)); font-weight: 700; }
+.article-toc a:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+@media (min-width: 62rem) {
+  .zeta-has-toc > article {
+    grid-template-columns: minmax(0, 1fr) minmax(13.5rem, 17rem);
+    column-gap: clamp(1.5rem, 3.5vw, 4rem);
+    align-items: start;
+  }
+  .zeta-has-toc > article > .article-toc {
+    grid-column: 2;
+    grid-row: 1 / 3;
+    position: sticky;
+    top: 1.5rem;
+    max-height: calc(100vh - 3rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+  }
+  .zeta-has-toc > article > .article-body,
+  .zeta-has-toc > article > .article-heading,
+  .zeta-has-toc > article > .article-header { grid-column: 1; }
+  .zeta-has-toc > article > .article-body { grid-row: 2; }
+}
+@media (max-width: 61.999rem) {
+  .zeta-has-toc > article > .article-toc { margin-block: 0 2rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .article-toc, .article-toc * { scroll-behavior: auto; }
+}

@@ -50,3 +50,6 @@
     font-size: 1.08rem;
   }
 }
+
+/* Theme-specific responsive table of contents. */
+.container.zeta-has-toc{max-width:78rem}.zeta-has-toc .article-toc{background:#161b22;border:1px dashed var(--border);border-radius:0;font-family:var(--font-mono)}.zeta-has-toc .zeta-toc-label{color:var(--accent)}.zeta-has-toc .zeta-toc-label::before{content:"$ ";color:var(--accent-cyan)}.zeta-has-toc .article-toc a[aria-current="location"]{color:var(--accent)}

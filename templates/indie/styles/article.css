@@ -1,1 +1,4 @@
 /* Landing article styles are shared in templates/common/styles/landing.css. */
+
+/* Theme-specific responsive table of contents. */
+.zeta-landing .reading.zeta-has-toc{width:min(calc(100% - 2.5rem),76rem)}.zeta-landing .zeta-has-toc .article-toc{background:var(--panel);border:1px solid var(--border);border-radius:.8rem;box-shadow:0 .8rem 2rem #0002}.zeta-landing .zeta-has-toc .zeta-toc-label{color:var(--accent)}.zeta-landing .zeta-has-toc .article-toc a[aria-current="location"]{color:var(--accent)}

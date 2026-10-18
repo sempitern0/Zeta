@@ -1,1 +1,4 @@
 /* Aurora article styles live in theme.css and common/markdown.css. */
+
+/* Theme-specific responsive table of contents. */
+.zeta-catalog .article-shell.zeta-has-toc{max-width:var(--width)}.theme-aurora .zeta-has-toc .article-toc{background:linear-gradient(145deg,#18234d,#101733);border:1px solid #53618a;border-radius:1.1rem;box-shadow:0 12px 35px #03082266;color:#dce4ff}.theme-aurora .zeta-has-toc .zeta-toc-label{color:#75eece}.theme-aurora .zeta-has-toc .article-toc a[aria-current="location"]{color:#75eece}

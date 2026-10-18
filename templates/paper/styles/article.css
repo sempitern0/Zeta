@@ -62,3 +62,6 @@
 .article-body pre:not(.sourceCode) {
   font-size: 0.92rem;
 }
+
+/* Theme-specific responsive table of contents. */
+.paper-article-shell.zeta-has-toc{max-width:var(--paper-max);grid-template-columns:minmax(0,1fr);justify-content:stretch}.zeta-has-toc .paper-article{width:100%}.zeta-has-toc .article-toc{background:transparent;border:0;border-top:2px solid var(--text-main);border-radius:0;padding:1rem 0;font-family:Georgia,"Times New Roman",serif}.zeta-has-toc .zeta-toc-label{color:var(--accent);font-family:var(--font-sans)}.zeta-has-toc .article-toc a[aria-current="location"]{color:var(--accent)}
