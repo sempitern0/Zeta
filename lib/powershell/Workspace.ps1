@@ -492,9 +492,9 @@ function Install-ZetaSiteFont([string]$name,[string]$choice){
   }
   $cssParts=[Collections.Generic.List[string]]::new()
   foreach($entry in $spec.files){
-   $cssParts.Add(('@font-face { font-family: "{0}"; src: url("../assets/fonts/{1}/{2}") format("woff2"); font-style: {3}; font-weight: {4}; font-display: swap; }' -f $spec.family,$spec.id,$entry[0],$entry[1],$entry[2]))
+   $cssParts.Add(('@font-face {{ font-family: "{0}"; src: url("../assets/fonts/{1}/{2}") format("woff2"); font-style: {3}; font-weight: {4}; font-display: swap; }}' -f $spec.family,$spec.id,$entry[0],$entry[1],$entry[2]))
   }
-  $cssParts.Add((':root { --font-mono: "{0}", ui-monospace, Consolas, monospace; }' -f $spec.family))
+  $cssParts.Add((':root {{ --font-mono: "{0}", ui-monospace, Consolas, monospace; }}' -f $spec.family))
   [void](New-Item -ItemType Directory -Path $assets,$styles -Force)
   if(Test-Path -LiteralPath $fontdir){Remove-Item -LiteralPath $fontdir -Recurse -Force}
   [void](New-Item -ItemType Directory -Path $fontdir -Force)
