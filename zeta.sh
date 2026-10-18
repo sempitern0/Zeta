@@ -7,7 +7,14 @@ if (( BASH_VERSINFO[0] < 4 || (BASH_VERSINFO[0] == 4 && BASH_VERSINFO[1] < 3) ))
     exit 2
 fi
 
-CURRENT_DIR="$(cd -- "$(dirname -- "$0")" && pwd -P)"
+# Resolve symbolic links before sourcing modules, even when launched via ~/bin/zeta.
+SOURCE="${BASH_SOURCE[0]}"
+while [[ -L "$SOURCE" ]]; do
+    TARGET_DIR="$(cd -P -- "$(dirname -- "$SOURCE")" && pwd)"
+    SOURCE="$(readlink "$SOURCE")"
+    [[ "$SOURCE" = /* ]] || SOURCE="$TARGET_DIR/$SOURCE"
+done
+CURRENT_DIR="$(cd -P -- "$(dirname -- "$SOURCE")" && pwd)"
 readonly CURRENT_DIR
 
 SITES_DIR="${CURRENT_DIR}/sites"
