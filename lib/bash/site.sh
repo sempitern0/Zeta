@@ -366,7 +366,7 @@ build_site() {
         return 1
     fi
 
-    if [[ ! "$site_lang" =~ ^[A-Za-z][A-Za-z0-9-]*$ ]]; then
+    if [[ ! "$site_lang" =~ ^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})*$ ]]; then
         msg_warn "Invalid site.language '${site_lang}'. Falling back to 'en' for generated HTML."
         site_lang="en"
     fi

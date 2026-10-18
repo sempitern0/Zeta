@@ -406,14 +406,19 @@ function Serve([string]$dir,[int]$serverPort){
     }else{
      $ext=[IO.Path]::GetExtension($full).ToLowerInvariant()
      $type=@{'.html'='text/html';'.css'='text/css';'.js'='text/javascript';'.svg'='image/svg+xml';
-       '.png'='image/png';'.jpg'='image/jpeg';'.webp'='image/webp';'.xml'='application/xml'}
+       '.png'='image/png';'.jpg'='image/jpeg';'.webp'='image/webp';'.xml'='application/xml';
+       '.woff2'='font/woff2';'.woff'='font/woff';'.txt'='text/plain';'.xsl'='text/xsl';'.json'='application/json';'.ico'='image/x-icon'}
      $ctx.Response.ContentType=if($type.ContainsKey($ext)){$type[$ext]}else{'application/octet-stream'}
      $bytes=[IO.File]::ReadAllBytes($full)
      $ctx.Response.ContentLength64=$bytes.Length
      $ctx.Response.OutputStream.Write($bytes,0,$bytes.Length)
     }
+   }catch{
+    # A malformed URL or a disconnected client must not stop the preview server.
+    try{$ctx.Response.StatusCode=400}catch{}
+    Write-Warning "Request failed: $($_.Exception.Message)"
    }finally{
-    $ctx.Response.Close()
+    try{$ctx.Response.Close()}catch [System.Net.HttpListenerException]{}catch [System.IO.IOException]{}catch [System.ObjectDisposedException]{}
    }
   }
  }finally{
