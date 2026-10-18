@@ -303,7 +303,7 @@ manage_site_menu() {
             7) { build_site "$site" && update_sites_index; } || msg_warn "Action failed. Choose another option."; pause_menu ;;
             8) { preview_site "$site" "$PREVIEW_PORT"; } || msg_warn "Action failed. Choose another option."; pause_menu ;;
             9) { clean_site "$site"; } || msg_warn "Action failed. Choose another option."; pause_menu ;;
-            10) delete_site "$site"; [[ -d "${SITES_DIR}/${site}" ]] || return 0; pause_menu ;;
+            10) { delete_site "$site"; } || msg_warn "Action failed. Choose another option."; [[ -d "${SITES_DIR}/${site}" ]] || return 0; pause_menu ;;
             0|b|back) return 0 ;;
             *) msg_warn "Unknown option: '$option'"; sleep 0.4 ;;
         esac
@@ -352,7 +352,7 @@ show_menu() {
         case "${option,,}" in
             1) { list_sites; } || msg_warn "Action failed. Returning to menu."; pause_menu ;;
             2) { create_new_site; } || msg_warn "Action failed. Returning to menu."; pause_menu ;;
-            3) manage_site_menu ;;
+            3) { manage_site_menu; } || msg_warn "Action failed. Returning to menu." ;;
             4) { select_and_build_site; } || msg_warn "Action failed. Returning to menu."; pause_menu ;;
             5) { build_all_sites; } || msg_warn "Action failed. Returning to menu."; pause_menu ;;
             6) { select_and_preview_site; } || msg_warn "Action failed. Returning to menu."; pause_menu ;;
