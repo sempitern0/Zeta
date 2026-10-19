@@ -12,12 +12,21 @@ for page in about contact; do
  [[ "$(cat "$site_dir/pages/$page.md")" == "$(cat "$ROOT/templates/common/pages/$page.md")" ]]
 done
 grep -Fq 'title: "Visual smoke"' "$site_dir/pages/index.md"
-! grep -q '__ZETA_SITE_' "$site_dir/pages/index.md"
+if grep -q '__ZETA_SITE_' "$site_dir/pages/index.md"; then echo "Unexpected matching content" >&2; exit 1; fi
 for sample in markdown-showcase code-showcase; do
  file="$site_dir/posts/$(date +%Y-%m-%d)-zeta-$sample.md"
  test -s "$file" || { echo "Missing example: $sample" >&2; exit 1; }
  pandoc -f markdown -t html -o /dev/null "$file"
 done
+# The page helper must use its argument, not an inherited caller variable.
+bash -c '
+ set -euo pipefail
+ for module in "$1/lib/bash/"*.sh; do source "$module"; done
+ SITES_DIR="$1/sites"
+ site="unrelated-caller-site"
+ listing=$(list_site_pages "$2")
+ [[ "$listing" == *about* && "$listing" == *contact* ]] || { echo "Page listing used the caller site" >&2; exit 1; }
+' _ "$ROOT" "$site"
 bash "$ROOT/zeta.sh" build "$site" >/dev/null
 bash "$ROOT/zeta.sh" dashboard >/dev/null
 test -s "$site_dir/public/index.html"

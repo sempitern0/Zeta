@@ -622,7 +622,7 @@ build_site() {
         )
         if [[ "$pages_mode" == true && "$base_html" == posts.html ]]; then
             local archive_nav
-            archive_nav=$(zeta_pages_navigation "$site_dir" "" blog "$blog_enabled")
+            archive_nav=$(zeta_pages_navigation "$site_dir" "./" blog "$blog_enabled")
             page_opts+=(-V "page_navigation=${archive_nav}")
         fi
         append_css_vars page_opts "" "${theme_dir}/styles" "${site_dir}/styles"
@@ -772,7 +772,7 @@ build_site() {
 
     if ! mv -- "$staging_dir" "$final_output_dir"; then
         msg_error "Could not publish the completed build to '${final_output_dir}'."
-        [[ -e "$previous_output" ]] && mv -- "$previous_output" "$final_output_dir" 2>/dev/null || true
+        if [[ -e "$previous_output" ]]; then mv -- "$previous_output" "$final_output_dir" 2>/dev/null || true; fi
         rm -rf -- "$staging_dir"
         return 1
     fi
