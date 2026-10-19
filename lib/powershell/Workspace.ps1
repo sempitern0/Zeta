@@ -449,13 +449,13 @@ function Recommended-ZetaFont([string]$theme){
 
 function Get-ZetaFontSources {
  return @{
-  'cascadia'=@{id='CascadiaCode';family='Cascadia Code';license='https://raw.githubusercontent.com/microsoft/cascadia-code/main/LICENSE';files=@(
-   ,@('CascadiaCode.woff2','normal','200 700','https://raw.githubusercontent.com/sempitern0/Zeta/main/templates/common/assets/fonts/CascadiaCode/CascadiaCode.woff2'))}
+  'cascadia'=@{id='CascadiaCode';family='Cascadia Code';license='https://raw.githubusercontent.com/google/fonts/3dd78844021e948ceb633d1dcee3f7885561b5d9/ofl/cascadiacode/OFL.txt';files=@(
+   ,@('CascadiaCode.ttf','normal','200 700','https://raw.githubusercontent.com/google/fonts/3dd78844021e948ceb633d1dcee3f7885561b5d9/ofl/cascadiacode/CascadiaCode[wght].ttf'))}
   'jetbrains'=@{id='JetBrainsMono';family='JetBrains Mono';license='https://raw.githubusercontent.com/JetBrains/JetBrainsMono/master/OFL.txt';files=@(
    @('JetBrainsMono-Regular.woff2','normal','400','https://raw.githubusercontent.com/JetBrains/JetBrainsMono/master/fonts/webfonts/JetBrainsMono-Regular.woff2'),
    @('JetBrainsMono-Bold.woff2','normal','700','https://raw.githubusercontent.com/JetBrains/JetBrainsMono/master/fonts/webfonts/JetBrainsMono-Bold.woff2'))}
-  'fira'=@{id='FiraCode';family='Fira Code';license='https://raw.githubusercontent.com/tonsky/FiraCode/master/LICENSE';files=@(
-   ,@('FiraCode-Regular.woff2','normal','400','https://raw.githubusercontent.com/sempitern0/Zeta/main/templates/common/assets/fonts/FiraCode/FiraCode-Regular.woff2'))}
+  'fira'=@{id='FiraCode';family='Fira Code';license='https://raw.githubusercontent.com/google/fonts/5020a98352f1909554697e1da4132da253727138/ofl/firacode/OFL.txt';files=@(
+   ,@('FiraCode.ttf','normal','300 700','https://raw.githubusercontent.com/google/fonts/5020a98352f1909554697e1da4132da253727138/ofl/firacode/FiraCode[wght].ttf'))}
   'ibm-plex'=@{id='IBMPlexMono';family='IBM Plex Mono';license='https://raw.githubusercontent.com/IBM/plex/master/LICENSE.txt';files=@(
    ,@('IBMPlexMono-Regular.woff2','normal','400','https://raw.githubusercontent.com/IBM/plex/master/packages/plex-mono/fonts/complete/woff2/IBMPlexMono-Regular.woff2'))}
   'source-code'=@{id='SourceCodePro';family='Source Code Pro';license='https://raw.githubusercontent.com/adobe-fonts/source-code-pro/release/LICENSE.md';files=@(
@@ -492,7 +492,8 @@ function Install-ZetaSiteFont([string]$name,[string]$choice){
   }
   $cssParts=[Collections.Generic.List[string]]::new()
   foreach($entry in $spec.files){
-   $cssParts.Add(('@font-face {{ font-family: "{0}"; src: url("../assets/fonts/{1}/{2}") format("woff2"); font-style: {3}; font-weight: {4}; font-display: swap; }}' -f $spec.family,$spec.id,$entry[0],$entry[1],$entry[2]))
+   $fontFormat=if($entry[0].EndsWith('.ttf')){'truetype'}else{'woff2'}
+   $cssParts.Add(('@font-face {{ font-family: "{0}"; src: url("../assets/fonts/{1}/{2}") format("{5}"); font-style: {3}; font-weight: {4}; font-display: swap; }}' -f $spec.family,$spec.id,$entry[0],$entry[1],$entry[2],$fontFormat))
   }
   $cssParts.Add((':root {{ --font-mono: "{0}", ui-monospace, Consolas, monospace; }}' -f $spec.family))
   [void](New-Item -ItemType Directory -Path $assets,$styles -Force)

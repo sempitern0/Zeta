@@ -13,7 +13,7 @@ chmod +x "$tmp/bin/shellcheck"
 if PATH="$tmp/bin:$PATH" make -C "$ROOT" lint > "$tmp/lint.log" 2>&1; then
     echo 'make lint swallowed a failure' >&2; exit 1
 fi
-! grep -q 'ShellCheck passed' "$tmp/lint.log"
+if grep -q 'ShellCheck passed' "$tmp/lint.log"; then echo "Unexpected matching content" >&2; exit 1; fi
 cd "$tmp/repo"
 git init -q
 git config user.email test@example.invalid
@@ -30,7 +30,7 @@ cat > "$tmp/bin/shellcheck" <<'STUB'
 #!/usr/bin/env bash
 [[ "$1" == -- && "$2" == 'space name.sh' && $# == 2 ]] || exit 1
 grep -qx 'echo staged' "$2" || exit 1
-! grep -q unstaged "$2"
+if grep -q unstaged "$2"; then echo "Unexpected matching content" >&2; exit 1; fi
 STUB
 PATH="$tmp/bin:$PATH" bash "$ROOT/githooks/pre-commit"
 cmp 'space name.sh' "$tmp/working-copy"

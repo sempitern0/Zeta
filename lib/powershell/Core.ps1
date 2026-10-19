@@ -267,12 +267,16 @@ function Build([string]$name){
   $pagesDir=Join-Path $dir 'pages'
   $pagesMode=Test-Path -LiteralPath (Join-Path $pagesDir 'index.md') -PathType Leaf
   $blogEnabled=(-not $pagesMode) -or ((Yaml (ConfigPath $name) build blog 'true') -ne 'false')
+  # Keep generated HTML out of native arguments (Windows has a 32K command-line limit).
+  # Pandoc defaults variables preserve raw HTML, unlike Markdown metadata.
+  $defaultsPath=Join-Path $stage '.zeta-template-defaults.json'
+  Save $defaultsPath (@{variables=$vars} | ConvertTo-Json -Depth 10)
   foreach($tpl in (Get-ChildItem $theme -Filter '*.html' -File)){
    if($pagesMode -and ($tpl.Name -eq 'index.html' -or (-not $blogEnabled -and $tpl.Name -eq 'posts.html'))){continue}
    if($tpl.Name -in @('article.html','post_link.html')){continue}
    $pageTemplate=Get-ZetaTemplate $theme $tpl.Name
    $pandocOptions=@('-f','markdown','-t','html5','--standalone','--quiet','--template',$pageTemplate)
-   foreach($k in $vars.Keys){$pandocOptions+=@('-V',('{0}={1}' -f $k,$vars[$k]))}
+   $pandocOptions+=@('--defaults',$defaultsPath)
    if($pagesMode -and $tpl.Name -eq 'posts.html'){
     $pandocOptions+=@('-V',('page_navigation='+(Get-ZetaPageNavigation $name './' 'blog' $blogEnabled)))
    }
@@ -280,6 +284,7 @@ function Build([string]$name){
    $pandocOptions+=@('-o',(Join-Path $stage $tpl.Name))
    Invoke-ZetaPandoc $pandocOptions
   }
+  Remove-Item -LiteralPath $defaultsPath -Force
   if($pagesMode){Render-ZetaPages $name $stage $c $blogEnabled}
   if(!(Test-Path (Join-Path $stage 'index.html'))){throw 'Theme did not generate index'}
   $base=$c.url.TrimEnd('/')

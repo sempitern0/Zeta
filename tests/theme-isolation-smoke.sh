@@ -5,8 +5,8 @@ ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)"
 COMMON="$ROOT/templates/common/styles"
 test -s "$COMMON/zeta-navigation.css"
 test -s "$COMMON/zeta-pages.css"
-! grep -Eq 'zeta-theme-(zen|paper|console|indie|organization|brutalist|folio|aurora)' "$COMMON/zeta-pages.css"
-! grep -Eq 'theme-(zen|paper|console|indie|organization|brutalist|folio|aurora)' "$COMMON/zeta-navigation.css"
+if grep -Eq 'zeta-theme-(zen|paper|console|indie|organization|brutalist|folio|aurora)' "$COMMON/zeta-pages.css"; then echo "Unexpected matching content" >&2; exit 1; fi
+if grep -Eq 'theme-(zen|paper|console|indie|organization|brutalist|folio|aurora)' "$COMMON/zeta-navigation.css"; then echo "Unexpected matching content" >&2; exit 1; fi
 for theme in zen paper console indie organization brutalist folio aurora; do
   css="$ROOT/templates/$theme/styles/00-theme-contract.css"
   test -s "$css"
@@ -16,6 +16,8 @@ for theme in zen paper console indie organization brutalist folio aurora; do
   grep -Fq 'body.zeta-static-page' "$css"
   for kind in index posts article; do
     template="$ROOT/templates/$theme/$kind.html"
+    # Pandoc template syntax is intentionally literal.
+    # shellcheck disable=SC2016
     grep -Fq '$if(page_navigation)$$page_navigation$$else$' "$template"
   done
   if command -v pandoc >/dev/null 2>&1; then
