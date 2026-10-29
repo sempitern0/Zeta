@@ -21,6 +21,7 @@ $Utf8=[Text.UTF8Encoding]::new($false)
 . (Join-Path $Root 'lib/powershell/Console.ps1')
 . (Join-Path $Root 'lib/powershell/Doctor.ps1')
 . (Join-Path $Root 'lib/powershell/Deploy.ps1')
+. (Join-Path $Root 'lib/powershell/Homepage.ps1')
 
 try {
  switch($Command.ToLowerInvariant()){
@@ -60,6 +61,7 @@ try {
   'delete'{RemoveSite $Site}
   'rm'{RemoveSite $Site}
   'fonts'{FontSite $Site $Value}
+  'homepage'{Set-ZetaHomepage $Site $Value $Highlight}
   default{throw "Unknown command: $Command"}
  }
 }catch{Write-Host "[ERROR] $($_.Exception.Message)" -ForegroundColor Red;exit 1}

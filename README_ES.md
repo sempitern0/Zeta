@@ -179,3 +179,8 @@ make lint          # ShellCheck, si está instalado
 PowerShell dispone de sus propias pruebas, documentadas en [Validación](docs/cross-platform-validation.md). Los dos asistentes comparten temas y Markdown, pero no se garantiza HTML idéntico byte a byte entre distintas plataformas o versiones de Pandoc.
 
 Las contribuciones son bienvenidas: consulta [CONTRIBUTING.md](CONTRIBUTING.md). Proyecto distribuido bajo [licencia MIT](LICENSE).
+
+
+## Portadas editoriales y artículos recientes
+
+Zeta puede mostrar artículos recientes en `pages/index.md` mediante `homepage.show_posts: true` y `homepage.posts_limit: 6` en `config.yaml`, o desde el asistente **Homepage articles**. La opción `auto` los activa en Paper, Gazette y Magazine. Gazette ofrece un estilo de periódico clásico y Magazine, una presentación editorial moderna. Consulta la [guía de portadas editoriales](docs/editorial-homepages.md).

@@ -1,0 +1,15 @@
+/* Theme-scoped design tokens. Do not edit the shared core for theme visuals. */
+:root{
+ --zeta-nav-background:#ebe5d8;
+ --zeta-nav-ink:#a33b20;
+ --zeta-nav-current:#a33b20;
+ --zeta-nav-type:Georgia,"Times New Roman",serif;
+}
+body.zeta-static-page{color-scheme:light;--page-bg:#f5f1e8;--page-panel:#ebe5d8;--page-fg:#25221e;--page-muted:#6d655b;--page-link:#a33b20;--page-border:#c9c0af;--page-font:Georgia,"Times New Roman",serif;--page-focus:#315b78}
+body.zeta-static-page .zeta-readable h1,.zeta-theme-folio .zeta-readable h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;letter-spacing:-.035em}
+
+body.zeta-static-page.zeta-theme-gazette{--page-bg:#faf9f4;--page-panel:#ebe9e1;--page-fg:#141414;--page-muted:#595850;--page-link:#721b1b;--page-border:#8c897e;--page-font:Georgia,"Times New Roman",serif;--page-focus:#8b2525}
+body.zeta-static-page.zeta-theme-gazette .zeta-home-stories{grid-template-columns:repeat(3,minmax(0,1fr));gap:1.5rem}
+body.zeta-static-page.zeta-theme-gazette .zeta-home-story:first-child{grid-column:span 2;grid-row:span 2;border-right:1px solid var(--page-border);padding-right:1.5rem}
+body.zeta-static-page.zeta-theme-gazette .zeta-home-story h3{font-family:Georgia,"Times New Roman",serif}
+@media(max-width:48rem){body.zeta-static-page.zeta-theme-gazette .zeta-home-stories{grid-template-columns:1fr}body.zeta-static-page.zeta-theme-gazette .zeta-home-story:first-child{grid-column:auto;grid-row:auto;border-right:0}}

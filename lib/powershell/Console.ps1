@@ -60,6 +60,7 @@ Content
   new-page SITE [TITLE] [SLUG]     Create a page and rebuild the site
   fonts SITE [KEY]                 Manage optional local fonts
   doctor | diagnose SITE           Check deployment readiness
+  homepage SITE [MODE] [LIMIT]     Configure index articles
   deploy SITE [all|PROVIDER]       Build once and publish to selected targets
   deploy setup SITE                Guided configuration
   deploy assistant SITE            Open deployment center
@@ -127,7 +128,7 @@ function Manage-Menu([string]$name){
   }
   Show-Actions 'Content & appearance' @(
    '[1] Site settings','[2] Switch theme','[3] List posts','[4] New post','[5] Manage fonts',
-   '[11] List pages','[12] New page')
+   '[11] List pages','[12] New page','[15] Homepage articles')
   Show-Actions 'Build & validate' @(
    '[6] Doctor','[7] Build site','[8] Preview site')
   Show-Actions 'Publish' @('[13] Deployment center','[14] Deploy now')
@@ -144,6 +145,7 @@ function Manage-Menu([string]$name){
     '5'{FontSite $name}
     '11'{ListPages $name}
     '12'{NewPage $name}
+    '15'{Set-ZetaHomepage $name}
     '6'{Doctor $name}
     '7'{Build $name;Dashboard}
     '8'{Preview $name $Port}

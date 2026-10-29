@@ -1,0 +1,15 @@
+/* Theme-scoped design tokens. Do not edit the shared core for theme visuals. */
+:root{
+ --zeta-nav-background:#ebe5d8;
+ --zeta-nav-ink:#a33b20;
+ --zeta-nav-current:#a33b20;
+ --zeta-nav-type:Georgia,"Times New Roman",serif;
+}
+body.zeta-static-page{color-scheme:light;--page-bg:#f5f1e8;--page-panel:#ebe5d8;--page-fg:#25221e;--page-muted:#6d655b;--page-link:#a33b20;--page-border:#c9c0af;--page-font:Georgia,"Times New Roman",serif;--page-focus:#315b78}
+body.zeta-static-page .zeta-readable h1,.zeta-theme-folio .zeta-readable h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;letter-spacing:-.035em}
+
+body.zeta-static-page.zeta-theme-magazine{--page-bg:#fcf8f0;--page-panel:#231f29;--page-fg:#231f29;--page-muted:#655861;--page-link:#a6224f;--page-border:#d2bdae;--page-font:ui-sans-serif,system-ui,sans-serif;--page-focus:#c33b58}
+body.zeta-static-page.zeta-theme-magazine .zeta-brand,body.zeta-static-page.zeta-theme-magazine .zeta-page-header nav a{color:#fff}
+body.zeta-static-page.zeta-theme-magazine .zeta-home-stories{gap:2rem}
+body.zeta-static-page.zeta-theme-magazine .zeta-home-story:first-child{border-top:6px solid #c33b58;padding-top:1.2rem}
+body.zeta-static-page.zeta-theme-magazine .zeta-home-story h3{font-family:ui-sans-serif,system-ui,sans-serif;font-weight:850}

@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="$site_lang$">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>$title$ — $site_title$</title>
+    <meta name="description" content="$description$">
+    <meta name="author" content="$author$">
+    <meta name="generator" content="Zeta + Pandoc">
+    <style>
+$styles.html()$
+    </style>
+    $for(css)$
+    <link rel="stylesheet" href="$css$">
+    $endfor$
+  </head>
+  <body id="top">
+    <a class="skip-link" href="#content">Skip to content</a>
+
+    <header class="paper-header">
+      <div class="paper-shell paper-header-inner">
+        <a class="paper-brand" href="$rel_root$index.html">$site_title$</a>
+        <nav class="paper-nav" aria-label="Primary navigation">$if(page_navigation)$$page_navigation$$else$
+          <a href="$rel_root$index.html">Home</a>
+          <a href="$rel_root$posts.html">Archive</a>
+        $endif$</nav>
+      </div>
+    </header>
+
+    <main id="content" class="paper-shell paper-article-shell$if(toc)$ zeta-has-toc$endif$">
+      <article class="paper-article">
+        <header class="article-header paper-article-header">
+          <p class="paper-kicker">Article</p>
+          <h1 class="article-title">$title$</h1>
+          <div class="article-meta">
+            <span class="meta-author">$author$</span>
+            <span aria-hidden="true"> · </span>
+            <time datetime="$iso_date$">$date$</time>
+            $if(tags)$
+            <div class="article-tags" aria-label="Tags">
+              $for(tags)$<span class="tag">#$tags$</span>$endfor$
+            </div>
+            $endif$
+          </div>
+        </header>
+
+        $if(toc)$
+        <nav class="article-toc" aria-label="Table of contents"><span class="zeta-toc-label">On this page</span>$toc$</nav>
+        $endif$
+
+        <div class="article-body">$body$</div>
+      </article>
+    </main>
+
+    <footer class="paper-footer">
+      <div class="paper-shell">
+        <p><a href="#top">Back to top</a> · <a href="$rel_root$posts.html">Archive</a></p>
+      </div>
+    </footer>
+  $if(toc)$<script src="$rel_root$assets/zeta-toc.js" defer></script>$endif$</body>
+</html>

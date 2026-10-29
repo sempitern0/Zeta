@@ -7,3 +7,13 @@
 }
 body.zeta-static-page{color-scheme:light;--page-bg:#f5f1e8;--page-panel:#ebe5d8;--page-fg:#25221e;--page-muted:#6d655b;--page-link:#a33b20;--page-border:#c9c0af;--page-font:Georgia,"Times New Roman",serif;--page-focus:#315b78}
 body.zeta-static-page .zeta-readable h1,.zeta-theme-folio .zeta-readable h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;letter-spacing:-.035em}
+
+/* Print-style first page: the lead story spans the spread, with newspaper columns. */
+body.zeta-static-page.zeta-theme-paper .zeta-readable{max-width:86ch}
+body.zeta-static-page.zeta-theme-paper .zeta-home-feed{border-top:4px double var(--page-fg)}
+body.zeta-static-page.zeta-theme-paper .zeta-home-feed-heading h2,
+body.zeta-static-page.zeta-theme-paper .zeta-home-story h3{font-family:Georgia,"Times New Roman",serif;font-weight:700;letter-spacing:-.045em}
+body.zeta-static-page.zeta-theme-paper .zeta-home-stories{grid-template-columns:repeat(3,minmax(0,1fr));gap:1.75rem;border-top:1px solid var(--page-border);padding-top:1.75rem}
+body.zeta-static-page.zeta-theme-paper .zeta-home-story:first-child{grid-column:span 2;grid-row:span 2;border-right:1px solid var(--page-border);padding-right:1.5rem}
+body.zeta-static-page.zeta-theme-paper .zeta-home-story:first-child h3{font-size:clamp(2.5rem,4.6vw,4.8rem);line-height:1.02}
+@media(max-width:46rem){body.zeta-static-page.zeta-theme-paper .zeta-home-stories{grid-template-columns:1fr}body.zeta-static-page.zeta-theme-paper .zeta-home-story:first-child{grid-column:auto;grid-row:auto;border-right:0;padding-right:0}}

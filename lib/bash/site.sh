@@ -639,6 +639,18 @@ build_site() {
             return 1
         fi
     fi
+    # Shared homepage feed runs after Markdown page rendering, before SEO.
+    local home_mode home_limit home_filter="${TEMPLATES_DIR}/common/filters/home-feed.lua"
+    home_mode=$(get_site_yaml_prop "$config_file" homepage show_posts auto)
+    home_limit=$(get_site_yaml_prop "$config_file" homepage posts_limit 6)
+    if ! printf '' | pandoc -f markdown -t plain --lua-filter="$home_filter" \
+        -M "zeta_home_output=$output_dir" -M "zeta_home_show=$home_mode" \
+        -M "zeta_home_theme=$site_theme" -M "zeta_home_blog=$blog_enabled" \
+        -M "zeta_home_limit=$home_limit" -o /dev/null; then
+        msg_error 'Homepage feed generation failed'
+        rm -rf -- "$staging_dir"
+        return 1
+    fi
     [[ -f "${output_dir}/index.html" ]] || {
         msg_error "Theme '${site_theme}' did not generate index.html."
         rm -rf -- "$staging_dir"

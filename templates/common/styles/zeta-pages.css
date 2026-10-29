@@ -24,3 +24,20 @@ body.zeta-static-page{--page-bg:#0e1726;--page-panel:#172438;--page-fg:#f5f8fd;-
 .zeta-static-page .article-body pre,.zeta-static-page .article-body div.sourceCode{background:var(--page-panel);border-color:var(--page-border)}
 .zeta-static-page .article-body :not(pre)>code{background:var(--page-panel);border-color:var(--page-border)}
 .zeta-static-page .article-body .table-scroll,.zeta-static-page .article-body th,.zeta-static-page .article-body td{border-color:var(--page-border)}
+
+/* Configurable homepage post feed. The theme contract owns the palette. */
+.zeta-static-page .zeta-home-feed{margin:clamp(2.5rem,5vw,5rem) 0 0;padding-top:1.4rem;border-top:3px solid var(--page-fg)}
+.zeta-static-page .zeta-home-feed-heading{display:flex;align-items:end;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:1.5rem}
+.zeta-static-page .zeta-home-feed-heading h2{margin:0;font-size:clamp(1.7rem,3vw,2.7rem);line-height:1.15;letter-spacing:-.035em}
+.zeta-static-page .zeta-home-feed-heading a{font-size:.9rem;font-weight:700}
+.zeta-static-page .zeta-home-stories{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));list-style:none;gap:1.5rem 2rem;margin:0;padding:0}
+.zeta-static-page .zeta-home-story{min-width:0;border-bottom:1px solid var(--page-border);padding:0 0 1.5rem}
+.zeta-static-page .zeta-home-story:first-child{grid-column:1/-1;border-bottom-width:2px}
+.zeta-static-page .zeta-home-story time{color:var(--page-muted);font-size:.84rem}
+.zeta-static-page .zeta-home-story h3{margin:.55rem 0;font-size:clamp(1.35rem,2.2vw,1.9rem);line-height:1.18;overflow-wrap:anywhere}
+.zeta-static-page .zeta-home-story:first-child h3{font-size:clamp(2rem,4vw,3.6rem)}
+.zeta-static-page .zeta-home-story h3 a{color:var(--page-fg);text-decoration:none}
+.zeta-static-page .zeta-home-story h3 a:hover{text-decoration:underline;color:var(--page-link)}
+.zeta-static-page .zeta-home-story p{margin:.55rem 0 0;color:var(--page-muted);max-width:66ch;line-height:1.55}
+.zeta-static-page .zeta-home-empty{color:var(--page-muted)}
+@media(max-width:40rem){.zeta-static-page .zeta-home-stories{grid-template-columns:1fr}.zeta-static-page .zeta-home-story:first-child{grid-column:auto}}

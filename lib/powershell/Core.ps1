@@ -286,6 +286,16 @@ function Build([string]$name){
   }
   Remove-Item -LiteralPath $defaultsPath -Force
   if($pagesMode){Render-ZetaPages $name $stage $c $blogEnabled}
+  # Post list insertion happens after the Markdown homepage, before SEO.
+  $homeFilter=Join-Path $Templates 'common/filters/home-feed.lua'
+  $homeMode=Yaml (ConfigPath $name) homepage show_posts auto
+  $homeLimit=Yaml (ConfigPath $name) homepage posts_limit '6'
+  $homepageArgs=@('-f','markdown','-t','plain',("--lua-filter=$homeFilter"),'-M',("zeta_home_output=$stage"),'-M',("zeta_home_show=$homeMode"),'-M',("zeta_home_theme=$($c.theme)"),'-M',("zeta_home_blog=$($blogEnabled.ToString().ToLowerInvariant())"),'-M',("zeta_home_limit=$homeLimit"))
+  $tmpHome=[IO.Path]::GetTempFileName()
+  try{
+   $null=@('' | & pandoc @homepageArgs '-o' $tmpHome)
+   if($LASTEXITCODE -ne 0){throw 'Homepage feed generation failed'}
+  }finally{Remove-Item -LiteralPath $tmpHome -Force -ErrorAction SilentlyContinue}
   if(!(Test-Path (Join-Path $stage 'index.html'))){throw 'Theme did not generate index'}
   $base=$c.url.TrimEnd('/')
   $robot=[IO.File]::ReadAllText((Join-Path $Templates 'robots.txt')).Replace('{{BASE_URL}}',$base)

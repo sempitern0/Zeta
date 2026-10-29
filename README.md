@@ -179,3 +179,8 @@ make lint          # ShellCheck, when installed
 PowerShell has a separate test suite documented in [Validation](docs/cross-platform-validation.md). Both assistants use the same themes and Markdown sources, but byte-identical HTML between platforms or Pandoc versions is not guaranteed.
 
 Contributions are welcome—see [CONTRIBUTING.md](CONTRIBUTING.md). Distributed under the [MIT license](LICENSE).
+
+
+## Homepage feeds and editorial themes
+
+Zeta can display recent posts on `pages/index.md` with `homepage.show_posts: true` and `homepage.posts_limit: 6` in `config.yaml`, or via the guided **Homepage articles** assistant. `auto` enables this by default for Paper, Gazette and Magazine. The new Gazette (traditional broadsheet) and Magazine (modern editorial) themes are available alongside the existing eight. See [editorial homepages](docs/editorial-homepages.md).

@@ -63,6 +63,7 @@ Content
   new-page <site> [title] [slug]      Create and build a new page
   fonts <site> [recommended]          Manage or install theme-recommended fonts
   doctor <site>                       Check deploy readiness
+  homepage <site> [auto|true|false] [limit]  Configure index articles
   deploy setup <site>                 Guided provider configuration
   deploy assistant <site>             Interactive deployment control panel
   deploy <site>                       Build, validate and publish (never setup)
@@ -204,6 +205,10 @@ parse_args() {
         fonts)
             site=$(resolve_site_arg "${1:-}") || exit 1
             manage_site_fonts "$site" "${2:-}"
+            ;;
+        homepage)
+            site=$(resolve_site_arg "${1:-}") || exit 1
+            zeta_homepage_setup "$site" "${2:-}" "${3:-}"
             ;;
         doctor|diagnose|check-site)
             site=$(resolve_site_arg "${1:-}") || exit 1
@@ -356,6 +361,7 @@ manage_site_menu() {
         ui_action 3 'List posts' 'Markdown library'
         ui_action 4 'New post' 'guided scaffold'
         ui_action 5 'Manage fonts' 'optional fonts'
+        ui_action 15 'Homepage articles' 'show / hide / latest limit'
         ui_action 11 'List pages' 'standalone Markdown pages'
         ui_action 12 'New page' 'create an About, project or other page'
         ui_heading "Build & validate"
@@ -378,6 +384,7 @@ manage_site_menu() {
             3) list_posts "$site"; pause_menu ;;
             4) create_post "$site"; pause_menu ;;
             5) manage_site_fonts "$site"; pause_menu ;;
+            15) zeta_homepage_setup "$site"; pause_menu ;;
             11) list_site_pages "$site"; pause_menu ;;
             12) create_site_page "$site"; pause_menu ;;
             6) diagnose_site "$site"; pause_menu ;;

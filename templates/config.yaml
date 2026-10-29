@@ -12,3 +12,7 @@ theme:
 build:
   content_dir: "posts"
   output_dir: "public"
+
+homepage:
+  show_posts: true
+  posts_limit: 6
