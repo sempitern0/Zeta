@@ -22,4 +22,35 @@ grep -Fq 'class="zeta-static-page zeta-tax-page"' "$dir/tags/plugins/index.html"
 grep -Fq 'Related articles' "$dir/posts/2026/one.html"
 grep -Fq '../../posts/2026/two.html' "$dir/posts/2026/one.html"
 grep -Fq 'https://example.org/categories/godot/' "$dir/sitemap.xml"
-echo '[OK] Bash taxonomy archives and related articles'
+
+# Regression: sites with exclusively tags OR categories must not link to the
+# archive that was not generated. Run Doctor against the resulting HTML too.
+for kind in tag category; do
+  if [[ "$kind" == tag ]]; then folder=tags; missing=categories; else folder=categories; missing=tags; fi
+  fixture="$dir/$kind-only"
+  mkdir -p "$fixture/posts/2026" "$fixture/styles"
+  cp "$dir/styles/"*.css "$fixture/styles/"
+  cat > "$fixture/index.html" <<'HTML'
+<!doctype html><html lang="en"><head><title>Fixture</title><meta name="description" content="Fixture"><link rel="canonical" href="https://example.org/"><link rel="stylesheet" href="styles/zeta-pages.css"><link rel="stylesheet" href="styles/00-theme-contract.css"></head><body><nav aria-label="Primary navigation"><a href="index.html">Home</a></nav></body></html>
+HTML
+  cat > "$fixture/posts/2026/one.html" <<'HTML'
+<!doctype html><html lang="en"><head><title>One</title><meta name="description" content="One"><link rel="canonical" href="https://example.org/posts/2026/one.html"></head><body><main><h1>One</h1></main></body></html>
+HTML
+  printf '<urlset><url><loc>https://example.org/</loc></url><url><loc>https://example.org/posts/2026/one.html</loc></url></urlset>\n' > "$fixture/sitemap.xml"
+  printf 'posts/2026/one.html\t%s\tonly\tOnly\n' "$kind" > "$fixture/.zeta-taxonomy.tsv"
+  printf '' | pandoc -f markdown -t plain --lua-filter="$ROOT/templates/common/filters/taxonomies.lua" -M "zeta_taxonomy_output=$fixture" -M zeta_taxonomy_url=https://example.org -M 'zeta_taxonomy_title=Fixture' -M zeta_taxonomy_language=en -o /dev/null
+  test -s "$fixture/$folder/index.html"
+  test -s "$fixture/$folder/only/index.html"
+  test ! -e "$fixture/$missing/index.html"
+  if grep -Fq "$missing/" "$fixture/$folder/index.html" "$fixture/$folder/only/index.html"; then
+    echo "Navigation points to nonexistent $missing archive in $kind-only site" >&2; exit 1
+  fi
+  printf '' | pandoc -f markdown -t plain --lua-filter="$ROOT/templates/common/filters/doctor-public.lua" -M "zeta_doctor_output=$fixture" -M zeta_doctor_url=https://example.org -o /dev/null 2> "$fixture/doctor.log"
+  if grep -Fq 'ZETA_DOCTOR|FAIL|BROKEN_OUTPUT_LINK|' "$fixture/doctor.log"; then
+    echo "Doctor detected broken links in $kind-only taxonomy site" >&2
+    cat "$fixture/doctor.log" >&2
+    exit 1
+  fi
+done
+
+echo '[OK] Bash taxonomy archives, optional kinds and related articles'
