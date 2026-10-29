@@ -342,7 +342,14 @@ manage_site_menu() {
         status='draft'
         [[ -f "${SITES_DIR}/${site}/${output_rel}/index.html" ]] && status='built'
         ui_heading "Manage / ${title}"
-        printf '  %s · %s posts · %s · %s\n' "$site" "$(site_post_count "$site")" "$theme" "$status"
+        printf '  %b%s%b · %s posts · %s · %s\n' "$boldWhite" "$site" "$endColour" "$(site_post_count "$site")" "$theme" "$status"
+        local publish_provider
+        if zeta_deploy_read "$site" provider; then
+            publish_provider="$ZETA_DEPLOY_VALUE"
+            printf '  %bDeployment%b  %s configured\n' "$boldGreen" "$endColour" "$publish_provider"
+        else
+            printf '  %bDeployment%b  not configured\n' "$boldYellow" "$endColour"
+        fi
         ui_heading "Content & appearance"
         ui_action 1 'Site settings' 'metadata / URL'
         ui_action 2 'Switch theme' 'appearance / highlighting'
@@ -394,6 +401,7 @@ show_menu() {
         local -a projects=()
         readarray -t projects < <(get_all_sites)
         ui_heading "Your sites"
+        if (( ${#projects[@]} > 0 )); then printf '  %b%-22s %-12s %-11s %-6s %s%b\n' "$grayColour" 'SITE' 'CONTENT' 'THEME' 'BUILD' 'DEPLOY' "$endColour"; fi
         if (( ${#projects[@]} == 0 )); then
             printf '  %bNo sites yet. Choose [2] to create one.%b\n' "$grayColour" "$endColour"
         else
@@ -405,7 +413,9 @@ show_menu() {
                 output_rel=$(get_site_yaml_prop "$config" build output_dir public)
                 status='draft'
                 [[ -f "${SITES_DIR}/${site}/${output_rel}/index.html" ]] && status='built'
-                printf '  %-24.24s %3s posts   %-13s %s\n' "$site" "$(site_post_count "$site")" "$theme" "$status"
+                local publishing='not set'
+                if zeta_deploy_read "$site" provider; then publishing="$ZETA_DEPLOY_VALUE"; fi
+                printf '  %-22.22s %3s posts   %-11.11s %-6s %s\n' "$site" "$(site_post_count "$site")" "$theme" "$status" "$publishing"
                 ((shown+=1))
             done
             if (( ${#projects[@]} > 4 )); then
