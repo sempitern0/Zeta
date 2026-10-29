@@ -30,17 +30,22 @@ function Setup-ZetaDeploy([string]$name){
   $c.project=Ask 'Cloudflare Pages project name' ''
   $c.account=Ask 'Cloudflare account ID (optional)' ''
  }
+ if($c.provider -eq 'github-pages'){
+  if($c.repository -cnotmatch '^[a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+$' -or $c.repository.Contains('..')){throw 'Invalid repository'}
+  if($c.branch -cnotmatch '^[a-zA-Z0-9][a-zA-Z0-9_./-]*$' -or $c.branch.Contains('..')){throw 'Invalid branch'}
+ }else{
+  if($c.project -cnotmatch '^[a-zA-Z0-9][a-zA-Z0-9_-]*$'){throw 'Invalid project'}
+  if($c.account -and $c.account -cnotmatch '^[a-fA-F0-9]{32}$'){throw 'Invalid account ID'}
+ }
+ $reply=Ask 'Save this deployment configuration? (y/N)' 'N'
+ if($reply -notmatch '^[yYsS]'){Write-Host 'Cancelled';return}
  $path=Get-ZetaDeployFile $name
- # Validate before writing.
- $data=@('provider','repository','branch','project','account' | ForEach-Object { "$_=$($c[$_])" }) -join "`n"
+ $data=(foreach($key in @('provider','repository','branch','project','account')){ "$key=$($c[$key])" }) -join "`n"
  $tmp="$path.tmp"
  try{
   [IO.File]::WriteAllText($tmp,$data,[Text.UTF8Encoding]::new($false))
   Move-Item -LiteralPath $tmp -Destination $path -Force
-  [void](Read-ZetaDeploy $name)
- }catch{if(Test-Path $tmp){Remove-Item $tmp -Force};throw}
- $reply=Ask 'Save this deployment configuration? (y/N)' 'N'
- if($reply -notmatch '^[yYsS]'){ Remove-Item -LiteralPath $path -Force;Write-Host 'Cancelled';return }
+ }finally{if(Test-Path -LiteralPath $tmp){Remove-Item -LiteralPath $tmp -Force}}
  Write-Host "Saved. Next time use: .\\zeta.ps1 deploy $name" -ForegroundColor Green
 }
 function Show-ZetaDeploy([string]$name){
@@ -58,6 +63,7 @@ function Invoke-ZetaDeploy([string]$name,[switch]$DryRun){
  $index=Join-Path $dir 'index.html'
  if(!(Test-Path -LiteralPath $index -PathType Leaf)){throw "Site has no generated index.html: $dir"}
  $root=(Resolve-Path -LiteralPath $dir).Path
+ if(Test-Path -LiteralPath (Join-Path $dir '.git')){throw "Output contains .git metadata"}
  if((Get-Item -LiteralPath $dir).Attributes -band [IO.FileAttributes]::ReparsePoint){throw 'Output directory cannot be a symlink'}
  $items=@(Get-ChildItem -LiteralPath $dir -Force -Recurse)
  foreach($item in $items){
@@ -90,9 +96,7 @@ function Invoke-ZetaDeploy([string]$name,[switch]$DryRun){
    $tracked=@(& git ls-files)
    if($LASTEXITCODE -ne 0){throw 'Could not inspect publishing branch'}
    foreach($relative in $tracked){$p=Join-Path $temp $relative;if(Test-Path -LiteralPath $p){Remove-Item -LiteralPath $p -Force}}
-   Copy-Item -Path (Join-Path $dir '*') -Destination $temp -Force -Recurse
-   # Include dotfiles from output as well (but never the source repository's .git).
-   foreach($item in @(Get-ChildItem -LiteralPath $dir -Force -Hidden -ErrorAction SilentlyContinue)){Copy-Item -LiteralPath $item.FullName -Destination $temp -Recurse -Force}
+   foreach($item in @(Get-ChildItem -LiteralPath $dir -Force)){Copy-Item -LiteralPath $item.FullName -Destination $temp -Recurse -Force}
    [IO.File]::WriteAllText((Join-Path $temp '.nojekyll'),'')
    & git add -A
    if($LASTEXITCODE -ne 0){throw 'git add failed'}
