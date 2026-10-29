@@ -79,6 +79,7 @@ zeta_deploy_run() {
     fi
     [[ -s "$output/index.html" ]] || { msg_error "No index.html in $output"; return 1; }
     [[ ! -L "$output" ]] || { msg_error 'Output cannot be a symlink'; return 1; }
+    [[ ! -e "$output/.git" ]] || { msg_error "Output contains .git metadata"; return 1; }
     if find "$output" -type l -print -quit | grep -q .; then msg_error 'Output contains symlinks'; return 1; fi
     local bad
     bad=$(find "$output" -type f \( -name '*.md' -o -name 'config.yaml' -o -name 'deploy.conf' -o -name '.env' \) -print -quit)
@@ -94,7 +95,7 @@ zeta_deploy_run() {
         zeta_deploy_read "$site" repository; repo="$ZETA_DEPLOY_VALUE"
         zeta_deploy_read "$site" branch; branch="$ZETA_DEPLOY_VALUE"
         zeta_deploy_valid_repo "$repo" || return 1
-        [[ "$branch" =~ ^[a-zA-Z0-9][a-zA-Z0-9_./-]*$ && "$branch" != *..* ]] || return 1
+        [[ "$branch" =~ ^[a-zA-Z0-9][a-zA-Z0-9_./-]*$ && "$branch" != *..* && "$branch" != */ && "$branch" != *//* ]] || return 1
         remote="https://github.com/$repo.git"
         tmp=$(mktemp -d) || return 1
         if ! git clone -q --depth 1 --branch "$branch" "$remote" "$tmp"; then rm -rf -- "$tmp"; msg_error "Could not clone $branch. Create it and enable Pages from branch/root first."; return 1; fi
