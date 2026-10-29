@@ -60,11 +60,11 @@ Content
   new-page SITE [TITLE] [SLUG]     Create a page and rebuild the site
   fonts SITE [KEY]                 Manage optional local fonts
   doctor | diagnose SITE           Check deployment readiness
-  deploy SITE                      Build, validate and publish only
+  deploy SITE [all|PROVIDER]       Build once and publish to selected targets
   deploy setup SITE                Guided configuration
   deploy assistant SITE            Open deployment center
   deploy status SITE               Show deployment destination
-  deploy dry-run SITE              Preview files without publishing
+  deploy dry-run SITE [PROVIDER]   Preview without publishing
 
 Build and preview
   build | update SITE              Build a site (omit SITE for all)
@@ -88,11 +88,11 @@ function Show-ZetaDeployMenu([string]$name){
   Show-Brand
   Show-Actions "Deployment center / $name" @()
   $configPath=Join-Path (SiteDir $name) 'deploy.conf'
-  if(Test-Path -LiteralPath $configPath){
+  if(@(Get-ZetaProviders $name).Count -gt 0){
    try{Show-ZetaDeploy $name}catch{Write-ZetaLine "  Destination error: $($_.Exception.Message)" 'Yellow'}
   }else{Write-ZetaLine '  Not configured. Use [1] to connect a provider.' 'Yellow'}
   Show-Actions 'Configure' @('[1] Configure provider (GitHub / Cloudflare)')
-  Show-Actions 'Publish' @('[2] Deploy now - build + Doctor + publish','[3] Dry run - no remote writes')
+  Show-Actions 'Publish' @('[2] Deploy now - choose providers','[3] Dry run - choose providers')
   Show-Actions 'Inspect' @('[4] Destination details','[0] Back')
   $answer=Read-Host "zeta / deploy / $name >"
   if($answer -in @('0','back','b')){return}
@@ -119,7 +119,7 @@ function Manage-Menu([string]$name){
    if(-not (SafeDir $c.output)){throw "Invalid output_dir '$($c.output)' in $(ConfigPath $name)"}
    $status=if(Test-Path (Join-Path (SiteDir $name) "$($c.output)/index.html")){'built'}else{'draft'}
    Write-Host ('  {0} | {1} posts | {2} | {3}' -f $name,@(Posts $name).Count,$c.theme,$status)
-   $deployState=if(Test-Path (Join-Path (SiteDir $name) 'deploy.conf')){'configured'}else{'not configured'}
+   $deployState=if(@(Get-ZetaProviders $name).Count){'configured'}else{'not configured'}
    Write-ZetaLine "  Deployment: $deployState" $(if($deployState -eq 'configured'){'Green'}else{'Yellow'})
   }catch{
    Write-ZetaLine ("  CONFIG ERROR: {0}" -f $_.Exception.Message) 'Yellow'
@@ -175,9 +175,7 @@ function Menu{
     $count=@(Posts $name).Count
     $deployState='not set'
     $deployPath=Join-Path (SiteDir $name) 'deploy.conf'
-    if(Test-Path -LiteralPath $deployPath){
-     try{$deployState=(Read-ZetaDeploy $name).provider}catch{$deployState='invalid'}
-    }
+    try{$deployTargets=@(Get-ZetaProviders $name);if($deployTargets.Count){$deployState=($deployTargets -join ',')}}catch{$deployState='invalid'}
     Write-Host ('    {0,-22} {1,3} posts  {2,-11} {3,-6} {4}' -f $name,$count,$c.theme,$status,$deployState)
    }catch{
     Write-ZetaLine ("    {0,-23} CONFIG ERROR: {1}" -f $name,$_.Exception.Message) 'Yellow'
