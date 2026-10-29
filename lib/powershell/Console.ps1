@@ -165,6 +165,7 @@ function Menu{
   Write-ZetaLine '  ◆ Your sites' 'Magenta'
   $names=@(SiteNames)
   if(!$names.Count){Write-Host '    No sites yet. Choose [2] to create one.'}
+  if($names.Count -gt 0){Write-ZetaLine ('    {0,-22} {1,-10} {2,-11} {3,-6} {4}' -f 'SITE','CONTENT','THEME','BUILD','DEPLOY') 'DarkGray'}
   foreach($name in ($names | Select-Object -First 4)){
    try {
     $c=Config $name
@@ -172,7 +173,12 @@ function Menu{
     if(-not (SafeDir $c.output)){throw "Invalid build.output_dir '$($c.output)'."}
     if(Test-Path (Join-Path (SiteDir $name) "$($c.output)/index.html")){$status='built'}
     $count=@(Posts $name).Count
-    Write-Host ('    {0,-23} {1,3} posts   {2,-13} {3}' -f $name,$count,$c.theme,$status)
+    $deployState='not set'
+    $deployPath=Join-Path (SiteDir $name) 'deploy.conf'
+    if(Test-Path -LiteralPath $deployPath){
+     try{$deployState=(Read-ZetaDeploy $name).provider}catch{$deployState='invalid'}
+    }
+    Write-Host ('    {0,-22} {1,3} posts  {2,-11} {3,-6} {4}' -f $name,$count,$c.theme,$status,$deployState)
    }catch{
     Write-ZetaLine ("    {0,-23} CONFIG ERROR: {1}" -f $name,$_.Exception.Message) 'Yellow'
    }
