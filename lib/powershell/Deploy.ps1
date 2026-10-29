@@ -67,6 +67,7 @@ function Invoke-ZetaDeploy([string]$name,[switch]$DryRun){
  if((Get-Item -LiteralPath $dir).Attributes -band [IO.FileAttributes]::ReparsePoint){throw 'Output directory cannot be a symlink'}
  $items=@(Get-ChildItem -LiteralPath $dir -Force -Recurse)
  foreach($item in $items){
+  if($item.Name -eq '.git'){throw "Embedded Git metadata in output"}
   if($item.Attributes -band [IO.FileAttributes]::ReparsePoint){throw "Symlink/reparse point in output: $($item.FullName)"}
   if(!$item.PSIsContainer -and ($item.Name -in @('config.yaml','deploy.conf','.env') -or $item.Extension -eq '.md')){throw "Source/config file found in public: $($item.Name)"}
  }
