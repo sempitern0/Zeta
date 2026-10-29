@@ -233,7 +233,7 @@ parse_args() {
                     ;;
                 *)
                     site=$(resolve_site_arg "${1:-}") || exit 1
-                    zeta_deploy_run "$site"
+                    zeta_deploy_run "$site" false "${2:-}"
                     ;;
             esac
             ;;
