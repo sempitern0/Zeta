@@ -45,7 +45,10 @@ try {
   'build'{Build $Site;Dashboard}
   'update'{Build $Site;Dashboard}
   'build-all'{foreach($n in (SiteNames)){Build $n};Dashboard}
-  'deploy'{ZetaDeploy $Site $Value}
+  'deploy'{
+   if($Site -in @('setup','configure','status','dry-run','assistant','menu')){ZetaDeploy $Site $Value $Highlight}
+   else{ZetaDeploy $Site '' $Value}
+  }
   'doctor'{Doctor $Site}
   'diagnose'{Doctor $Site}
   'check-site'{Doctor $Site}
