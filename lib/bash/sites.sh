@@ -240,7 +240,7 @@ font_download() {
     mkdir -p "$(dirname "$destination")"
 
     if command_exists curl; then
-        curl -fsSL --retry 2 --connect-timeout 10 "$url" -o "$destination"
+        curl --globoff -fsSL --retry 2 --connect-timeout 10 "$url" -o "$destination"
     elif command_exists wget; then
         wget -qO "$destination" "$url"
     else
