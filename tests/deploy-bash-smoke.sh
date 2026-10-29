@@ -41,4 +41,16 @@ if zeta_deploy_run example true > /dev/null 2>&1; then echo 'Markdown source was
 rm "$SITES_DIR/example/public/secret.md"
 printf 'provider=github-pages\nrepository=../unsafe\nbranch=gh-pages\n' > "$SITES_DIR/example/deploy.conf"
 if zeta_deploy_status example > /dev/null 2>&1; then echo 'Invalid repository was accepted' >&2; exit 1; fi
-echo '[OK] Deployment validation and offline dry-run'
+# Ensure the command dispatcher never launches setup implicitly.
+# shellcheck source=../lib/bash/cli.sh
+source "$ROOT/lib/bash/cli.sh"
+zeta_deploy_run() { printf 'publish:%s:%s\n' "$1" "${2:-false}"; }
+zeta_deploy_setup() { printf 'setup:%s\n' "$1"; }
+zeta_deploy_status() { printf 'status:%s\n' "$1"; }
+zeta_deployment_menu() { printf 'assistant:%s\n' "$1"; }
+[[ "$(parse_args deploy example)" == 'publish:example:false' ]]
+[[ "$(parse_args deploy setup example)" == 'setup:example' ]]
+[[ "$(parse_args deploy status example)" == 'status:example' ]]
+[[ "$(parse_args deploy --dry-run example)" == 'publish:example:true' ]]
+[[ "$(parse_args deploy assistant example)" == 'assistant:example' ]]
+echo '[OK] Deployment safety, offline dry-run and explicit command routing'
