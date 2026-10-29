@@ -15,6 +15,25 @@ Zeta provides **eight static themes** that work with Bash and PowerShell and sha
 | folio | Soft paper tones, serif type, airy portfolio | Designers and writers |
 | aurora | Cinematic gradients, teal accents, modular cards | Digital products |
 
+## Smart code highlighting recommendations
+
+When creating a site, editing its appearance, or switching themes, Zeta recommends a Pandoc syntax-highlighting style matching the theme's **current visual palette**. Recommendations are data-driven and shared by Bash and PowerShell (`templates/common/highlight-recommendations.tsv`). Every suggestion has a rationale and an alternative.
+
+| Theme | Recommended | Alternative | Palette |
+| --- | --- | --- | --- |
+| zen | breezedark | zenburn | dark slate, cool blue |
+| paper | tango | kate | warm paper, rust |
+| console | breezedark | zenburn | near-black, green |
+| indie | espresso | zenburn | midnight blue, amber |
+| organization | tango | kate | pale blue, navy |
+| brutalist | kate | monochrome | yellow, black |
+| folio | tango | kate | ivory, sage |
+| aurora | breezedark | zenburn | navy, teal |
+| gazette | tango | kate | newsprint, burgundy |
+| magazine | kate | tango | cream, magenta |
+
+The recommended style is the *default*, not a restriction. Zeta checks what the installed Pandoc supports, falls back to an available style where necessary, and offers all available styles in the interactive list. An explicit `theme SITE THEME STYLE` command still uses the supplied style without substitution. No external AI, network service or API key is required.
+
 ## Visual theme gallery and open-source fonts
 
 Run `./zeta.sh dashboard` or `.\\zeta.ps1 dashboard`, then open `sites/index.html` (or use the local `serve` command). The workspace includes eight representative, responsive visual samples, even if no site has been created. Samples do not replace real Pandoc builds and do not download fonts, load images or require a framework.

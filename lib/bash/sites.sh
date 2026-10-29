@@ -179,7 +179,36 @@ choose_theme_interactive() {
     fi
 }
 
+zeta_highlight_recommend() {
+    local theme="$1" name primary alternative palette rationale
+    ZETA_HIGHLIGHT_PRIMARY=zenburn
+    ZETA_HIGHLIGHT_ALTERNATIVE=pygments
+    ZETA_HIGHLIGHT_PALETTE=neutral
+    ZETA_HIGHLIGHT_REASON='Balanced code highlighting'
+    while IFS='|' read -r name primary alternative palette rationale; do
+        [[ "$name" == "$theme" ]] || continue
+        ZETA_HIGHLIGHT_PRIMARY="$primary"
+        ZETA_HIGHLIGHT_ALTERNATIVE="$alternative"
+        ZETA_HIGHLIGHT_PALETTE="$palette"
+        ZETA_HIGHLIGHT_REASON="$rationale"
+        break
+    done < "${TEMPLATES_DIR}/common/highlight-recommendations.tsv"
+    if ! highlight_style_exists "$ZETA_HIGHLIGHT_PRIMARY"; then
+        if highlight_style_exists "$ZETA_HIGHLIGHT_ALTERNATIVE"; then ZETA_HIGHLIGHT_PRIMARY="$ZETA_HIGHLIGHT_ALTERNATIVE"
+        else
+            local styles=()
+            readarray -t styles < <(pandoc --list-highlight-styles 2>/dev/null || printf 'zenburn\n')
+            ZETA_HIGHLIGHT_PRIMARY="${styles[0]:-zenburn}"
+        fi
+    fi
+}
 choose_highlight_interactive() {
+    local theme="${2:-zen}" recommended
+    zeta_highlight_recommend "$theme"
+    recommended="$ZETA_HIGHLIGHT_PRIMARY"
+    printf '\n  ZETA recommends %s for %s (%s)\n  %s\n  Alternative: %s\n' "$recommended" "$theme" "$ZETA_HIGHLIGHT_PALETTE" "$ZETA_HIGHLIGHT_REASON" "$ZETA_HIGHLIGHT_ALTERNATIVE" >&2
+    current="$recommended"
+
     local current="${1:-zenburn}"
     local styles=()
 
@@ -587,7 +616,7 @@ change_site_appearance() {
         fi
         highlight="$requested_highlight"
     else
-        highlight=$(choose_highlight_interactive "$highlight")
+        highlight=$(choose_highlight_interactive "$highlight" "$theme")
     fi
 
     write_site_config "$config_file" "$title" "$desc" "$author" "$lang" "$url" \
@@ -1082,7 +1111,7 @@ create_new_site() {
 
     local selected_theme selected_pandoc_theme
     selected_theme=$(choose_theme_interactive "zen")
-    selected_pandoc_theme=$(choose_highlight_interactive "zenburn")
+    selected_pandoc_theme=$(choose_highlight_interactive "zenburn" "$selected_theme")
     local install_suggested_font=false font_reply
     read -rp "Install suggested open-source font ($(recommended_theme_font "$selected_theme"))? [y/N]: " font_reply
     [[ "$font_reply" =~ ^[Yy] ]] && install_suggested_font=true
@@ -1160,7 +1189,7 @@ edit_site() {
     read -rp "Production URL [${url}]: " value; url="${value:-$url}"; url="${url%/}"
 
     theme=$(choose_theme_interactive "$theme")
-    highlight=$(choose_highlight_interactive "$highlight")
+    highlight=$(choose_highlight_interactive "$highlight" "$theme")
 
     write_site_config "$config_file" "$title" "$desc" "$author" "$lang" "$url" \
         "$theme" "$highlight" "$content_rel" "$output_rel"

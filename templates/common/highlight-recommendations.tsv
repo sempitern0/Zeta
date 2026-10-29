@@ -1,0 +1,11 @@
+# theme|primary|alternative|palette|reason
+zen|breezedark|zenburn|dark slate / cool blue|Cool syntax tones complement the slate background and blue links
+paper|tango|kate|warm paper / rust|Soft light background keeps code readable against warm paper
+console|breezedark|zenburn|near-black / green|Dark code canvas and green tokens echo the terminal palette
+indie|espresso|zenburn|midnight blue / amber|Warm syntax highlights balance the dark game-dev palette
+organization|tango|kate|pale blue / navy|Light code canvas works with the clean blue corporate palette
+brutalist|kate|monochrome|yellow / black|Sharp light code blocks and saturated keywords suit high contrast
+folio|tango|kate|ivory / sage|Subtle light syntax palette respects the quiet editorial design
+aurora|breezedark|zenburn|navy / teal|Cool dark code surface harmonizes with the aurora gradients
+gazette|tango|kate|newsprint / burgundy|Restrained light highlighting reads like printed editorial material
+magazine|kate|tango|cream / magenta|Crisp light highlighting supports the modern editorial contrast

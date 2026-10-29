@@ -73,6 +73,31 @@ function Get-ZetaHighlightStyles {
  }
  return $fallback
 }
+function Get-ZetaHighlightRecommendation([string]$theme){
+ $path=Join-Path $Templates 'common/highlight-recommendations.tsv'
+ $rec=@{Primary='zenburn';Alternative='pygments';Palette='neutral';Reason='Balanced code highlighting'}
+ foreach($line in [IO.File]::ReadAllLines($path)){
+  if($line.StartsWith('#')){continue}
+  $parts=$line.Split('|')
+  if($parts.Count -eq 5 -and $parts[0] -eq $theme){
+   $rec=@{Primary=$parts[1];Alternative=$parts[2];Palette=$parts[3];Reason=$parts[4]}
+   break
+  }
+ }
+ $available=@(Get-ZetaHighlightStyles)
+ if($rec.Primary -notin $available){
+  if($rec.Alternative -in $available){$rec.Primary=$rec.Alternative}
+  elseif($available.Count){$rec.Primary=$available[0]}
+ }
+ return $rec
+}
+function Select-ZetaHighlight([string]$theme,[string]$current=''){
+ $rec=Get-ZetaHighlightRecommendation $theme
+ Write-Host ("ZETA recommends {0} for {1} ({2})" -f $rec.Primary,$theme,$rec.Palette) -ForegroundColor Cyan
+ Write-Host ("  {0}" -f $rec.Reason)
+ Write-Host ("  Alternative: {0} | Previous: {1}" -f $rec.Alternative,$current)
+ return SelectItem 'Pandoc highlight style' @(Get-ZetaHighlightStyles) $rec.Primary
+}
 function NewSite{
  $title=Ask 'Title' 'My New Blog'
  if([string]::IsNullOrWhiteSpace($title)){throw 'Site title is required'}
@@ -92,7 +117,7 @@ function NewSite{
  $themes=@(Themes)
  if($themes.Count -eq 0){throw 'No compatible themes available in templates/'}
  $theme=SelectItem 'Theme' $themes $(if($themes -contains 'zen'){'zen'}else{$themes[0]})
- $highlight=SelectItem 'Pandoc highlight style' @(Get-ZetaHighlightStyles) 'zenburn'
+ $highlight=Select-ZetaHighlight $theme 'zenburn'
  $fontReply=Ask ("Install suggested open-source font ({0})? (y/N)" -f (Recommended-ZetaFont $theme)) 'N'
  $installFont=$fontReply -match '^[Yy]'
  $blogReply=Ask 'Include a blog? (Y/n)' 'Y'
@@ -206,7 +231,7 @@ function EditSite([string]$name){
  if($c.url -notmatch '^https?://[^\s?#]+$'){throw "Invalid production URL '$($c.url)'."}
  $c.url=$c.url.TrimEnd('/')
  $c.theme=SelectItem 'Theme' @(Themes) $c.theme
- $c.highlight=SelectItem 'Pandoc highlight style' @(Get-ZetaHighlightStyles) $c.highlight
+ $c.highlight=Select-ZetaHighlight $c.theme $c.highlight
  $configPath=ConfigPath $name
  $updated=Set-ZetaSiteFields ([IO.File]::ReadAllText($configPath)) $c
  $updated=Set-ZetaThemeFields $updated $c.theme $c.highlight
@@ -268,7 +293,7 @@ function ThemeSite([string]$name,[string]$theme,[string]$style=''){
  }
  if(!$theme){$theme=SelectItem 'Theme' @(Themes) $c.theme}
  if(@(Themes) -notcontains $theme){throw "Unknown theme '$theme'."}
- if(!$style){$style=SelectItem 'Pandoc highlight style' @(Get-ZetaHighlightStyles) $c.highlight}
+ if(!$style){$style=Select-ZetaHighlight $theme $c.highlight}
  if(@(Get-ZetaHighlightStyles) -notcontains $style){throw "Unknown highlight style '$style'."}
  $installFont=$false
  if(-not $fullySpecified){
