@@ -80,6 +80,7 @@ zeta_deploy_run() {
     [[ -s "$output/index.html" ]] || { msg_error "No index.html in $output"; return 1; }
     [[ ! -L "$output" ]] || { msg_error 'Output cannot be a symlink'; return 1; }
     [[ ! -e "$output/.git" ]] || { msg_error "Output contains .git metadata"; return 1; }
+    if find "$output" -mindepth 1 -name .git -print -quit | grep -q .; then msg_error "Embedded .git entry in output"; return 1; fi
     if find "$output" -type l -print -quit | grep -q .; then msg_error 'Output contains symlinks'; return 1; fi
     local bad
     bad=$(find "$output" -type f \( -name '*.md' -o -name 'config.yaml' -o -name 'deploy.conf' -o -name '.env' \) -print -quit)
