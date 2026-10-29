@@ -2,6 +2,12 @@
 
 Zeta publishes only the compiled output directory (`build.output_dir`, normally `sites/<site>/public/`). Markdown sources, site configuration and secrets stay local.
 
+## Deployment center and standalone commands
+
+The assistant is a **control panel**, not the deploy command. Run `./zeta.sh` or `.\\zeta.ps1` and select **Deployment center** to configure a provider, publish, inspect status or run a dry run. From the site management menu you can open the same panel.
+
+The `deploy SITE` command always publishes and **never silently starts the setup wizard**. If there is no saved destination it reports the missing configuration. Both platforms also support `deploy assistant SITE` to open the panel directly. Standalone configuration remains available through `deploy setup SITE`.
+
 ## First publication
 
 From an interactive terminal:
@@ -9,7 +15,7 @@ From an interactive terminal:
 - Bash: `./zeta.sh deploy setup my-site`
 - PowerShell: `.\\zeta.ps1 deploy setup my-site`
 
-The wizard asks for GitHub Pages or Cloudflare Pages, and saves the non-secret destination settings in the site's `deploy.conf` (ignored by the Zeta repository because `sites/*` is ignored).
+Setup configures the destination but never publishes. The wizard asks for GitHub Pages or Cloudflare Pages, and saves the non-secret destination settings in the site's `deploy.conf` (ignored by the Zeta repository because `sites/*` is ignored).
 
 ### GitHub Pages
 
@@ -24,7 +30,7 @@ Create a Cloudflare Pages project for Direct Upload, install Wrangler and authen
 - Bash: `./zeta.sh deploy my-site`
 - PowerShell: `.\\zeta.ps1 deploy my-site`
 
-The deploy command builds and checks with Doctor before publishing. Interactive publishing asks for confirmation. Run `deploy status <site>` to inspect the destination or `deploy --dry-run <site>` (Bash) / `deploy dry-run <site>` (PowerShell) to list existing build artifacts without contacting the provider or changing the remote site.
+The deploy command builds and checks with Doctor before publishing. Run `deploy setup SITE` again to change providers without publishing. Interactive publishing asks for confirmation. Run `deploy status <site>` to inspect the destination or `deploy --dry-run <site>` (Bash) / `deploy dry-run <site>` (PowerShell) to list existing build artifacts without contacting the provider or changing the remote site.
 
 Review the site's `site.url` before publication: GitHub Pages project sites need the repository subpath, for example `https://username.github.io/project/`. Zeta does not automatically enable Pages settings or create remote Cloudflare projects. The configured publishing repository or Pages project must already exist.
 
