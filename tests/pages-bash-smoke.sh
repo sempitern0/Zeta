@@ -64,7 +64,7 @@ EOF
  test -s "$dir/public/styles/zeta-navigation.css"
  test -s "$dir/public/styles/00-theme-contract.css"
  grep -Fq -- '--zeta-nav-background' "$dir/public/styles/00-theme-contract.css"
- ! grep -Eq 'zeta-theme-(zen|paper|console|indie|organization|brutalist|folio|aurora)' "$dir/public/styles/zeta-pages.css"
+ if grep -Eq 'zeta-theme-(zen|paper|console|indie|organization|brutalist|folio|aurora)' "$dir/public/styles/zeta-pages.css"; then echo "Unexpected matching content" >&2; exit 1; fi
 
  grep -Fq "zeta-theme-$theme" "$dir/public/index.html"
  grep -Fq "zeta-theme-$theme" "$dir/public/about/index.html"
@@ -78,18 +78,18 @@ EOF
  grep -Fq 'href="./about/"' "$dir/public/index.html"
  grep -Fq 'href="../index.html#content"' "$dir/public/about/index.html"
  grep -Fq 'https://example.org/about/' "$dir/public/sitemap.xml"
- ! grep -Fq '/posts/' "$dir/public/sitemap.xml"
+ if grep -Fq '/posts/' "$dir/public/sitemap.xml"; then echo "Unexpected matching content" >&2; exit 1; fi
  # Verify the enabled blog and its article preserve the same full menu for every theme.
  sed -i 's/blog: false/blog: true/' "$dir/config.yaml"
  bash "$ROOT/zeta.sh" build "$name" >/dev/null
  for html in "$dir/public/posts.html" "$dir/public/posts/2026/hidden.html"; do
    test -s "$html"
    grep -Fq 'aria-current="page"' "$html"
-   ! grep -Fq '>page_navigation<' "$html"
+   if grep -Fq '>page_navigation<' "$html"; then echo "Unexpected matching content" >&2; exit 1; fi
  done
  grep -Fq 'href="./about/"' "$dir/public/posts.html"
  grep -Fq 'href="../../about/"' "$dir/public/posts/2026/hidden.html"
- grep -Fq -- '--zeta-nav-background' "$dir/public/styles/zeta-pages.css"
+ grep -Fq -- '--zeta-nav-background' "$dir/public/styles/zeta-navigation.css"
  sed -i 's/blog: true/blog: false/' "$dir/config.yaml"
  echo "[OK] $theme: Markdown pages, links, sitemap, blog disabled"
 done
@@ -97,14 +97,13 @@ done
 # Regression: blog and article must retain all Markdown navigation entries.
 sed -i 's/blog: false/blog: true/' "$dir/config.yaml"
 bash "$ROOT/zeta.sh" build "$name" >/dev/null
-for html in "$dir/public/posts.html"; do
- grep -Fq 'href="./about/"' "$html"
- grep -Fq 'href="./index.html"' "$html"
- grep -Fq 'aria-current="page"' "$html"
- ! grep -Fq '>page_navigation<' "$html"
- grep -Fq 'href="../../about/"' "$dir/public/posts/2026/hidden.html"
- grep -Fq 'href="../../index.html"' "$dir/public/posts/2026/hidden.html"
-done
+html="$dir/public/posts.html"
+grep -Fq 'href="./about/"' "$html"
+grep -Fq 'href="./index.html"' "$html"
+grep -Fq 'aria-current="page"' "$html"
+if grep -Fq '>page_navigation<' "$html"; then echo "Unexpected matching content" >&2; exit 1; fi
+grep -Fq 'href="../../about/"' "$dir/public/posts/2026/hidden.html"
+grep -Fq 'href="../../index.html"' "$dir/public/posts/2026/hidden.html"
 
 # Regression: creating a page in a site with a missing homepage auto-bootstraps index.md.
 rm -rf -- "$dir/pages"

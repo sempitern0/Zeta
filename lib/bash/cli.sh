@@ -261,7 +261,7 @@ manage_site_menu() {
     local site
     site=$(select_site_interactive) || return 0
     while true; do
-        [[ -t 1 ]] && clear 2>/dev/null || true
+        if [[ -t 1 ]]; then clear 2>/dev/null || true; fi
         show_banner
         local config title theme output_rel status
         config=$(find_site_config "${SITES_DIR}/${site}") || return 1
@@ -313,7 +313,7 @@ manage_site_menu() {
 
 show_menu() {
     while true; do
-        [[ -t 1 ]] && clear 2>/dev/null || true
+        if [[ -t 1 ]]; then clear 2>/dev/null || true; fi
         show_banner
         local -a projects=()
         readarray -t projects < <(get_all_sites)

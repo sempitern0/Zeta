@@ -22,7 +22,7 @@ msg_success() { echo -e "${greenColour}[OK]${endColour} $*" >&2; }
 msg_warn()    { echo -e "${yellowColour}[WARN]${endColour} $*" >&2; }
 msg_error()   { echo -e "${redColour}[ERROR]${endColour} $*" >&2; }
 msg_build()   { echo -e "${boldCyan}[BUILD]${endColour} $*" >&2; }
-msg_debug()   { [[ "${VERBOSE:-false}" == true ]] && echo -e "${grayColour}[DEBUG]${endColour} $*" >&2 || true; }
+msg_debug()   { if [[ "${VERBOSE:-false}" == true ]]; then echo -e "${grayColour}[DEBUG]${endColour} $*" >&2 || true; fi; }
 
 print_separator() {
     echo -e "${grayColour}------------------------------------------------------------${endColour}"

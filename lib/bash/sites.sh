@@ -164,7 +164,7 @@ choose_theme_interactive() {
     local i=1 theme default_index=1
     for theme in "${themes[@]}"; do
         [[ "$theme" == "$current" ]] && default_index=$i
-        printf '  [%d] %s%s\n' "$i" "$theme" "$([[ "$theme" == "$current" ]] && echo ' (current)' || true)" >&2
+        printf '  [%d] %s%s\n' "$i" "$theme" "$(if [[ "$theme" == "$current" ]]; then echo ' (current)'; fi)" >&2
         ((i++))
     done
 
@@ -193,7 +193,7 @@ choose_highlight_interactive() {
     local i=1 style default_index=1
     for style in "${styles[@]}"; do
         [[ "${style,,}" == "${current,,}" ]] && default_index=$i
-        printf '  [%d] %s%s\n' "$i" "$style" "$([[ "${style,,}" == "${current,,}" ]] && echo ' (current)' || true)" >&2
+        printf '  [%d] %s%s\n' "$i" "$style" "$(if [[ "${style,,}" == "${current,,}" ]]; then echo ' (current)'; fi)" >&2
         ((i++))
     done
 
@@ -240,7 +240,7 @@ font_download() {
     mkdir -p "$(dirname "$destination")"
 
     if command_exists curl; then
-        curl -fsSL --retry 2 --connect-timeout 10 "$url" -o "$destination"
+        curl --globoff -fsSL --retry 2 --connect-timeout 10 "$url" -o "$destination"
     elif command_exists wget; then
         wget -qO "$destination" "$url"
     else
@@ -341,10 +341,10 @@ install_open_font() {
         cascadia)
             font_id="CascadiaCode"
             family="Cascadia Code"
-            license_url="https://raw.githubusercontent.com/microsoft/cascadia-code/main/LICENSE"
+            license_url="https://raw.githubusercontent.com/google/fonts/3dd78844021e948ceb633d1dcee3f7885561b5d9/ofl/cascadiacode/OFL.txt"
             faces=(
-                "CascadiaCode.woff2|normal|200 700|https://raw.githubusercontent.com/sempitern0/Zeta/main/templates/common/assets/fonts/CascadiaCode/CascadiaCode.woff2"
-                "CascadiaCodeItalic.woff2|italic|200 700|https://raw.githubusercontent.com/sempitern0/Zeta/main/templates/common/assets/fonts/CascadiaCode/CascadiaCodeItalic.woff2"
+                "CascadiaCode.ttf|normal|200 700|https://raw.githubusercontent.com/google/fonts/3dd78844021e948ceb633d1dcee3f7885561b5d9/ofl/cascadiacode/CascadiaCode[wght].ttf"
+                "CascadiaCodeItalic.ttf|italic|200 700|https://raw.githubusercontent.com/google/fonts/3dd78844021e948ceb633d1dcee3f7885561b5d9/ofl/cascadiacode/CascadiaCode-Italic[wght].ttf"
             )
             ;;
         jetbrains)
@@ -361,10 +361,9 @@ install_open_font() {
         fira)
             font_id="FiraCode"
             family="Fira Code"
-            license_url="https://raw.githubusercontent.com/tonsky/FiraCode/master/LICENSE"
+            license_url="https://raw.githubusercontent.com/google/fonts/5020a98352f1909554697e1da4132da253727138/ofl/firacode/OFL.txt"
             faces=(
-                "FiraCode-Regular.woff2|normal|400|https://raw.githubusercontent.com/sempitern0/Zeta/main/templates/common/assets/fonts/FiraCode/FiraCode-Regular.woff2"
-                "FiraCode-Bold.woff2|normal|700|https://raw.githubusercontent.com/sempitern0/Zeta/main/templates/common/assets/fonts/FiraCode/FiraCode-Bold.woff2"
+                "FiraCode.ttf|normal|300 700|https://raw.githubusercontent.com/google/fonts/5020a98352f1909554697e1da4132da253727138/ofl/firacode/FiraCode[wght].ttf"
             )
             ;;
         ibm-plex)
@@ -417,10 +416,12 @@ install_open_font() {
     local face filename font_style font_weight url
     for face in "${faces[@]}"; do
         IFS='|' read -r filename font_style font_weight url <<< "$face"
+        local font_format=woff2
+        [[ "$filename" == *.ttf ]] && font_format=truetype
         cat >> "$css_file" <<EOF_FONT_FACE
 @font-face {
   font-family: "${family}";
-  src: url("../assets/fonts/${font_id}/${filename}") format("woff2");
+  src: url("../assets/fonts/${font_id}/${filename}") format("${font_format}");
   font-style: ${font_style};
   font-weight: ${font_weight};
   font-display: swap;
@@ -780,9 +781,9 @@ diagnose_site() {
     [[ "$pages_mode" == true ]] && doctor_ok "Pages" "Markdown homepage present"
     echo -e "${boldWhite}Configuration${endColour}"
 
-    [[ -n "$title" ]] && doctor_ok "site.title" "$title" || doctor_fail "site.title" "missing"
-    [[ -n "$desc" ]] && doctor_ok "site.description" "$desc" || doctor_warn "site.description" "missing"
-    [[ -n "$author" ]] && doctor_ok "site.author" "$author" || doctor_warn "site.author" "missing"
+    if [[ -n "$title" ]]; then doctor_ok "site.title" "$title"; else doctor_fail "site.title" "missing"; fi
+    if [[ -n "$desc" ]]; then doctor_ok "site.description" "$desc"; else doctor_warn "site.description" "missing"; fi
+    if [[ -n "$author" ]]; then doctor_ok "site.author" "$author"; else doctor_warn "site.author" "missing"; fi
 
     if [[ "$lang" =~ ^[A-Za-z]{2,3}([_-][A-Za-z0-9]{2,8})*$ ]]; then
         doctor_ok "site.language" "$lang"
@@ -916,12 +917,12 @@ diagnose_site() {
     if [[ -d "$output_dir" ]]; then
         doctor_ok "public/" "$output_dir"
 
-        [[ -s "${output_dir}/index.html" ]] && doctor_ok "index.html" "present" || doctor_fail "index.html" "missing"
+        if [[ -s "${output_dir}/index.html" ]]; then doctor_ok "index.html" "present"; else doctor_fail "index.html" "missing"; fi
         if [[ "$blog_enabled" == true ]]; then
-            [[ -s "${output_dir}/posts.html" ]] && doctor_ok "posts.html" "present" || doctor_warn "posts.html" "missing"
+            if [[ -s "${output_dir}/posts.html" ]]; then doctor_ok "posts.html" "present"; else doctor_warn "posts.html" "missing"; fi
         fi
-        [[ -s "${output_dir}/robots.txt" ]] && doctor_ok "robots.txt" "present" || doctor_fail "robots.txt" "missing"
-        [[ -s "${output_dir}/sitemap.xml" ]] && doctor_ok "sitemap.xml" "present" || doctor_fail "sitemap.xml" "missing"
+        if [[ -s "${output_dir}/robots.txt" ]]; then doctor_ok "robots.txt" "present"; else doctor_fail "robots.txt" "missing"; fi
+        if [[ -s "${output_dir}/sitemap.xml" ]]; then doctor_ok "sitemap.xml" "present"; else doctor_fail "sitemap.xml" "missing"; fi
 
         if [[ "$pages_mode" == true ]]; then
             local page_file page_slug
@@ -932,7 +933,7 @@ diagnose_site() {
                 if [[ "$page_slug" == index ]]; then
                     [[ -s "${output_dir}/index.html" ]] || doctor_fail "Page index" "missing"
                 else
-                    [[ -s "${output_dir}/${page_slug}/index.html" ]] && doctor_ok "Page $page_slug" "published" || doctor_fail "Page $page_slug" "missing"
+                    if [[ -s "${output_dir}/${page_slug}/index.html" ]]; then doctor_ok "Page $page_slug" "published"; else doctor_fail "Page $page_slug" "missing"; fi
                 fi
             done
         fi
@@ -1480,7 +1481,8 @@ serve_workspace() {
 
 # Manage standalone Markdown pages; blog articles remain a separate collection.
 list_site_pages() {
-    local site="$1" dir="${SITES_DIR}/${site}/pages" path
+    local site="$1" path
+    local dir="${SITES_DIR}/${site}/pages"
     require_site_slug "$site" || return 1
     [[ -d "$dir" ]] || { msg_info "No pages in $site"; return 0; }
     printf 'Markdown pages in %s:\n' "$site"
