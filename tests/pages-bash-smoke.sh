@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# No-JavaScript multipage smoke test, all eight themes, no blog.
+# No-JavaScript multipage smoke test, all ten themes, no blog.
 set -euo pipefail
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)"
 command -v pandoc >/dev/null || { echo 'Pandoc required' >&2; exit 2; }
@@ -41,7 +41,7 @@ date: "2026-10-13"
 ---
 Should not publish.
 MD
-for theme in zen paper console indie organization brutalist folio aurora; do
+for theme in zen paper console indie organization brutalist folio aurora gazette magazine; do
 cat > "$dir/config.yaml" <<EOF
 site:
   title: "Page smoke"

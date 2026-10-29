@@ -1,5 +1,5 @@
 #Requires -Version 7.0
-# Generates all eight themes without a blog using only Markdown pages.
+# Generates all ten themes without a blog using only Markdown pages.
 Set-StrictMode -Version Latest
 $ErrorActionPreference='Stop'
 $Root=Split-Path -Parent $PSScriptRoot
@@ -10,7 +10,7 @@ try {
  if(-not (Get-Command pandoc -ErrorAction SilentlyContinue)){throw 'Pandoc required'}
  . (Join-Path $Root 'lib/powershell/Dependencies.ps1')
  . (Join-Path $Root 'lib/powershell/Core.ps1')
- foreach($theme in @('zen','paper','console','indie','organization','brutalist','folio','aurora')){
+ foreach($theme in @('zen','paper','console','indie','organization','brutalist','folio','aurora','gazette','magazine')){
   $name='pages-'+$theme
   $site=Join-Path $Sites $name
   [void](New-Item -ItemType Directory -Path (Join-Path $site 'pages'),(Join-Path $site 'posts') -Force)
