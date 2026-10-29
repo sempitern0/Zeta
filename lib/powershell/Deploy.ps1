@@ -115,15 +115,18 @@ function Invoke-ZetaDeploy([string]$name,[switch]$DryRun){
  }finally{if(Test-Path -LiteralPath $temp){Remove-Item -LiteralPath $temp -Recurse -Force}}
 }
 function ZetaDeploy([string]$name,[string]$action=''){
- if($name -eq 'setup'){$name=$action;$action='setup'}
- if($name -eq 'status'){$name=$action;$action='status'}
- if($name -eq 'dry-run'){$name=$action;$action='dry-run'}
+ if($name -in @('setup','configure','status','dry-run','assistant','menu')){
+  $mode=$name;$name=$action;$action=$mode
+ }
  if(!$name){$name=SelectItem 'Site' @(SiteNames)}
  switch($action){
   'setup'{Setup-ZetaDeploy $name}
+  'configure'{Setup-ZetaDeploy $name}
   'status'{Show-ZetaDeploy $name}
   'dry-run'{Invoke-ZetaDeploy $name -DryRun}
-  ''{if(!(Test-Path -LiteralPath (Join-Path (SiteDir $name) 'deploy.conf'))){Setup-ZetaDeploy $name}else{Invoke-ZetaDeploy $name}}
+  'assistant'{Show-ZetaDeployMenu $name}
+  'menu'{Show-ZetaDeployMenu $name}
+  ''{Invoke-ZetaDeploy $name}
   default{throw "Unknown deploy action: $action"}
  }
 }
