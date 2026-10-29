@@ -40,7 +40,11 @@ function Setup-ZetaDeploy([string]$name){
  $reply=Ask 'Save this deployment configuration? (y/N)' 'N'
  if($reply -notmatch '^[yYsS]'){Write-Host 'Cancelled';return}
  $path=Get-ZetaDeployFile $name
- $data=(foreach($key in @('provider','repository','branch','project','account')){ "$key=$($c[$key])" }) -join "`n"
+ $lines=[Collections.Generic.List[string]]::new()
+ foreach($key in @('provider','repository','branch','project','account')){
+  $lines.Add(('{0}={1}' -f $key,$c[$key]))
+ }
+ $data=$lines -join [Environment]::NewLine
  $tmp="$path.tmp"
  try{
   [IO.File]::WriteAllText($tmp,$data,[Text.UTF8Encoding]::new($false))
