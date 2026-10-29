@@ -36,5 +36,32 @@ try{
  if(-not $archive.Contains('href="../../about/"')){throw 'Missing global navigation in tag archive'}
  $post=[IO.File]::ReadAllText((Join-Path $dir 'posts/2026/one.html'))
  if(!$post.Contains('Related articles')){throw 'Related article links missing'}
- Write-Host '[OK] PowerShell taxonomy validation' -ForegroundColor Green
+
+ # A tags-only (or categories-only) site must not link to the missing archive.
+ foreach($kind in @('tag','category')){
+  $folder=if($kind -eq 'tag'){'tags'}else{'categories'}
+  $missing=if($kind -eq 'tag'){'categories'}else{'tags'}
+  $fixture=Join-Path $dir "$kind-only"
+  [void](New-Item -ItemType Directory -Force -Path (Join-Path $fixture 'posts/2026'),(Join-Path $fixture 'styles'))
+  Copy-Item -Path (Join-Path $dir 'styles/*.css') -Destination (Join-Path $fixture 'styles')
+  $home='<html lang="en"><head><title>Fixture</title><meta name="description" content="Fixture"><link rel="canonical" href="https://example.org/"><link rel="stylesheet" href="styles/zeta-pages.css"><link rel="stylesheet" href="styles/00-theme-contract.css"></head><body><nav aria-label="Primary navigation"><a href="index.html">Home</a></nav></body></html>'
+  $article='<html lang="en"><head><title>One</title><meta name="description" content="One"><link rel="canonical" href="https://example.org/posts/2026/one.html"></head><body><main><h1>One</h1></main></body></html>'
+  [IO.File]::WriteAllText((Join-Path $fixture 'index.html'),$home,$utf8)
+  [IO.File]::WriteAllText((Join-Path $fixture 'posts/2026/one.html'),$article,$utf8)
+  [IO.File]::WriteAllText((Join-Path $fixture 'sitemap.xml'),'<urlset><url><loc>https://example.org/</loc></url><url><loc>https://example.org/posts/2026/one.html</loc></url></urlset>',$utf8)
+  [IO.File]::WriteAllText((Join-Path $fixture '.zeta-taxonomy.tsv'),(@('posts/2026/one.html',$kind,'only','Only') -join [char]9),$utf8)
+  $temporary=[IO.Path]::GetTempFileName()
+  try{
+   $null=@('' | & pandoc '-f' 'markdown' '-t' 'plain' "--lua-filter=$filter" "-Mzeta_taxonomy_output=$fixture" '-Mzeta_taxonomy_url=https://example.org' '-Mzeta_taxonomy_title=Fixture' '-Mzeta_taxonomy_language=en' '-o' $temporary)
+   if($LASTEXITCODE -ne 0){throw "Taxonomy filter failed for $kind-only"}
+  }finally{Remove-Item -LiteralPath $temporary -Force -ErrorAction SilentlyContinue}
+  if(!(Test-Path -LiteralPath (Join-Path $fixture "$folder/only/index.html"))){throw "Missing archive $folder/only"}
+  if(Test-Path -LiteralPath (Join-Path $fixture "$missing/index.html")){throw "Unexpected $missing archive"}
+  foreach($route in @("$folder/index.html","$folder/only/index.html")){
+   $rendered=[IO.File]::ReadAllText((Join-Path $fixture $route))
+   if($rendered.Contains("$missing/")){throw "Generated broken $missing link in $route"}
+  }
+ }
+
+ Write-Host '[OK] PowerShell taxonomy validation for full and one-kind archives' -ForegroundColor Green
 }finally{Remove-Item -LiteralPath $dir -Force -Recurse -ErrorAction SilentlyContinue}

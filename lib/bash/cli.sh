@@ -31,7 +31,7 @@ show_banner() {
     printf '\n%bZETA%b  %b/ create · write · publish%b\n' "$boldCyan" "$endColour" "$grayColour" "$endColour"
     ui_rule
     printf '  Workspace   %b%s sites%b\n' "$boldWhite" "${#sites[@]}" "$endColour"
-    printf '  Pipeline    Markdown > Pandoc > public/\n'
+    printf '  Pipeline    Markdown > Pandoc > public/ > provider\n'
     if command_exists pandoc; then
         printf '  Renderer    %bready%b\n' "$boldGreen" "$endColour"
     else
@@ -63,6 +63,11 @@ Content
   new-page <site> [title] [slug]      Create and build a new page
   fonts <site> [recommended]          Manage or install theme-recommended fonts
   doctor <site>                       Check deploy readiness
+  deploy setup <site>                 Guided provider configuration
+  deploy assistant <site>             Interactive deployment control panel
+  deploy <site>                       Build, validate and publish (never setup)
+  deploy status <site>                Show destination configuration
+  deploy --dry-run <site>             Inspect artifacts without publishing
 
 Build / preview
   build | update <site>               Rebuild a site
@@ -82,6 +87,8 @@ Examples
   ./zeta.sh theme my-site indie zenburn
   ./zeta.sh doctor my-site
   ./zeta.sh preview my-site
+  ./zeta.sh deploy setup my-site
+  ./zeta.sh deploy my-site
 
 Windows
   ./zeta.ps1 help
@@ -202,6 +209,34 @@ parse_args() {
             site=$(resolve_site_arg "${1:-}") || exit 1
             diagnose_site "$site"
             ;;
+        deploy)
+            case "${1:-}" in
+                setup|configure)
+                    shift
+                    site=$(resolve_site_arg "${1:-}") || exit 1
+                    zeta_deploy_setup "$site"
+                    ;;
+                assistant|menu)
+                    shift
+                    site=$(resolve_site_arg "${1:-}") || exit 1
+                    zeta_deployment_menu "$site"
+                    ;;
+                status)
+                    shift
+                    site=$(resolve_site_arg "${1:-}") || exit 1
+                    zeta_deploy_status "$site"
+                    ;;
+                --dry-run|dry-run)
+                    shift
+                    site=$(resolve_site_arg "${1:-}") || exit 1
+                    zeta_deploy_run "$site" true "${2:-}"
+                    ;;
+                *)
+                    site=$(resolve_site_arg "${1:-}") || exit 1
+                    zeta_deploy_run "$site" false "${2:-}"
+                    ;;
+            esac
+            ;;
         build|update)
             if [[ $# -gt 0 ]]; then
                 build_site "$1" && update_sites_index
@@ -257,6 +292,42 @@ select_and_preview_site() {
 }
 
 
+# Dedicated deployment assistant: configure is distinct from publish.
+zeta_deployment_menu() {
+    local site="${1:-}" choice
+    if [[ -z "$site" ]]; then site=$(select_site_interactive) || return 1; fi
+    require_site_slug "$site" || return 1
+    find_site_config "${SITES_DIR}/${site}" >/dev/null || return 1
+    while true; do
+        if [[ -t 1 ]]; then clear 2>/dev/null || true; fi
+        show_banner
+        ui_heading "Deployment center / ${site}"
+        printf '  %bCurrent destination%b\n' "$boldCyan" "$endColour"
+        if [[ -f "$(zeta_deploy_file "$site")" ]]; then
+            if ! zeta_deploy_status "$site"; then msg_warn 'Review the saved destination.'; fi
+        else
+            printf '  %bNot configured%b. Choose [1] to connect a provider.\n' "$boldYellow" "$endColour"
+        fi
+        ui_heading "Configure"
+        ui_action 1 'Configure provider' 'GitHub Pages / Cloudflare Pages'
+        ui_heading "Publish"
+        ui_action 2 'Deploy now' 'build + Doctor + publish'
+        ui_action 3 'Dry run' 'inspect output without remote writes'
+        ui_action 4 'Destination details' 'read-only provider settings'
+        printf '\n  %b[0]%b Back to site menu\n' "$grayColour" "$endColour"
+        ui_rule
+        read -rp "$(printf '%b' "${boldCyan}zeta / deploy / ${site} > ${endColour}")" choice
+        case "${choice,,}" in
+            1) if ! zeta_deploy_setup "$site"; then msg_warn 'Configuration was not changed.'; fi; pause_menu ;;
+            2) if ! zeta_deploy_run "$site"; then msg_warn 'Deployment did not complete.'; fi; pause_menu ;;
+            3) if ! zeta_deploy_run "$site" true; then msg_warn 'Dry run failed.'; fi; pause_menu ;;
+            4) if ! zeta_deploy_status "$site"; then msg_warn 'Configure a provider first.'; fi; pause_menu ;;
+            0|b|back) return 0 ;;
+            *) msg_warn "Unknown option: $choice" ;;
+        esac
+    done
+}
+
 manage_site_menu() {
     local site
     site=$(select_site_interactive) || return 0
@@ -271,7 +342,14 @@ manage_site_menu() {
         status='draft'
         [[ -f "${SITES_DIR}/${site}/${output_rel}/index.html" ]] && status='built'
         ui_heading "Manage / ${title}"
-        printf '  %s · %s posts · %s · %s\n' "$site" "$(site_post_count "$site")" "$theme" "$status"
+        printf '  %b%s%b · %s posts · %s · %s\n' "$boldWhite" "$site" "$endColour" "$(site_post_count "$site")" "$theme" "$status"
+        local publish_provider
+        if zeta_deploy_read "$site" provider; then
+            publish_provider="$ZETA_DEPLOY_VALUE"
+            printf '  %bDeployment%b  %s configured\n' "$boldGreen" "$endColour" "$publish_provider"
+        else
+            printf '  %bDeployment%b  not configured\n' "$boldYellow" "$endColour"
+        fi
         ui_heading "Content & appearance"
         ui_action 1 'Site settings' 'metadata / URL'
         ui_action 2 'Switch theme' 'appearance / highlighting'
@@ -284,6 +362,9 @@ manage_site_menu() {
         ui_action 6 'Doctor' 'pre-publish checks'
         ui_action 7 'Build' 'regenerate public/'
         ui_action 8 'Preview' 'localhost server'
+        ui_heading "Publish"
+        ui_action 13 'Deployment center' 'configure / publish / inspect'
+        ui_action 14 'Deploy now' 'build + Doctor + publish'
         ui_heading "Maintenance"
         ui_action 9 'Clean' 'remove generated files'
         ui_action 10 'Delete site' 'confirmation required'
@@ -302,6 +383,8 @@ manage_site_menu() {
             6) diagnose_site "$site"; pause_menu ;;
             7) build_site "$site" && update_sites_index; pause_menu ;;
             8) preview_site "$site" "$PREVIEW_PORT"; pause_menu ;;
+            13) zeta_deployment_menu "$site" ;;
+            14) if ! zeta_deploy_run "$site"; then msg_warn 'Deployment did not complete.'; fi; pause_menu ;;
             9) clean_site "$site"; pause_menu ;;
             10) delete_site "$site"; [[ -d "${SITES_DIR}/${site}" ]] || return 0; pause_menu ;;
             0|b|back) return 0 ;;
@@ -318,6 +401,7 @@ show_menu() {
         local -a projects=()
         readarray -t projects < <(get_all_sites)
         ui_heading "Your sites"
+        if (( ${#projects[@]} > 0 )); then printf '  %b%-22s %-12s %-11s %-6s %s%b\n' "$grayColour" 'SITE' 'CONTENT' 'THEME' 'BUILD' 'DEPLOY' "$endColour"; fi
         if (( ${#projects[@]} == 0 )); then
             printf '  %bNo sites yet. Choose [2] to create one.%b\n' "$grayColour" "$endColour"
         else
@@ -329,7 +413,9 @@ show_menu() {
                 output_rel=$(get_site_yaml_prop "$config" build output_dir public)
                 status='draft'
                 [[ -f "${SITES_DIR}/${site}/${output_rel}/index.html" ]] && status='built'
-                printf '  %-24.24s %3s posts   %-13s %s\n' "$site" "$(site_post_count "$site")" "$theme" "$status"
+                local publishing='not set'
+                if zeta_deploy_read "$site" provider; then publishing="$ZETA_DEPLOY_VALUE"; fi
+                printf '  %-22.22s %3s posts   %-11.11s %-6s %s\n' "$site" "$(site_post_count "$site")" "$theme" "$status" "$publishing"
                 ((shown+=1))
             done
             if (( ${#projects[@]} > 4 )); then
@@ -341,6 +427,7 @@ show_menu() {
         ui_action 2 'Create site' 'new workspace'
         ui_action 3 'Manage site' 'content / appearance'
         ui_heading "Build & preview"
+        ui_action 8 'Deployment center' 'configure / publish / inspect'
         ui_action 4 'Build one' 'generate public/'
         ui_action 5 'Build all' 'all workspaces'
         ui_action 6 'Preview one' 'local browser'
@@ -357,6 +444,7 @@ show_menu() {
             5) build_all_sites; pause_menu ;;
             6) select_and_preview_site; pause_menu ;;
             7) serve_workspace "$PREVIEW_PORT"; pause_menu ;;
+            8) site=$(select_site_interactive) || continue; zeta_deployment_menu "$site" ;;
             '?'|h|help) show_help; pause_menu ;;
             0|q|quit|exit) msg_info "Goodbye."; exit 0 ;;
             *) msg_warn "Unknown option: '$option'"; sleep 0.4 ;;

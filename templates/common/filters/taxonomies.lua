@@ -23,7 +23,7 @@ local function taxonomy_head_assets(home,output_root,relative_root)
  if #links==0 then error('Built homepage has no local stylesheet links for taxonomy') end
  return table.concat(links,'\n')
 end
-local function taxonomy_navigation(home,relative_root)
+local function taxonomy_navigation(home,relative_root,has_categories,has_tags)
  local menu=home:match('<nav[^>]*aria%-label="Primary navigation"[^>]*>(.-)</nav>')
  if not menu then
   menu='<a href="index.html">Home</a> <a href="posts.html">Blog</a>'
@@ -33,11 +33,14 @@ local function taxonomy_navigation(home,relative_root)
   if href:match('^%a[%w+.-]*:') or href:sub(1,1)=='/' or href:sub(1,1)=='#' then return 'href="'..href..'"' end
   return 'href="'..relative_root..href:gsub('^%./','')..'"'
  end)
- return menu..' <a href="'..relative_root..'categories/">Categories</a> <a href="'..relative_root..'tags/">Tags</a>'
+ -- Do not link to an archive that was not generated (tag-only/category-only sites).
+ if has_categories then menu=menu..' <a href="'..relative_root..'categories/">Categories</a>' end
+ if has_tags then menu=menu..' <a href="'..relative_root..'tags/">Tags</a>' end
+ return menu
 end
-local function html_head(title,description,lang,relative_root,home,output_root,site)
+local function html_head(title,description,lang,relative_root,home,output_root,site,has_categories,has_tags)
  local styles=taxonomy_head_assets(home,output_root,relative_root)
- local navigation=taxonomy_navigation(home,relative_root)
+ local navigation=taxonomy_navigation(home,relative_root,has_categories,has_tags)
  return '<!doctype html><html lang="'..escape(lang)..'"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'..escape(title)..'</title><meta name="description" content="'..escape(description)..'">'..styles..'</head><body class="zeta-static-page zeta-tax-page"><a class="zeta-skip" href="#main">Skip to content</a><header class="zeta-page-header zeta-tax-header"><div class="zeta-page-inner"><a class="zeta-brand" href="'..relative_root..'index.html">'..escape(site)..'</a><nav aria-label="Primary navigation">'..navigation..'</nav></div></header><main id="main" class="zeta-page-inner zeta-tax-wrap">'
 end
 local function html_foot() return '</main><footer class="zeta-page-footer zeta-tax-footer"><div class="zeta-page-inner">Published with Zeta · Static HTML, no JavaScript</div></footer></body></html>\n' end
@@ -78,13 +81,15 @@ function Pandoc(doc)
  for _,t in pairs(terms.tag) do tags[#tags+1]=t end
  local function term_sort(a,b) return a.slug<b.slug end
  table.sort(categories,term_sort);table.sort(tags,term_sort)
+ local has_categories=#categories>0
+ local has_tags=#tags>0
  local urls={}
  local function archive(items,folder,title)
   if #items==0 then return end
   local directory=root..'/'..folder
   if read(directory..'/index.html') then error('Taxonomy route conflicts with page: '..folder) end
   make_dir(directory)
-  local home={html_head(title..' · '..site,'Browse '..title:lower()..' on '..site,lang,'../',home_html,root,site),'<h1>'..escape(title)..'</h1><ul class="zeta-tax-list">'}
+  local home={html_head(title..' · '..site,'Browse '..title:lower()..' on '..site,lang,'../',home_html,root,site,has_categories,has_tags),'<h1>'..escape(title)..'</h1><ul class="zeta-tax-list">'}
   urls[#urls+1]=base..'/'..folder..'/'
   for _,term in ipairs(items) do
    home[#home+1]='<li><a href="'..term.slug..'/">'..escape(term.label)..'</a> <span>('..#term.posts..')</span></li>'
@@ -92,7 +97,7 @@ function Pandoc(doc)
    if read(path..'/index.html') then error('Taxonomy route conflict: '..folder..'/'..term.slug) end
    make_dir(path)
    table.sort(term.posts,sort_posts)
-   local page={html_head(term.label..' · '..title..' · '..site,'Articles on '..term.label,lang,'../../',home_html,root,site),'<nav aria-label="Breadcrumbs"><a href="../">'..escape(title)..'</a> / '..escape(term.label)..'</nav><h1>'..escape(term.label)..'</h1><ul class="zeta-tax-list">'}
+   local page={html_head(term.label..' · '..title..' · '..site,'Articles on '..term.label,lang,'../../',home_html,root,site,has_categories,has_tags),'<nav aria-label="Breadcrumbs"><a href="../">'..escape(title)..'</a> / '..escape(term.label)..'</nav><h1>'..escape(term.label)..'</h1><ul class="zeta-tax-list">'}
    for _,post in ipairs(term.posts) do page[#page+1]='<li><a href="../../'..post.route..'">'..escape(post.title)..'</a></li>' end
    page[#page+1]='</ul>'..html_foot()
    write(path..'/index.html',table.concat(page,'\n'))
