@@ -229,7 +229,7 @@ parse_args() {
                 --dry-run|dry-run)
                     shift
                     site=$(resolve_site_arg "${1:-}") || exit 1
-                    zeta_deploy_run "$site" true
+                    zeta_deploy_run "$site" true "${2:-}"
                     ;;
                 *)
                     site=$(resolve_site_arg "${1:-}") || exit 1
