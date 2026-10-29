@@ -20,6 +20,7 @@ $Utf8=[Text.UTF8Encoding]::new($false)
 . (Join-Path $Root 'lib/powershell/Workspace.ps1')
 . (Join-Path $Root 'lib/powershell/Console.ps1')
 . (Join-Path $Root 'lib/powershell/Doctor.ps1')
+. (Join-Path $Root 'lib/powershell/Deploy.ps1')
 
 try {
  switch($Command.ToLowerInvariant()){
@@ -44,6 +45,7 @@ try {
   'build'{Build $Site;Dashboard}
   'update'{Build $Site;Dashboard}
   'build-all'{foreach($n in (SiteNames)){Build $n};Dashboard}
+  'deploy'{ZetaDeploy $Site $Value}
   'doctor'{Doctor $Site}
   'diagnose'{Doctor $Site}
   'check-site'{Doctor $Site}

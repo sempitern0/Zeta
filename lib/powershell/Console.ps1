@@ -60,6 +60,10 @@ Content
   new-page SITE [TITLE] [SLUG]     Create a page and rebuild the site
   fonts SITE [KEY]                 Manage optional local fonts
   doctor | diagnose SITE           Check deployment readiness
+  deploy SITE                      Set up or publish a site
+  deploy setup SITE                Guided configuration
+  deploy status SITE               Show deployment destination
+  deploy dry-run SITE              Preview files without publishing
 
 Build and preview
   build | update SITE              Build a site (omit SITE for all)
@@ -96,6 +100,7 @@ function Manage-Menu([string]$name){
    '[11] List pages','[12] New page')
   Show-Actions 'Build & validate' @(
    '[6] Doctor','[7] Build site','[8] Preview site')
+  Show-Actions 'Publish' @('[13] Deploy (setup or publish)','[14] Deployment status')
   Show-Actions 'Maintenance' @(
    '[9] Clean output','[10] Delete site','[0] Back')
   $answer=Read-Host 'zeta / manage >'
@@ -112,6 +117,8 @@ function Manage-Menu([string]$name){
     '6'{Doctor $name}
     '7'{Build $name;Dashboard}
     '8'{Preview $name $Port}
+    '13'{ZetaDeploy $name}
+    '14'{Show-ZetaDeploy $name}
     '9'{Clean $name;Dashboard}
     '10'{RemoveSite $name;return}
     default{Write-ZetaLine 'Unknown option.' 'Yellow'}
@@ -144,6 +151,7 @@ function Menu{
   Show-Actions 'Workspace' @('[1] List sites','[2] Create site','[3] Manage site')
   Show-Actions 'Build & preview' @(
    '[4] Build one','[5] Build all','[6] Preview one','[7] Serve workspace','[8] Install Pandoc')
+  Show-Actions 'Publish' @('[9] Deploy site (guided)')
   Write-Host ''
   Write-ZetaLine '    [?] Help     [0] Exit' 'Gray'
   Write-ZetaLine ('─'*60) 'DarkGray'
@@ -159,6 +167,7 @@ function Menu{
     '6'{Preview (SelectItem 'Site' @(SiteNames)) $Port}
     '7'{foreach($name in (SiteNames)){Build $name};Dashboard;Serve $Sites $Port}
     '8'{[void](Install-ZetaPandoc)}
+    '9'{ZetaDeploy (SelectItem 'Site' @(SiteNames))}
     '?'{Help}
     'h'{Help}
     'help'{Help}

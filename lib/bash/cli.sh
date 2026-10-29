@@ -63,6 +63,10 @@ Content
   new-page <site> [title] [slug]      Create and build a new page
   fonts <site> [recommended]          Manage or install theme-recommended fonts
   doctor <site>                       Check deploy readiness
+  deploy setup <site>                Guided publishing setup
+  deploy <site>                      Build, validate and publish
+  deploy status <site>               Show provider configuration
+  deploy --dry-run <site>            List files without publishing
 
 Build / preview
   build | update <site>               Rebuild a site
@@ -202,6 +206,16 @@ parse_args() {
             site=$(resolve_site_arg "${1:-}") || exit 1
             diagnose_site "$site"
             ;;
+        deploy)
+            if [[ "${1:-}" == setup || "${1:-}" == status || "${1:-}" == --dry-run ]]; then
+                local action="${1:-}"; shift
+                site=$(resolve_site_arg "${1:-}") || exit 1
+                case "$action" in setup) zeta_deploy_setup "$site" ;; status) zeta_deploy_status "$site" ;; --dry-run) zeta_deploy_run "$site" true ;; esac
+            else
+                site=$(resolve_site_arg "${1:-}") || exit 1
+                if [[ -f "$(zeta_deploy_file "$site")" ]]; then zeta_deploy_run "$site"; else zeta_deploy_setup "$site"; fi
+            fi
+            ;;
         build|update)
             if [[ $# -gt 0 ]]; then
                 build_site "$1" && update_sites_index
@@ -284,6 +298,9 @@ manage_site_menu() {
         ui_action 6 'Doctor' 'pre-publish checks'
         ui_action 7 'Build' 'regenerate public/'
         ui_action 8 'Preview' 'localhost server'
+        ui_heading "Publish"
+        ui_action 13 'Deploy' 'guided setup or publish'
+        ui_action 14 'Deployment status' 'provider and destination'
         ui_heading "Maintenance"
         ui_action 9 'Clean' 'remove generated files'
         ui_action 10 'Delete site' 'confirmation required'
@@ -302,6 +319,8 @@ manage_site_menu() {
             6) diagnose_site "$site"; pause_menu ;;
             7) build_site "$site" && update_sites_index; pause_menu ;;
             8) preview_site "$site" "$PREVIEW_PORT"; pause_menu ;;
+            13) if [[ -f "$(zeta_deploy_file "$site")" ]]; then zeta_deploy_run "$site"; else zeta_deploy_setup "$site"; fi; pause_menu ;;
+            14) zeta_deploy_status "$site"; pause_menu ;;
             9) clean_site "$site"; pause_menu ;;
             10) delete_site "$site"; [[ -d "${SITES_DIR}/${site}" ]] || return 0; pause_menu ;;
             0|b|back) return 0 ;;
@@ -341,6 +360,7 @@ show_menu() {
         ui_action 2 'Create site' 'new workspace'
         ui_action 3 'Manage site' 'content / appearance'
         ui_heading "Build & preview"
+        ui_action 8 'Deploy site' 'setup or publish public/'
         ui_action 4 'Build one' 'generate public/'
         ui_action 5 'Build all' 'all workspaces'
         ui_action 6 'Preview one' 'local browser'
@@ -357,6 +377,7 @@ show_menu() {
             5) build_all_sites; pause_menu ;;
             6) select_and_preview_site; pause_menu ;;
             7) serve_workspace "$PREVIEW_PORT"; pause_menu ;;
+            8) site=$(select_site_interactive) || continue; if [[ -f "$(zeta_deploy_file "$site")" ]]; then zeta_deploy_run "$site"; else zeta_deploy_setup "$site"; fi; pause_menu ;;
             '?'|h|help) show_help; pause_menu ;;
             0|q|quit|exit) msg_info "Goodbye."; exit 0 ;;
             *) msg_warn "Unknown option: '$option'"; sleep 0.4 ;;
