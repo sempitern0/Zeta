@@ -37,14 +37,14 @@ body.theme-liminal{color-scheme:dark;--bg:#151718;--ink:#e4e1d8;--muted:#b9b6ad;
 .theme-liminal .liminal-room::before{top:1.2rem;left:1.2rem;border-top:1px solid #727b6d;border-left:1px solid #727b6d}
 .theme-liminal .liminal-room::after{bottom:1.2rem;right:1.2rem;border-bottom:1px solid #727b6d;border-right:1px solid #727b6d}
 .theme-liminal .liminal-room-label{display:flex;justify-content:space-between;padding:2rem 3rem;font:.67rem ui-monospace,monospace;letter-spacing:.15em;color:#b9b6ad}
-.theme-liminal .liminal-document{width:min(100% - 3rem,65ch);margin:clamp(3rem,7vw,6.5rem) auto 5rem;min-width:0}
+.theme-liminal .liminal-document{width:min(100% - 3rem,45rem);margin:clamp(3rem,7vw,6.5rem) auto 5rem;min-width:0}
 .theme-liminal .liminal-article-heading{border-bottom:1px solid #555953;padding-bottom:2.5rem;margin-bottom:3rem}
 .theme-liminal .liminal-article-heading h1{font-size:clamp(2.2rem,5vw,3.8rem);line-height:1.2;letter-spacing:-.035em;font-weight:530}
 .theme-liminal .liminal-article-heading .byline{font:.82rem ui-monospace,monospace;color:#b9b6ad}
-.theme-liminal .liminal-document .article-body{font:1.06rem/1.95 system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:.004em}
-.theme-liminal .liminal-document .article-body p{margin:1.65em 0}
-.theme-liminal .liminal-document .article-body h2,.theme-liminal .liminal-document .article-body h3{font-weight:520;margin-top:4.3em;border-top:1px solid #555953;padding-top:1.6rem;letter-spacing:-.015em}
+.theme-liminal .liminal-document .article-body{max-width:58ch;margin-inline:auto;text-align:left;font:1.1rem/1.76 system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:.004em}
+.theme-liminal .liminal-document .article-body p{margin:1.18em 0}
+.theme-liminal .liminal-document .article-body h2,.theme-liminal .liminal-document .article-body h3{font-weight:520;margin-top:3.35em;border-top:1px solid #555953;padding-top:1.6rem;letter-spacing:-.015em}
 .theme-liminal .liminal-return{margin:5rem 0 0;border-top:1px solid #555953;padding-top:1.5rem;font:.85rem ui-monospace,monospace}
 .theme-liminal .liminal-room-foot{position:absolute;bottom:2.2rem;right:3rem;color:#949a90;font:.6rem ui-monospace,monospace;letter-spacing:.13em}
 @media(max-width:56rem){.theme-liminal .liminal-lobby{grid-template-columns:1fr;gap:1rem;min-height:0;padding-inline:1.25rem}.theme-liminal .liminal-void{min-height:20rem}.theme-liminal .liminal-door{height:15rem}.theme-liminal .liminal-entries{grid-template-columns:1fr}.theme-liminal .liminal-intro,.theme-liminal .liminal-directory,.theme-liminal .liminal-archive,.theme-liminal .liminal-reading{padding-inline:1.15rem}}
-@media(max-width:42rem){.theme-liminal .liminal-room-label{padding:1.5rem 1.8rem}.theme-liminal .liminal-room-foot{right:1.7rem}.theme-liminal .liminal-document{width:calc(100% - 3.4rem)}.theme-liminal .liminal-document .article-body{font-size:1rem;line-height:1.83}}
+@media(max-width:42rem){.theme-liminal .liminal-room-label{padding:1.5rem 1.8rem}.theme-liminal .liminal-room-foot{right:1.7rem}.theme-liminal .liminal-reading{padding-inline:.55rem}.theme-liminal .liminal-room{box-shadow:inset 0 0 0 .5rem #1a1d1c}.theme-liminal .liminal-document{width:calc(100% - 2rem)}.theme-liminal .liminal-document .article-body{font-size:1rem;line-height:1.78}}

@@ -61,5 +61,21 @@ EOF
   liminal) grep -Fq 'liminal-room' "$article";grep -Fq 'liminal-door' "$DIR/public/index.html";;
   reliquary) grep -Fq 'reliquary-folio' "$article";grep -Fq 'reliquary-inner' "$DIR/public/index.html";;
  esac
- echo "[OK] $theme: unique composition; native headings; no TOC"
+ # Regression: prose is constrained independently of its decorative container.
+ case "$theme" in
+  nocturne)
+   grep -Fq 'max-width:57ch;margin-inline:auto;text-align:left;font:1.15rem/1.8' "$DIR/public/styles/theme.css"
+   grep -Fq 'max-width:57ch;margin-inline:auto;text-align:left;font-size:1.15rem;line-height:1.8' "$DIR/public/styles/00-theme-contract.css"
+   ;;
+  liminal)
+   grep -Fq 'max-width:58ch;margin-inline:auto;text-align:left;font:1.1rem/1.76' "$DIR/public/styles/theme.css"
+   grep -Fq 'max-width:58ch;margin-inline:auto;text-align:left;font-size:1.1rem;line-height:1.76' "$DIR/public/styles/00-theme-contract.css"
+   ;;
+  reliquary)
+   grep -Fq 'width:100%;max-width:54rem' "$DIR/public/styles/theme.css"
+   grep -Fq 'max-width:56ch;margin-inline:auto;text-align:left;font:1.17rem/1.8' "$DIR/public/styles/theme.css"
+   grep -Fq 'max-width:56ch;margin-inline:auto;text-align:left;font-size:1.17rem;line-height:1.8' "$DIR/public/styles/00-theme-contract.css"
+   ;;
+ esac
+ echo "[OK] $theme: unique composition; focused prose width; no TOC"
 done

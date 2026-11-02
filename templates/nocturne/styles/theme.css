@@ -31,19 +31,19 @@ body.theme-nocturne{color-scheme:dark;--bg:#0b1211;--ink:#e1e5da;--muted:#aeb9aa
 .theme-nocturne .night-archive{max-width:52rem;padding:5rem 0}
 .theme-nocturne .night-archive-heading{text-align:center}
 .theme-nocturne .night-archive-heading .archive-description{margin:1.2rem auto}
-.theme-nocturne .night-reading{max-width:66ch;padding:clamp(3.5rem,8vw,7rem) 0 5rem}
+.theme-nocturne .night-reading{max-width:47rem;padding:clamp(3.5rem,8vw,7rem) 0 5rem}
 .theme-nocturne .night-manuscript{width:100%;min-width:0}
 .theme-nocturne .night-chapter-heading{text-align:center;border:0;padding-bottom:2.8rem;margin:0 0 3.5rem}
 .theme-nocturne .night-chapter-symbol{color:#c4d8ad;font-size:1.6rem}
 .theme-nocturne .night-chapter-heading h1{font-weight:400;letter-spacing:-.035em;font-size:clamp(2.4rem,5vw,4.2rem);line-height:1.15}
 .theme-nocturne .night-chapter-heading .byline{color:#aeb9aa;font-style:italic}
 .theme-nocturne .article-tags{justify-content:center}
-.theme-nocturne .night-reading .article-body{font:1.13rem/1.97 Georgia,"Times New Roman",serif;hyphens:auto;overflow-wrap:break-word}
-.theme-nocturne .night-reading .article-body p{margin-block:1.45em}
-.theme-nocturne .night-reading .article-body h2,.theme-nocturne .night-reading .article-body h3{font-weight:400;text-align:center;margin:3.8em 0 1.35em;letter-spacing:.025em}
+.theme-nocturne .night-reading .article-body{max-width:57ch;margin-inline:auto;text-align:left;font:1.15rem/1.8 Georgia,"Times New Roman",serif;hyphens:auto;overflow-wrap:break-word}
+.theme-nocturne .night-reading .article-body p{margin-block:1.14em}
+.theme-nocturne .night-reading .article-body h2,.theme-nocturne .night-reading .article-body h3{font-weight:400;text-align:center;margin:3.3em 0 1.3em;letter-spacing:.025em}
 .theme-nocturne .night-reading .article-body h2::before{content:"✳";display:block;color:#c4d8ad;font-size:.66em;margin:0 auto 1.4rem}
 .theme-nocturne .night-reading .article-body blockquote{font-style:italic}
 .theme-nocturne .night-article-end{text-align:center;border-top:1px solid #385048;padding:3rem 0 1rem;margin-top:5rem}
 .theme-nocturne .night-article-end span{color:#c4d8ad}
 .theme-nocturne .night-article-end a{font-size:.95rem}
-@media(max-width:48rem){.theme-nocturne .night-about,.theme-nocturne .night-latest,.theme-nocturne .night-archive,.theme-nocturne .night-reading{padding-inline:1.15rem}.theme-nocturne .night-entrance{min-height:32rem}.theme-nocturne .night-reading .article-body{font-size:1.06rem;line-height:1.85}}
+@media(max-width:48rem){.theme-nocturne .night-about,.theme-nocturne .night-latest,.theme-nocturne .night-archive,.theme-nocturne .night-reading{padding-inline:1.15rem}.theme-nocturne .night-entrance{min-height:32rem}.theme-nocturne .night-reading .article-body{font-size:1.065rem;line-height:1.78}}

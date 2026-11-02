@@ -28,19 +28,19 @@ body.theme-reliquary{color-scheme:dark;--bg:#191413;--ink:#e9dfcc;--muted:#c4b8a
 .theme-reliquary .reliquary-document-read{display:block;margin-top:1.7rem;color:#d9a78d;font-size:.88rem}
 .theme-reliquary .reliquary-archive{padding-top:5rem;padding-bottom:6rem}
 .theme-reliquary .reliquary-reading{max-width:79rem;padding:clamp(2rem,5vw,5rem) 0 6rem}
-.theme-reliquary .reliquary-folio{position:relative;width:min(100%,76ch);margin:0 auto;padding:clamp(2.2rem,6vw,5.5rem) clamp(1.4rem,6vw,5rem);background:#29211e;border:1px solid #94735e;box-shadow:0 12px 50px #07040370,inset 0 0 0 6px #29211e,inset 0 0 0 7px #654c4260}
+.theme-reliquary .reliquary-folio{position:relative;width:100%;max-width:54rem;margin:0 auto;padding:clamp(2.2rem,6vw,5.5rem) clamp(1.1rem,5vw,4.5rem);background:#29211e;border:1px solid #94735e;box-shadow:0 12px 50px #07040370,inset 0 0 0 6px #29211e,inset 0 0 0 7px #654c4260}
 .theme-reliquary .reliquary-folio-heading{text-align:center;border-bottom:1px solid #654c42;padding-bottom:2.5rem;margin-bottom:3rem}
 .theme-reliquary .reliquary-folio-heading .reliquary-sigil{margin:1.5rem auto}
 .theme-reliquary .reliquary-folio-heading h1{font-weight:400;letter-spacing:-.03em;line-height:1.18;font-size:clamp(2.35rem,5vw,3.75rem)}
 .theme-reliquary .reliquary-folio-heading .byline{color:#c4b8a8;font-style:italic}
 .theme-reliquary .reliquary-folio-heading .article-tags{justify-content:center}
-.theme-reliquary .reliquary-folio .article-body{font:1.16rem/1.98 Georgia,"Times New Roman",serif;hyphens:auto;overflow-wrap:break-word}
+.theme-reliquary .reliquary-folio .article-body{max-width:56ch;margin-inline:auto;text-align:left;font:1.17rem/1.8 Georgia,"Times New Roman",serif;hyphens:auto;overflow-wrap:break-word}
 .theme-reliquary .reliquary-folio .article-body>p:first-of-type::first-letter{float:left;font-size:3em;line-height:.84;margin:.07em .13em 0 0;color:#d9a78d}
-.theme-reliquary .reliquary-folio .article-body p{margin-block:1.35em}
-.theme-reliquary .reliquary-folio .article-body h2,.theme-reliquary .reliquary-folio .article-body h3{text-align:center;font-weight:400;margin:3.3em 0 1.2em;letter-spacing:.02em}
+.theme-reliquary .reliquary-folio .article-body p{margin-block:1.16em}
+.theme-reliquary .reliquary-folio .article-body h2,.theme-reliquary .reliquary-folio .article-body h3{text-align:center;font-weight:400;margin:3.05em 0 1.2em;letter-spacing:.02em}
 .theme-reliquary .reliquary-folio .article-body h2::before{content:"❦";display:block;font-size:.72em;color:#d9a78d;margin-bottom:1rem}
 .theme-reliquary .reliquary-folio .article-body blockquote{font-style:italic;color:#d7c9b6}
 .theme-reliquary .reliquary-folio-end{text-align:center;border-top:1px solid #654c42;margin-top:4.5rem;padding-top:2.8rem;color:#c4b8a8;font-style:italic}
 .theme-reliquary .reliquary-folio-end span{color:#d9a78d}
 .theme-reliquary .reliquary-folio-end a{font-style:normal}
-@media(max-width:48rem){.theme-reliquary .reliquary-cover,.theme-reliquary .reliquary-prologue,.theme-reliquary .reliquary-collection,.theme-reliquary .reliquary-archive,.theme-reliquary .reliquary-reading{padding-inline:1.1rem}.theme-reliquary .reliquary-documents{grid-template-columns:1fr}.theme-reliquary .reliquary-document{padding:1.6rem}.theme-reliquary .reliquary-folio .article-body{font-size:1.06rem;line-height:1.84}}
+@media(max-width:48rem){.theme-reliquary .reliquary-cover,.theme-reliquary .reliquary-prologue,.theme-reliquary .reliquary-collection,.theme-reliquary .reliquary-archive,.theme-reliquary .reliquary-reading{padding-inline:1.1rem}.theme-reliquary .reliquary-documents{grid-template-columns:1fr}.theme-reliquary .reliquary-document{padding:1.6rem}.theme-reliquary .reliquary-reading{padding-inline:0}.theme-reliquary .reliquary-folio{padding-inline:clamp(1rem,4vw,4.5rem)}.theme-reliquary .reliquary-folio .article-body{font-size:1.06rem;line-height:1.8}}

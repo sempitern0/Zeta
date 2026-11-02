@@ -186,3 +186,17 @@ On all three, **articles intentionally omit the Pandoc table of contents**, the 
 The three variants also give Markdown-only pages distinct reading surfaces. They rely exclusively on local HTML/CSS and respect keyboard focus and responsive layouts, with no autoplay, flicker or motion-dependent behavior.
 
 For verification, run `bash tests/horror-reading-smoke.sh` (Pandoc required). Validate all three themes in a browser at desktop and mobile widths, including long prose, headings, code and keyboard navigation.
+
+### Horror themes: long-form typography calibration
+
+The CSS of the three horror themes now limits **the actual prose** independently from the large cover, room or manuscript. A character measure expressed in `ch` is **not** a guaranteed number of visible letters; it changes with font metrics and language. Initial targets should be evaluated with a long Spanish story in a real browser:
+
+| Theme | Prose max-width | Desktop text size | Line height | Paragraph block margins |
+| --- | --- | --- | --- | --- |
+| Nocturne | `57ch` in Georgia | `1.15rem` | `1.80` | `1.14em` |
+| Liminal | `58ch` in system sans | `1.1rem` | `1.76` | `1.18em` |
+| Reliquary | `56ch` in Georgia | `1.17rem` | `1.80` | `1.16em` |
+
+These values are a **provisional optical baseline**, not a claim of a verified real-world characters-per-line measurement. They keep left-aligned body text, preserve the centered editorial presentation and allow a shorter, viewport-limited line on phones. Reliquary expands its outer folio to `54rem` while independently limiting its prose, avoiding the old narrow text area created by large interior padding. The same rhythm is used on Markdown-only pages where applicable.
+
+Recommended manual check: a full Spanish narrative on a desktop at 1366px and 1920px, on mobile at 375px, and at 200% browser zoom; test prose with punctuation, dialogue, chapter headings, lists and long words. Confirm that there is no horizontal page overflow, chapter headings remain discoverable in the text (no TOC), and the eye can return comfortably to the next line. User-supplied site CSS retains final precedence so the measure can be overridden if desired.
