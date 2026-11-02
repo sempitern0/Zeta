@@ -1,23 +1,50 @@
-/* Liminal: atmospheric framing, still readable in long sessions. */
-body.theme-liminal{color-scheme:dark;--bg:#151718;--ink:#e4e1d8;--muted:#b9b6ad;--rule:#555953;--card:#242727;--accent:#cdd4b8;--link:#e1d4a5;--button-ink:#151718;--focus:#f7d58b;--width:78rem;--font-ui:system-ui,-apple-system,"Segoe UI",sans-serif;background:#151718}
-.theme-liminal .site-header{background:#242727}
-.theme-liminal .site-brand{font-size:1.35rem;letter-spacing:.035em;font-weight:600}
-.theme-liminal .hero{border-bottom:1px solid #555953;background:radial-gradient(ellipse at 86% 10%,#55595355,transparent 48%);padding:clamp(3.5rem,8vw,7rem) 0}
-.theme-liminal .hero h1{max-width:16ch;font-family:Georgia,"Times New Roman",serif;font-weight:400;letter-spacing:-.045em;line-height:1.07}
-.theme-liminal .hero-lead{color:#e4e1d8;max-width:55ch}
-.theme-liminal .mood-line{color:#b9b6ad;font-style:italic;max-width:58ch}
-.theme-liminal .eyebrow{font-family:ui-monospace,Consolas,monospace;letter-spacing:.16em}
-.theme-liminal .button{border-radius:2px}
-.theme-liminal .cards{grid-template-columns:repeat(2,minmax(0,1fr))}
-.theme-liminal .card{border-color:#555953;background:#242727;border-radius:2px}
-.theme-liminal .card h3{font-family:Georgia,"Times New Roman",serif;font-weight:500;font-size:1.65rem}
-.theme-liminal .article-shell{max-width:79rem}
-.theme-liminal .article-shell:not(.zeta-has-toc){max-width:72ch}
-.theme-liminal .article-body{font-family:Georgia,"Times New Roman",serif;font-size:1.1rem;line-height:1.9}
-.theme-liminal .article-body p,.theme-liminal .article-body li{max-width:68ch}
-.theme-liminal .article-heading h1{font-family:Georgia,"Times New Roman",serif;font-weight:400}
-.theme-liminal .article-body blockquote{border-left-color:#cdd4b8}
-.theme-liminal .article-body a{color:#e1d4a5}
-.theme-liminal .article-body a:focus-visible{outline:3px solid #f7d58b;outline-offset:3px}
-.theme-liminal .section-heading{border-bottom:1px solid #555953}
-@media(max-width:48rem){.theme-liminal .cards{grid-template-columns:1fr}.theme-liminal .hero{padding:3.5rem 0}}
+/* Liminal: corridors, sterile wayfinding, disproportionate negative space. */
+body.theme-liminal{color-scheme:dark;--bg:#151718;--ink:#e4e1d8;--muted:#b9b6ad;--rule:#555953;--card:#242727;--accent:#cdd4b8;--link:#e1d4a5;--button-ink:#151718;--focus:#f7d58b;--width:84rem;--font-ui:system-ui,-apple-system,"Segoe UI",sans-serif;background:#151718}
+.theme-liminal .site-header{background:#1b1d1d}
+.theme-liminal .site-brand{font-size:.94rem;font-weight:700;text-transform:uppercase;letter-spacing:.26em}
+.theme-liminal .eyebrow{font:.7rem/1.5 ui-monospace,Consolas,monospace;letter-spacing:.15em}
+.theme-liminal .liminal-lobby{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);align-items:center;gap:clamp(2rem,7vw,8rem);min-height:min(82vh,53rem);padding-top:4rem;padding-bottom:5rem}
+.theme-liminal .liminal-instructions{align-self:center;padding-block:3rem}
+.theme-liminal .liminal-warning{display:inline-block;font:.66rem/1.4 ui-monospace,monospace;letter-spacing:.12em;padding:.4rem .65rem;background:#262b28;color:#cdd4b8;border:1px solid #555953}
+.theme-liminal .liminal-instructions h1{margin:3rem 0 2rem;font-size:clamp(2.9rem,5.5vw,6rem);font-weight:450;line-height:1.12;letter-spacing:-.062em;max-width:15ch}
+.theme-liminal .liminal-lead{color:#b9b6ad;max-width:41ch;font-size:1.13rem}
+.theme-liminal .liminal-enter{display:inline-flex;margin-top:2.5rem;padding:.8rem 1.2rem;gap:1.5rem;justify-content:space-between;min-width:12rem;background:#cdd4b8;color:#151718;text-decoration:none;font-weight:650}
+.theme-liminal .liminal-enter:hover{background:#e4e1d8;color:#151718}
+.theme-liminal .liminal-void{position:relative;min-height:31rem;display:flex;align-items:flex-end;justify-content:center;background:linear-gradient(120deg,#252a28 0%,#343834 54%,#242826 100%);border:1px solid #4b534b;overflow:hidden;box-shadow:inset 25px 0 80px #14171680}
+.theme-liminal .liminal-void::before{content:"";position:absolute;left:-25%;right:-25%;height:45%;bottom:-30%;border-top:1px solid #6d73684d;transform:perspective(24rem) rotateX(62deg);background:repeating-linear-gradient(90deg,transparent 0 16%,#42484244 16% 16.35%,transparent 16.5% 32%)}
+.theme-liminal .liminal-door{position:relative;width:42%;height:22rem;border:8px solid #1a1d1b;background:linear-gradient(100deg,#0a0d0c,#222a26);box-shadow:0 0 0 2px #73797180,15px 16px 55px #0a0d0c80;display:flex;align-items:flex-start;justify-content:flex-end;padding:1rem}
+.theme-liminal .liminal-door span{font:.77rem ui-monospace,monospace;color:#cdd4b8}
+.theme-liminal .liminal-floor{position:absolute;bottom:0;left:0;width:100%;height:2px;background:#929b8a38}
+.theme-liminal .liminal-intro{max-width:58rem;padding:3rem 0 4rem;color:#b9b6ad;border-top:1px solid #555953}
+.theme-liminal .liminal-intro .article-body{max-width:65ch}
+.theme-liminal .liminal-directory{padding-bottom:6rem}
+.theme-liminal .liminal-directory-title{display:flex;justify-content:space-between;align-items:end;gap:1rem;border-bottom:3px solid #b9b6ad;padding-bottom:1.25rem;margin-bottom:2rem}
+.theme-liminal .liminal-directory-title h2,.theme-liminal .liminal-directory-title h1{margin:.65rem 0 0;font-size:clamp(2.1rem,4.5vw,4.5rem);line-height:1.1;letter-spacing:-.055em;font-weight:500}
+.theme-liminal .liminal-counter{font:.87rem ui-monospace,monospace;color:#b9b6ad;white-space:nowrap}
+.theme-liminal .liminal-entries{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:#555953;padding:1px;counter-reset:room}
+.theme-liminal .liminal-entry{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:1.1rem;align-items:start;padding:1.75rem 1.25rem;background:#242727;border:0;border-radius:0;counter-increment:room}
+.theme-liminal .liminal-entry-no::before{content:counter(room,decimal-leading-zero);font:.85rem ui-monospace,Consolas,monospace;color:#cdd4b8}
+.theme-liminal .liminal-entry-copy{min-width:0}
+.theme-liminal .liminal-entry .card-date{font:.72rem ui-monospace,monospace;color:#b9b6ad}
+.theme-liminal .liminal-entry h3{font-size:1.33rem;font-weight:520;margin:.5rem 0}
+.theme-liminal .liminal-entry h3 a{color:#e4e1d8}
+.theme-liminal .liminal-entry-copy>p:last-child{color:#b9b6ad;line-height:1.6}
+.theme-liminal .liminal-entry-arrow{color:#cdd4b8}
+.theme-liminal .liminal-archive{padding-top:5rem;padding-bottom:6rem}
+.theme-liminal .liminal-reading{max-width:78rem;padding:clamp(2.5rem,6vw,5rem) 0 6rem}
+.theme-liminal .liminal-room{position:relative;min-height:70vh;border:1px solid #555953;background:linear-gradient(180deg,#202322,#1a1d1c);box-shadow:inset 0 0 0 1.15rem #1a1d1c}
+.theme-liminal .liminal-room::before,.theme-liminal .liminal-room::after{content:"";position:absolute;width:5rem;height:5rem;pointer-events:none}
+.theme-liminal .liminal-room::before{top:1.2rem;left:1.2rem;border-top:1px solid #727b6d;border-left:1px solid #727b6d}
+.theme-liminal .liminal-room::after{bottom:1.2rem;right:1.2rem;border-bottom:1px solid #727b6d;border-right:1px solid #727b6d}
+.theme-liminal .liminal-room-label{display:flex;justify-content:space-between;padding:2rem 3rem;font:.67rem ui-monospace,monospace;letter-spacing:.15em;color:#b9b6ad}
+.theme-liminal .liminal-document{width:min(100% - 3rem,65ch);margin:clamp(3rem,7vw,6.5rem) auto 5rem;min-width:0}
+.theme-liminal .liminal-article-heading{border-bottom:1px solid #555953;padding-bottom:2.5rem;margin-bottom:3rem}
+.theme-liminal .liminal-article-heading h1{font-size:clamp(2.2rem,5vw,3.8rem);line-height:1.2;letter-spacing:-.035em;font-weight:530}
+.theme-liminal .liminal-article-heading .byline{font:.82rem ui-monospace,monospace;color:#b9b6ad}
+.theme-liminal .liminal-document .article-body{font:1.06rem/1.95 system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:.004em}
+.theme-liminal .liminal-document .article-body p{margin:1.65em 0}
+.theme-liminal .liminal-document .article-body h2,.theme-liminal .liminal-document .article-body h3{font-weight:520;margin-top:4.3em;border-top:1px solid #555953;padding-top:1.6rem;letter-spacing:-.015em}
+.theme-liminal .liminal-return{margin:5rem 0 0;border-top:1px solid #555953;padding-top:1.5rem;font:.85rem ui-monospace,monospace}
+.theme-liminal .liminal-room-foot{position:absolute;bottom:2.2rem;right:3rem;color:#949a90;font:.6rem ui-monospace,monospace;letter-spacing:.13em}
+@media(max-width:56rem){.theme-liminal .liminal-lobby{grid-template-columns:1fr;gap:1rem;min-height:0;padding-inline:1.25rem}.theme-liminal .liminal-void{min-height:20rem}.theme-liminal .liminal-door{height:15rem}.theme-liminal .liminal-entries{grid-template-columns:1fr}.theme-liminal .liminal-intro,.theme-liminal .liminal-directory,.theme-liminal .liminal-archive,.theme-liminal .liminal-reading{padding-inline:1.15rem}}
+@media(max-width:42rem){.theme-liminal .liminal-room-label{padding:1.5rem 1.8rem}.theme-liminal .liminal-room-foot{right:1.7rem}.theme-liminal .liminal-document{width:calc(100% - 3.4rem)}.theme-liminal .liminal-document .article-body{font-size:1rem;line-height:1.83}}

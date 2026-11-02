@@ -1,6 +1,9 @@
-/* Scoped visual contract for Liminal; does not modify Zeta shared styles. */
-:root{--zeta-nav-background:#242727;--zeta-nav-ink:#e4e1d8;--zeta-nav-current:#cdd4b8;--zeta-nav-type:system-ui,-apple-system,"Segoe UI",sans-serif}
-body.zeta-static-page.zeta-theme-liminal{color-scheme:dark;--page-bg:#151718;--page-panel:#242727;--page-fg:#e4e1d8;--page-muted:#b9b6ad;--page-link:#e1d4a5;--page-border:#555953;--page-font:system-ui,-apple-system,"Segoe UI",sans-serif;--page-focus:#f7d58b;background:#151718}
-body.zeta-static-page.zeta-theme-liminal .zeta-readable{max-width:68ch}
-body.zeta-static-page.zeta-theme-liminal .article-body{font-size:1.075rem;line-height:1.88}
-body.zeta-static-page.zeta-theme-liminal .zeta-content{padding-block:clamp(2.5rem,6vw,5rem)}
+/* Liminal page reading: a room centered inside a larger empty surface. */
+:root{--zeta-nav-background:#1b1d1d;--zeta-nav-ink:#e4e1d8;--zeta-nav-current:#cdd4b8;--zeta-nav-type:system-ui,-apple-system,"Segoe UI",sans-serif}
+body.zeta-static-page.zeta-theme-liminal{color-scheme:dark;--page-bg:#151718;--page-panel:#242727;--page-fg:#e4e1d8;--page-muted:#b9b6ad;--page-link:#e1d4a5;--page-border:#555953;--page-font:system-ui,-apple-system,"Segoe UI",sans-serif;--page-focus:#f7d58b;background:linear-gradient(90deg,#151718 0%,#202323 50%,#151718 100%)}
+body.zeta-static-page.zeta-theme-liminal .zeta-content{max-width:76rem;width:calc(100% - 2rem);margin:clamp(2rem,5vw,5rem) auto;padding:clamp(2rem,5vw,4rem);background:#202322;border:1px solid #555953;box-shadow:inset 0 0 0 .65rem #1a1d1c}
+body.zeta-static-page.zeta-theme-liminal .zeta-readable{max-width:66ch;margin-inline:auto}
+body.zeta-static-page.zeta-theme-liminal .zeta-readable h1{font-weight:530;letter-spacing:-.04em}
+body.zeta-static-page.zeta-theme-liminal .article-body{font-size:1.07rem;line-height:1.9}
+body.zeta-static-page.zeta-theme-liminal .article-body h2{margin-top:3.7em;border-top:1px solid #555953;padding-top:1.3rem}
+body.zeta-static-page.zeta-theme-liminal .zeta-home-stories{grid-template-columns:1fr}

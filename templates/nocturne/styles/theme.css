@@ -1,23 +1,49 @@
-/* Nocturne: atmospheric framing, still readable in long sessions. */
-body.theme-nocturne{color-scheme:dark;--bg:#0b1211;--ink:#e1e5da;--muted:#aeb9aa;--rule:#385048;--card:#14201d;--accent:#c4d8ad;--link:#b7d8c0;--button-ink:#0b1211;--focus:#f3d49b;--width:78rem;--font-ui:Georgia,"Times New Roman",serif;background:#0b1211}
-.theme-nocturne .site-header{background:#14201d}
-.theme-nocturne .site-brand{font-size:1.35rem;letter-spacing:.035em;font-weight:600}
-.theme-nocturne .hero{border-bottom:1px solid #385048;background:radial-gradient(ellipse at 86% 10%,#38504855,transparent 48%);padding:clamp(3.5rem,8vw,7rem) 0}
-.theme-nocturne .hero h1{max-width:16ch;font-family:Georgia,"Times New Roman",serif;font-weight:400;letter-spacing:-.045em;line-height:1.07}
-.theme-nocturne .hero-lead{color:#e1e5da;max-width:55ch}
-.theme-nocturne .mood-line{color:#aeb9aa;font-style:italic;max-width:58ch}
-.theme-nocturne .eyebrow{font-family:ui-monospace,Consolas,monospace;letter-spacing:.16em}
-.theme-nocturne .button{border-radius:2px}
-.theme-nocturne .cards{grid-template-columns:repeat(2,minmax(0,1fr))}
-.theme-nocturne .card{border-color:#385048;background:#14201d;border-radius:2px}
-.theme-nocturne .card h3{font-family:Georgia,"Times New Roman",serif;font-weight:500;font-size:1.65rem}
-.theme-nocturne .article-shell{max-width:79rem}
-.theme-nocturne .article-shell:not(.zeta-has-toc){max-width:72ch}
-.theme-nocturne .article-body{font-family:Georgia,"Times New Roman",serif;font-size:1.1rem;line-height:1.9}
-.theme-nocturne .article-body p,.theme-nocturne .article-body li{max-width:68ch}
-.theme-nocturne .article-heading h1{font-family:Georgia,"Times New Roman",serif;font-weight:400}
-.theme-nocturne .article-body blockquote{border-left-color:#c4d8ad}
-.theme-nocturne .article-body a{color:#b7d8c0}
-.theme-nocturne .article-body a:focus-visible{outline:3px solid #f3d49b;outline-offset:3px}
-.theme-nocturne .section-heading{border-bottom:1px solid #385048}
-@media(max-width:48rem){.theme-nocturne .cards{grid-template-columns:1fr}.theme-nocturne .hero{padding:3.5rem 0}}
+/* Nocturne: a single forest path. Narrow long-form chapters, quiet vertical rhythm. */
+body.theme-nocturne{color-scheme:dark;--bg:#0b1211;--ink:#e1e5da;--muted:#aeb9aa;--rule:#385048;--card:#14201d;--accent:#c4d8ad;--link:#b7d8c0;--button-ink:#0b1211;--focus:#f3d49b;--width:73rem;--font-ui:Georgia,"Times New Roman",serif;background:#0b1211}
+.theme-nocturne .site-header{background:#0a100f}
+.theme-nocturne .site-brand{font-size:1.15rem;letter-spacing:.12em;text-transform:uppercase;font-weight:500}
+.theme-nocturne .eyebrow{font-family:ui-monospace,Consolas,monospace;font-size:.7rem;letter-spacing:.18em}
+.theme-nocturne .night-entrance{position:relative;isolation:isolate;display:flex;align-items:center;min-height:min(83vh,47rem);overflow:hidden;background:radial-gradient(ellipse at 50% 42%,#24382b 0%,#15231b 35%,#0b1211 72%)}
+.theme-nocturne .night-entrance::before,.theme-nocturne .night-entrance::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:-1}
+.theme-nocturne .night-entrance::before{background:repeating-linear-gradient(91deg,transparent 0 11%,#07100d33 11.1% 11.35%,transparent 11.6% 20%);opacity:.45}
+.theme-nocturne .night-entrance::after{background:linear-gradient(90deg,#0b1211ad,transparent 30%,transparent 70%,#0b1211ad)}
+.theme-nocturne .night-spine{position:absolute;top:0;bottom:0;left:50%;width:1px;background:linear-gradient(180deg,transparent,#71907738 27%,#71907738 73%,transparent);pointer-events:none}
+.theme-nocturne .night-center{position:relative;padding:5rem 1.2rem;text-align:center;max-width:50rem}
+.theme-nocturne .night-center .eyebrow{color:#c4d8ad}
+.theme-nocturne .night-symbol{font-size:1.5rem;color:#c4d8ad;margin:2.2rem 0 1rem}
+.theme-nocturne .night-center h1{max-width:none;margin:.5rem auto 1.25rem;font-size:clamp(3.2rem,9vw,7rem);line-height:1.08;font-weight:400;letter-spacing:-.05em}
+.theme-nocturne .night-intro{font-size:clamp(1.15rem,2vw,1.4rem);max-width:36ch;margin:0 auto;color:#e1e5da}
+.theme-nocturne .night-whisper{font-size:.97rem;font-style:italic;color:#aeb9aa;margin:1.8rem auto 2.6rem}
+.theme-nocturne .night-cta{display:inline-block;border-bottom:1px solid #c4d8ad;padding:.65rem .1rem;color:#c4d8ad;text-decoration:none}
+.theme-nocturne .night-cta:hover{color:#e1e5da}
+.theme-nocturne .night-about{max-width:66ch;padding:5rem 0;border-bottom:1px solid #385048;text-align:center;font-size:1.2rem;line-height:1.9;color:#b9cabb}
+.theme-nocturne .night-latest{max-width:52rem;padding:5rem 0 7rem}
+.theme-nocturne .night-latest h2,.theme-nocturne .night-archive h1{font-weight:400;font-size:clamp(2.2rem,5vw,3.7rem);letter-spacing:-.04em;line-height:1.15}
+.theme-nocturne .night-stories{display:block;list-style:none;margin:2.5rem 0;padding:0}
+.theme-nocturne .night-story{position:relative;border:0;border-top:1px solid #385048;border-radius:0;background:transparent;padding:1.65rem 2.7rem 1.8rem 0}
+.theme-nocturne .night-story:last-child{border-bottom:1px solid #385048}
+.theme-nocturne .night-story h3{font-weight:400;font-size:clamp(1.45rem,3vw,2rem);margin:.4rem 0}
+.theme-nocturne .night-story h3 a{color:#e1e5da}
+.theme-nocturne .night-story .card-date{font: .76rem/1.4 ui-monospace,Consolas,monospace;color:#aeb9aa;letter-spacing:.09em}
+.theme-nocturne .night-story>p:last-of-type{max-width:62ch;margin-bottom:0;color:#aeb9aa}
+.theme-nocturne .night-story-mark{position:absolute;right:0;top:50%;transform:translateY(-50%);color:#c4d8ad}
+.theme-nocturne .night-all{text-align:center;margin:3rem 0}
+.theme-nocturne .night-archive{max-width:52rem;padding:5rem 0}
+.theme-nocturne .night-archive-heading{text-align:center}
+.theme-nocturne .night-archive-heading .archive-description{margin:1.2rem auto}
+.theme-nocturne .night-reading{max-width:66ch;padding:clamp(3.5rem,8vw,7rem) 0 5rem}
+.theme-nocturne .night-manuscript{width:100%;min-width:0}
+.theme-nocturne .night-chapter-heading{text-align:center;border:0;padding-bottom:2.8rem;margin:0 0 3.5rem}
+.theme-nocturne .night-chapter-symbol{color:#c4d8ad;font-size:1.6rem}
+.theme-nocturne .night-chapter-heading h1{font-weight:400;letter-spacing:-.035em;font-size:clamp(2.4rem,5vw,4.2rem);line-height:1.15}
+.theme-nocturne .night-chapter-heading .byline{color:#aeb9aa;font-style:italic}
+.theme-nocturne .article-tags{justify-content:center}
+.theme-nocturne .night-reading .article-body{font:1.13rem/1.97 Georgia,"Times New Roman",serif;hyphens:auto;overflow-wrap:break-word}
+.theme-nocturne .night-reading .article-body p{margin-block:1.45em}
+.theme-nocturne .night-reading .article-body h2,.theme-nocturne .night-reading .article-body h3{font-weight:400;text-align:center;margin:3.8em 0 1.35em;letter-spacing:.025em}
+.theme-nocturne .night-reading .article-body h2::before{content:"✳";display:block;color:#c4d8ad;font-size:.66em;margin:0 auto 1.4rem}
+.theme-nocturne .night-reading .article-body blockquote{font-style:italic}
+.theme-nocturne .night-article-end{text-align:center;border-top:1px solid #385048;padding:3rem 0 1rem;margin-top:5rem}
+.theme-nocturne .night-article-end span{color:#c4d8ad}
+.theme-nocturne .night-article-end a{font-size:.95rem}
+@media(max-width:48rem){.theme-nocturne .night-about,.theme-nocturne .night-latest,.theme-nocturne .night-archive,.theme-nocturne .night-reading{padding-inline:1.15rem}.theme-nocturne .night-entrance{min-height:32rem}.theme-nocturne .night-reading .article-body{font-size:1.06rem;line-height:1.85}}

@@ -1,4 +1,3 @@
-.theme-nocturne .zeta-has-toc .article-toc{background:#14201d;border:1px solid #385048;border-radius:2px;color:#e1e5da}
-.theme-nocturne .zeta-has-toc .zeta-toc-label,.theme-nocturne .zeta-has-toc .article-toc a[aria-current="location"]{color:#c4d8ad}
-.theme-nocturne .article-body :is(h2,h3,h4){font-weight:500;letter-spacing:.005em}
-.theme-nocturne .article-body img{filter:saturate(.85)}
+.theme-nocturne .article-body h2,.theme-nocturne .article-body h3{scroll-margin-top:2rem}
+.theme-nocturne .article-body a{color:#b7d8c0}
+.theme-nocturne .article-body :is(pre,code){hyphens:none}

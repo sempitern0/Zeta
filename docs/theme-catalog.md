@@ -172,3 +172,17 @@ Three dark, accessible, script-free editorial variants have been added:
 | `reliquary` | archivos góticos y manuscritos | `#191413` background · `#d9a78d` accent | `zenburn` |
 
 These themes extend the existing HTML/Pandoc interface and keep Markdown pages, archives, table of contents, taxonomy pages and homepage feeds under the same theme-scoped contract. The local dashboard contains representative visual samples and short reading excerpts. Decoration remains outside the prose column; there is no flicker, autoplay, remote font or animation. Existing themes are unchanged. For a Markdown-first horror publication enable `homepage.show_posts: true`, then run `./zeta.sh theme SITE nocturne zenburn` (or `liminal` / `reliquary`) and `./zeta.sh build SITE`; PowerShell: `.\zeta.ps1 theme SITE nocturne zenburn`.
+
+### Horror themes: distinct compositions and uninterrupted reading
+
+The three themes are **not palette variants**. Their layout signatures are intentionally different:
+
+- **Nocturne**: a centered forest-path cover, narrow single-column story trail, minimal chapter ornaments and serif-first prose.
+- **Liminal**: offset lobby with architectural doorway, numbered room cards, and a central article framed as an empty interior.
+- **Reliquary**: double-ruled manuscript cover, catalogue folios, archival inscriptions, and a central book-page reading surface.
+
+On all three, **articles intentionally omit the Pandoc table of contents**, the sticky side column and the `zeta-toc.js` active-section observer. Narrative headings remain in the Markdown flow, encountered naturally during scrolling. Other existing themes continue using their table of contents as before. This is a template-only editorial decision; the shared TOC implementation is left intact.
+
+The three variants also give Markdown-only pages distinct reading surfaces. They rely exclusively on local HTML/CSS and respect keyboard focus and responsive layouts, with no autoplay, flicker or motion-dependent behavior.
+
+For verification, run `bash tests/horror-reading-smoke.sh` (Pandoc required). Validate all three themes in a browser at desktop and mobile widths, including long prose, headings, code and keyboard navigation.
