@@ -1,0 +1,3 @@
+.theme-reliquary .article-body h2,.theme-reliquary .article-body h3{scroll-margin-top:2rem}
+.theme-reliquary .article-body a{color:#efc2a0}
+.theme-reliquary .article-body :is(pre,code){hyphens:none}

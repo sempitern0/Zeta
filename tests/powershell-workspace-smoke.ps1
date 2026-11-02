@@ -49,7 +49,7 @@ build:
  }
  if($html.Contains('<script>demo</script>')){throw 'Unescaped site content in dashboard'}
  if(!(Test-Path (Join-Path $Sites 'workspace.css'))){throw 'Shared stylesheet missing'}
-  foreach($theme in @('zen','paper','console','indie','organization','brutalist','folio','aurora')){
+  foreach($theme in @('zen','paper','console','indie','organization','brutalist','folio','aurora','nocturne','liminal','reliquary')){
    if(-not $html.Contains('id="theme-'+$theme+'"')){throw "Missing theme preview: $theme"}
   }
   if(-not $html.Contains('id="theme-gallery"')){throw 'Missing theme gallery'}

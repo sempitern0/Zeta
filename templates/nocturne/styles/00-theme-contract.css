@@ -1,0 +1,10 @@
+/* Night reading contract: visual tokens scoped to this theme. */
+:root{--zeta-nav-background:#0a100f;--zeta-nav-ink:#e1e5da;--zeta-nav-current:#c4d8ad;--zeta-nav-type:Georgia,"Times New Roman",serif}
+body.zeta-static-page.zeta-theme-nocturne{color-scheme:dark;--page-bg:#0b1211;--page-panel:#14201d;--page-fg:#e1e5da;--page-muted:#aeb9aa;--page-link:#b7d8c0;--page-border:#385048;--page-font:Georgia,"Times New Roman",serif;--page-focus:#f3d49b;background:radial-gradient(ellipse at 50% 15%,#1a2b21,#0b1211 60%)}
+body.zeta-static-page.zeta-theme-nocturne .zeta-content{width:100%;max-width:74ch;margin-inline:auto;padding:clamp(3rem,7vw,6rem) 1.25rem}
+body.zeta-static-page.zeta-theme-nocturne .zeta-readable{max-width:44rem;margin-inline:auto}
+body.zeta-static-page.zeta-theme-nocturne .zeta-readable h1{text-align:center;font-weight:400;letter-spacing:-.03em}
+body.zeta-static-page.zeta-theme-nocturne .article-body{max-width:57ch;margin-inline:auto;text-align:left;font-size:1.15rem;line-height:1.8}
+body.zeta-static-page.zeta-theme-nocturne .article-body p{margin-block:1.14em}
+body.zeta-static-page.zeta-theme-nocturne .article-body h2{margin-top:3.5em;text-align:center;font-weight:400}
+body.zeta-static-page.zeta-theme-nocturne .zeta-home-stories{grid-template-columns:1fr}

@@ -55,3 +55,34 @@ a{color:var(--accent);text-underline-offset:.2em}a:focus-visible{outline:3px sol
 .sample--aurora .sample-cta{border-radius:2rem}
 @media(max-width:52rem){.theme-grid{grid-template-columns:1fr}}
 @media(max-width:25rem){.sample-topbar{flex-wrap:wrap}.sample-hero{min-height:0}.sample-story{flex-wrap:wrap}}
+
+.sample--nocturne{--sample-bg:#0b1211;--sample-fg:#e1e5da;--sample-muted:#aeb9aa;--sample-accent:#c4d8ad;--sample-panel:#14201d;font-family:Georgia,"Times New Roman",serif}
+.sample--nocturne .sample-hero h4{font-family:Georgia,"Times New Roman",serif;font-weight:400;letter-spacing:-.025em}
+
+.sample--liminal{--sample-bg:#151718;--sample-fg:#e4e1d8;--sample-muted:#b9b6ad;--sample-accent:#cdd4b8;--sample-panel:#242727;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+.sample--liminal .sample-hero h4{font-family:Georgia,"Times New Roman",serif;font-weight:400;letter-spacing:-.025em}
+
+.sample--reliquary{--sample-bg:#191413;--sample-fg:#e9dfcc;--sample-muted:#c4b8a8;--sample-accent:#d9a78d;--sample-panel:#29211e;font-family:Georgia,"Times New Roman",serif}
+.sample--reliquary .sample-hero h4{font-family:Georgia,"Times New Roman",serif;font-weight:400;letter-spacing:-.025em}
+
+/* The three horror previews mirror their actual compositions; no shared recolor-only template. */
+.horror-sample{font-size:.88rem;min-height:20rem}
+.horror--nocturne{background:radial-gradient(ellipse at center,#22372b,#0b1211 75%);color:#e1e5da;border-color:#385048;font-family:Georgia,"Times New Roman",serif}
+.horror-n-top,.horror-n-bottom{display:flex;justify-content:space-between;gap:.7rem;padding:.8rem 1rem;font:.61rem ui-monospace,monospace;letter-spacing:.16em;color:#bdcbb5}
+.horror-n-top{border-bottom:1px solid #385048}.horror-n-bottom{border-top:1px solid #385048;justify-content:center}
+.horror-n-center{text-align:center;min-height:15rem;padding:1.8rem 1.2rem 2rem}.horror-n-center>span{font-size:1.3rem;color:#c4d8ad}
+.horror-n-center h4{font-size:1.7rem;line-height:1.1;font-weight:400;margin:.8rem auto}.horror-n-center p{max-width:26ch;margin:.7rem auto 1.5rem;line-height:1.75;color:#c4d2c4}
+.horror-n-action{font:.65rem ui-monospace,monospace;letter-spacing:.08em;color:#c4d8ad}
+.horror--liminal{background:#252a28;color:#e4e1d8;border-color:#555953;font-family:system-ui,-apple-system,sans-serif}
+.horror-l-top,.horror-l-bottom{display:flex;justify-content:space-between;gap:1rem;padding:.7rem 1rem;font:.64rem ui-monospace,monospace;letter-spacing:.09em;background:#171a19;color:#bec9b8}
+.horror-l-stage{min-height:16rem;display:grid;grid-template-columns:1.15fr .85fr;align-items:center;gap:1rem;padding:1.2rem 1rem;background:linear-gradient(115deg,#252a28,#343a34)}
+.horror-l-text>span{font:.6rem ui-monospace,monospace;color:#cdd4b8}.horror-l-text h4{font-size:1.5rem;line-height:1.16;letter-spacing:-.04em;font-weight:550;margin:.85rem 0}
+.horror-l-text p{font-size:.78rem;color:#cfcec5;line-height:1.55}.horror-l-text b{display:inline-block;background:#cdd4b8;color:#151718;padding:.45rem;font-size:.63rem;margin-top:.75rem}
+.horror-l-door{height:10.5rem;border:5px solid #1c201e;background:linear-gradient(110deg,#090c0b,#222a26);box-shadow:0 0 0 1px #6b766b,9px 11px 25px #090b0a88;color:#cdd4b8;text-align:right;padding:.65rem;font: .7rem ui-monospace,monospace}
+.horror--reliquary{padding:1.1rem;background:#191413;color:#e9dfcc;border-color:#805f4d;font-family:Georgia,"Times New Roman",serif}
+.horror-r-paper{min-height:18rem;border:5px double #805f4d;background:#29211e;text-align:center;padding:1.6rem 1rem;box-shadow:0 8px 24px #09060599}
+.horror-r-paper>span{font-size:.66rem;letter-spacing:.16em;color:#d9a78d}.horror-r-paper>div{font-size:1.35rem;margin:1.2rem auto;color:#d9a78d}
+.horror-r-paper h4{font-size:1.65rem;font-weight:400;margin:.6rem auto;max-width:19ch}.horror-r-paper p{color:#c4b8a8;font-style:italic;font-size:.82rem;max-width:26ch;margin:1rem auto}
+.horror-r-paper b{display:block;font-size:.7rem;font-weight:400;color:#efc2a0;text-decoration:underline;text-underline-offset:.3em}
+.horror-r-paper small{display:block;margin-top:1.1rem;color:#a99b8e;font-style:italic}
+@media(max-width:25rem){.horror-l-stage{grid-template-columns:1fr}.horror-l-door{height:6rem;width:40%;justify-self:center}}

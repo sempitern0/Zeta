@@ -38,7 +38,7 @@ Details body.
 
 Closing body.
 EOF
-for theme in zen paper console indie organization brutalist folio aurora; do
+for theme in zen paper console indie organization brutalist folio aurora nocturne liminal reliquary; do
 cat > "$DIR/config.yaml" <<EOF
 site:
   title: "Navigation QA"
