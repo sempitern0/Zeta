@@ -210,3 +210,5 @@ Both Bash and PowerShell now share `templates/common/filters/toc-policy.lua`. A 
 - Disabled by default: `brutalist`, `nocturne`, `liminal`, `reliquary`.
 
 Frontmatter `toc: true` forces a TOC when headings exist, `toc: false` prevents it, and `toc: auto` follows the theme defaults. The homepage never has a TOC. The existing `zeta-toc.js` handles highlighting without a framework.
+
+**Explicit exception for story-first themes:** `toc: true` renders the same accessible index in Nocturne, Liminal, and Reliquary. Without that override, their articles remain uninterrupted and never expose upcoming chapters in a sidebar.
