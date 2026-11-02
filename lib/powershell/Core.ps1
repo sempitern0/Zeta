@@ -241,7 +241,8 @@ function Build([string]$name){
    $target=Join-Path $stage $rel
    [void](New-Item -ItemType Directory -Path (Split-Path $target -Parent) -Force)
    $pandocOptions=@($file.FullName,'-f','markdown','-t','html5','--standalone','--section-divs','--wrap=none',
-      '--table-of-contents','--toc-depth=3','--preserve-tabs','--template',$articleTemplate,
+      '--table-of-contents','--toc-depth=3',('--lua-filter='+(Join-Path $Templates 'common/filters/toc-policy.lua')),
+      '-M',('zeta_toc_theme='+$c.theme),'-M','zeta_toc_kind=post','--preserve-tabs','--template',$articleTemplate,
       '-V','rel_root=../../','-V',"title=$(Escape $p.title)",'-V',"author=$(Escape $p.author)",
       '-V',"date=$(Escape $p.human)",'-V',"iso_date=$(Escape $p.date)",'-V',"year=$($p.year)",
       '-V',"slug=$($p.slug)",'-V',"description=$(Escape $p.description)",'-V',"site_title=$(Escape $c.title)",
@@ -463,6 +464,8 @@ function Render-ZetaPages([string]$name,[string]$stage,[hashtable]$c,[bool]$blog
   $opts=@($file.FullName,'-f','markdown-raw_html','-t','html5','--standalone','--wrap=none',
     '--template',$pageTemplate,
     $filterArgument,
+    '--table-of-contents','--toc-depth=3',('--lua-filter='+(Join-Path $Templates 'common/filters/toc-policy.lua')),
+    '-M',('zeta_toc_theme='+$c.theme),'-M',('zeta_toc_kind='+$(if($slug -eq 'index'){'home'}else{'page'})),
     '-M',('zeta_page_depth='+$depth),
     '-V',('title='+(Escape $heading)),'-V',('description='+(Escape $desc)),
     '-V',('site_title='+(Escape $c.title)),'-V',('site_author='+(Escape $c.author)),

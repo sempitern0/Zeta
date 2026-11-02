@@ -1,3 +1,10 @@
 .theme-nocturne .article-body h2,.theme-nocturne .article-body h3{scroll-margin-top:2rem}
 .theme-nocturne .article-body a{color:#b7d8c0}
 .theme-nocturne .article-body :is(pre,code){hyphens:none}
+
+/* An explicit toc: true opt-in preserves the normal spoiler-free default. */
+.theme-nocturne .night-reading.zeta-has-toc{max-width:80rem}
+.theme-nocturne .night-reading.zeta-has-toc .article-toc{font-size:.82rem;border:1px solid var(--rule);padding:1.1rem;background:var(--card);color:var(--ink)}
+.theme-nocturne .night-reading.zeta-has-toc .article-toc .zeta-toc-label{color:var(--accent)}
+.theme-nocturne .night-reading.zeta-has-toc .night-article-end{grid-column:1}
+@media(max-width:61.999rem){.theme-nocturne .night-reading.zeta-has-toc .article-toc{margin-bottom:2rem}}

@@ -1,3 +1,10 @@
 .theme-liminal .article-body h2,.theme-liminal .article-body h3{scroll-margin-top:2rem}
 .theme-liminal .article-body a{color:#e1d4a5}
 .theme-liminal .article-body :is(pre,code){letter-spacing:normal}
+
+/* An explicit toc: true opt-in preserves the normal spoiler-free default. */
+.theme-liminal .liminal-room.zeta-has-toc .liminal-document{width:calc(100% - 3rem);max-width:75rem}
+.theme-liminal .liminal-room.zeta-has-toc .article-toc{font-size:.82rem;border:1px solid var(--rule);padding:1.1rem;background:var(--card);color:var(--ink)}
+.theme-liminal .liminal-room.zeta-has-toc .article-toc .zeta-toc-label{color:var(--accent)}
+.theme-liminal .liminal-room.zeta-has-toc .liminal-return{grid-column:1}
+@media(max-width:61.999rem){.theme-liminal .liminal-room.zeta-has-toc .article-toc{margin-bottom:2rem}}

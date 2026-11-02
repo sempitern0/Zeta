@@ -1,3 +1,10 @@
 .theme-reliquary .article-body h2,.theme-reliquary .article-body h3{scroll-margin-top:2rem}
 .theme-reliquary .article-body a{color:#efc2a0}
 .theme-reliquary .article-body :is(pre,code){hyphens:none}
+
+/* An explicit toc: true opt-in preserves the normal spoiler-free default. */
+.theme-reliquary .reliquary-reading.zeta-has-toc .reliquary-folio{max-width:78rem}
+.theme-reliquary .reliquary-reading.zeta-has-toc .article-toc{font-size:.82rem;border:1px solid var(--rule);padding:1.1rem;background:var(--card);color:var(--ink)}
+.theme-reliquary .reliquary-reading.zeta-has-toc .article-toc .zeta-toc-label{color:var(--accent)}
+.theme-reliquary .reliquary-reading.zeta-has-toc .reliquary-folio-end{grid-column:1}
+@media(max-width:61.999rem){.theme-reliquary .reliquary-reading.zeta-has-toc .article-toc{margin-bottom:2rem}}

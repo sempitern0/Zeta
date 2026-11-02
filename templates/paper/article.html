@@ -27,7 +27,7 @@ $styles.html()$
       </div>
     </header>
 
-    <main id="content" class="paper-shell paper-article-shell$if(toc)$ zeta-has-toc$endif$">
+    <main id="content" class="paper-shell paper-article-shell$if(zeta_toc_enabled)$ zeta-has-toc$endif$">
       <article class="paper-article">
         <header class="article-header paper-article-header">
           <p class="paper-kicker">Article</p>
@@ -44,7 +44,7 @@ $styles.html()$
           </div>
         </header>
 
-        $if(toc)$
+        $if(zeta_toc_enabled)$
         <nav class="article-toc" aria-label="Table of contents"><span class="zeta-toc-label">On this page</span>$toc$</nav>
         $endif$
 
@@ -57,5 +57,5 @@ $styles.html()$
         <p><a href="#top">Back to top</a> · <a href="$rel_root$posts.html">Archive</a></p>
       </div>
     </footer>
-  $if(toc)$<script src="$rel_root$assets/zeta-toc.js" defer></script>$endif$</body>
+  $if(zeta_toc_enabled)$<script src="$rel_root$assets/zeta-toc.js" defer></script>$endif$</body>
 </html>
