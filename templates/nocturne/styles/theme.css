@@ -1,0 +1,23 @@
+/* Nocturne: atmospheric framing, still readable in long sessions. */
+body.theme-nocturne{color-scheme:dark;--bg:#0b1211;--ink:#e1e5da;--muted:#aeb9aa;--rule:#385048;--card:#14201d;--accent:#c4d8ad;--link:#b7d8c0;--button-ink:#0b1211;--focus:#f3d49b;--width:78rem;--font-ui:Georgia,"Times New Roman",serif;background:#0b1211}
+.theme-nocturne .site-header{background:#14201d}
+.theme-nocturne .site-brand{font-size:1.35rem;letter-spacing:.035em;font-weight:600}
+.theme-nocturne .hero{border-bottom:1px solid #385048;background:radial-gradient(ellipse at 86% 10%,#38504855,transparent 48%);padding:clamp(3.5rem,8vw,7rem) 0}
+.theme-nocturne .hero h1{max-width:16ch;font-family:Georgia,"Times New Roman",serif;font-weight:400;letter-spacing:-.045em;line-height:1.07}
+.theme-nocturne .hero-lead{color:#e1e5da;max-width:55ch}
+.theme-nocturne .mood-line{color:#aeb9aa;font-style:italic;max-width:58ch}
+.theme-nocturne .eyebrow{font-family:ui-monospace,Consolas,monospace;letter-spacing:.16em}
+.theme-nocturne .button{border-radius:2px}
+.theme-nocturne .cards{grid-template-columns:repeat(2,minmax(0,1fr))}
+.theme-nocturne .card{border-color:#385048;background:#14201d;border-radius:2px}
+.theme-nocturne .card h3{font-family:Georgia,"Times New Roman",serif;font-weight:500;font-size:1.65rem}
+.theme-nocturne .article-shell{max-width:79rem}
+.theme-nocturne .article-shell:not(.zeta-has-toc){max-width:72ch}
+.theme-nocturne .article-body{font-family:Georgia,"Times New Roman",serif;font-size:1.1rem;line-height:1.9}
+.theme-nocturne .article-body p,.theme-nocturne .article-body li{max-width:68ch}
+.theme-nocturne .article-heading h1{font-family:Georgia,"Times New Roman",serif;font-weight:400}
+.theme-nocturne .article-body blockquote{border-left-color:#c4d8ad}
+.theme-nocturne .article-body a{color:#b7d8c0}
+.theme-nocturne .article-body a:focus-visible{outline:3px solid #f3d49b;outline-offset:3px}
+.theme-nocturne .section-heading{border-bottom:1px solid #385048}
+@media(max-width:48rem){.theme-nocturne .cards{grid-template-columns:1fr}.theme-nocturne .hero{padding:3.5rem 0}}

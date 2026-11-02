@@ -55,3 +55,12 @@ a{color:var(--accent);text-underline-offset:.2em}a:focus-visible{outline:3px sol
 .sample--aurora .sample-cta{border-radius:2rem}
 @media(max-width:52rem){.theme-grid{grid-template-columns:1fr}}
 @media(max-width:25rem){.sample-topbar{flex-wrap:wrap}.sample-hero{min-height:0}.sample-story{flex-wrap:wrap}}
+
+.sample--nocturne{--sample-bg:#0b1211;--sample-fg:#e1e5da;--sample-muted:#aeb9aa;--sample-accent:#c4d8ad;--sample-panel:#14201d;font-family:Georgia,"Times New Roman",serif}
+.sample--nocturne .sample-hero h4{font-family:Georgia,"Times New Roman",serif;font-weight:400;letter-spacing:-.025em}
+
+.sample--liminal{--sample-bg:#151718;--sample-fg:#e4e1d8;--sample-muted:#b9b6ad;--sample-accent:#cdd4b8;--sample-panel:#242727;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+.sample--liminal .sample-hero h4{font-family:Georgia,"Times New Roman",serif;font-weight:400;letter-spacing:-.025em}
+
+.sample--reliquary{--sample-bg:#191413;--sample-fg:#e9dfcc;--sample-muted:#c4b8a8;--sample-accent:#d9a78d;--sample-panel:#29211e;font-family:Georgia,"Times New Roman",serif}
+.sample--reliquary .sample-hero h4{font-family:Georgia,"Times New Roman",serif;font-weight:400;letter-spacing:-.025em}

@@ -1,0 +1,23 @@
+/* Reliquary: atmospheric framing, still readable in long sessions. */
+body.theme-reliquary{color-scheme:dark;--bg:#191413;--ink:#e9dfcc;--muted:#c4b8a8;--rule:#654c42;--card:#29211e;--accent:#d9a78d;--link:#efc2a0;--button-ink:#191413;--focus:#f4d29c;--width:78rem;--font-ui:Georgia,"Times New Roman",serif;background:#191413}
+.theme-reliquary .site-header{background:#29211e}
+.theme-reliquary .site-brand{font-size:1.35rem;letter-spacing:.035em;font-weight:600}
+.theme-reliquary .hero{border-bottom:1px solid #654c42;background:radial-gradient(ellipse at 86% 10%,#654c4255,transparent 48%);padding:clamp(3.5rem,8vw,7rem) 0}
+.theme-reliquary .hero h1{max-width:16ch;font-family:Georgia,"Times New Roman",serif;font-weight:400;letter-spacing:-.045em;line-height:1.07}
+.theme-reliquary .hero-lead{color:#e9dfcc;max-width:55ch}
+.theme-reliquary .mood-line{color:#c4b8a8;font-style:italic;max-width:58ch}
+.theme-reliquary .eyebrow{font-family:ui-monospace,Consolas,monospace;letter-spacing:.16em}
+.theme-reliquary .button{border-radius:2px}
+.theme-reliquary .cards{grid-template-columns:repeat(2,minmax(0,1fr))}
+.theme-reliquary .card{border-color:#654c42;background:#29211e;border-radius:2px}
+.theme-reliquary .card h3{font-family:Georgia,"Times New Roman",serif;font-weight:500;font-size:1.65rem}
+.theme-reliquary .article-shell{max-width:79rem}
+.theme-reliquary .article-shell:not(.zeta-has-toc){max-width:72ch}
+.theme-reliquary .article-body{font-family:Georgia,"Times New Roman",serif;font-size:1.1rem;line-height:1.9}
+.theme-reliquary .article-body p,.theme-reliquary .article-body li{max-width:68ch}
+.theme-reliquary .article-heading h1{font-family:Georgia,"Times New Roman",serif;font-weight:400}
+.theme-reliquary .article-body blockquote{border-left-color:#d9a78d}
+.theme-reliquary .article-body a{color:#efc2a0}
+.theme-reliquary .article-body a:focus-visible{outline:3px solid #f4d29c;outline-offset:3px}
+.theme-reliquary .section-heading{border-bottom:1px solid #654c42}
+@media(max-width:48rem){.theme-reliquary .cards{grid-template-columns:1fr}.theme-reliquary .hero{padding:3.5rem 0}}

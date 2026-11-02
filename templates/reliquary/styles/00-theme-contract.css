@@ -1,0 +1,6 @@
+/* Scoped visual contract for Reliquary; does not modify Zeta shared styles. */
+:root{--zeta-nav-background:#29211e;--zeta-nav-ink:#e9dfcc;--zeta-nav-current:#d9a78d;--zeta-nav-type:Georgia,"Times New Roman",serif}
+body.zeta-static-page.zeta-theme-reliquary{color-scheme:dark;--page-bg:#191413;--page-panel:#29211e;--page-fg:#e9dfcc;--page-muted:#c4b8a8;--page-link:#efc2a0;--page-border:#654c42;--page-font:Georgia,"Times New Roman",serif;--page-focus:#f4d29c;background:#191413}
+body.zeta-static-page.zeta-theme-reliquary .zeta-readable{max-width:68ch}
+body.zeta-static-page.zeta-theme-reliquary .article-body{font-size:1.075rem;line-height:1.88}
+body.zeta-static-page.zeta-theme-reliquary .zeta-content{padding-block:clamp(2.5rem,6vw,5rem)}

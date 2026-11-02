@@ -1,0 +1,4 @@
+.theme-liminal .zeta-has-toc .article-toc{background:#242727;border:1px solid #555953;border-radius:2px;color:#e4e1d8}
+.theme-liminal .zeta-has-toc .zeta-toc-label,.theme-liminal .zeta-has-toc .article-toc a[aria-current="location"]{color:#cdd4b8}
+.theme-liminal .article-body :is(h2,h3,h4){font-weight:500;letter-spacing:.005em}
+.theme-liminal .article-body img{filter:saturate(.85)}

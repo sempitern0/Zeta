@@ -1,0 +1,23 @@
+/* Liminal: atmospheric framing, still readable in long sessions. */
+body.theme-liminal{color-scheme:dark;--bg:#151718;--ink:#e4e1d8;--muted:#b9b6ad;--rule:#555953;--card:#242727;--accent:#cdd4b8;--link:#e1d4a5;--button-ink:#151718;--focus:#f7d58b;--width:78rem;--font-ui:system-ui,-apple-system,"Segoe UI",sans-serif;background:#151718}
+.theme-liminal .site-header{background:#242727}
+.theme-liminal .site-brand{font-size:1.35rem;letter-spacing:.035em;font-weight:600}
+.theme-liminal .hero{border-bottom:1px solid #555953;background:radial-gradient(ellipse at 86% 10%,#55595355,transparent 48%);padding:clamp(3.5rem,8vw,7rem) 0}
+.theme-liminal .hero h1{max-width:16ch;font-family:Georgia,"Times New Roman",serif;font-weight:400;letter-spacing:-.045em;line-height:1.07}
+.theme-liminal .hero-lead{color:#e4e1d8;max-width:55ch}
+.theme-liminal .mood-line{color:#b9b6ad;font-style:italic;max-width:58ch}
+.theme-liminal .eyebrow{font-family:ui-monospace,Consolas,monospace;letter-spacing:.16em}
+.theme-liminal .button{border-radius:2px}
+.theme-liminal .cards{grid-template-columns:repeat(2,minmax(0,1fr))}
+.theme-liminal .card{border-color:#555953;background:#242727;border-radius:2px}
+.theme-liminal .card h3{font-family:Georgia,"Times New Roman",serif;font-weight:500;font-size:1.65rem}
+.theme-liminal .article-shell{max-width:79rem}
+.theme-liminal .article-shell:not(.zeta-has-toc){max-width:72ch}
+.theme-liminal .article-body{font-family:Georgia,"Times New Roman",serif;font-size:1.1rem;line-height:1.9}
+.theme-liminal .article-body p,.theme-liminal .article-body li{max-width:68ch}
+.theme-liminal .article-heading h1{font-family:Georgia,"Times New Roman",serif;font-weight:400}
+.theme-liminal .article-body blockquote{border-left-color:#cdd4b8}
+.theme-liminal .article-body a{color:#e1d4a5}
+.theme-liminal .article-body a:focus-visible{outline:3px solid #f7d58b;outline-offset:3px}
+.theme-liminal .section-heading{border-bottom:1px solid #555953}
+@media(max-width:48rem){.theme-liminal .cards{grid-template-columns:1fr}.theme-liminal .hero{padding:3.5rem 0}}

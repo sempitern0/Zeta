@@ -1,0 +1,4 @@
+.theme-reliquary .zeta-has-toc .article-toc{background:#29211e;border:1px solid #654c42;border-radius:2px;color:#e9dfcc}
+.theme-reliquary .zeta-has-toc .zeta-toc-label,.theme-reliquary .zeta-has-toc .article-toc a[aria-current="location"]{color:#d9a78d}
+.theme-reliquary .article-body :is(h2,h3,h4){font-weight:500;letter-spacing:.005em}
+.theme-reliquary .article-body img{filter:saturate(.85)}

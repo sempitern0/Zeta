@@ -10,7 +10,7 @@ try {
  if(-not (Get-Command pandoc -ErrorAction SilentlyContinue)){throw 'Pandoc required'}
  . (Join-Path $Root 'lib/powershell/Dependencies.ps1')
  . (Join-Path $Root 'lib/powershell/Core.ps1')
- foreach($theme in @('zen','paper','console','indie','organization','brutalist','folio','aurora','gazette','magazine')){
+ foreach($theme in @('zen','paper','console','indie','organization','brutalist','folio','aurora','nocturne','liminal','reliquary','gazette','magazine','nocturne','liminal','reliquary')){
   $name='pages-'+$theme
   $site=Join-Path $Sites $name
   [void](New-Item -ItemType Directory -Path (Join-Path $site 'pages'),(Join-Path $site 'posts') -Force)
@@ -78,7 +78,7 @@ Should not publish.
   $themeContract=[IO.File]::ReadAllText((Join-Path $out 'styles/00-theme-contract.css'))
   if(-not $themeContract.Contains('--zeta-nav-background')){throw "$theme missing navigation contract"}
   $sharedCss=[IO.File]::ReadAllText((Join-Path $out 'styles/zeta-pages.css'))
-  if($sharedCss -match 'zeta-theme-(zen|paper|console|indie|organization|brutalist|folio|aurora)'){throw "Theme styling leaked into shared core"}
+  if($sharedCss -match 'zeta-theme-(zen|paper|console|indie|organization|brutalist|folio|aurora|nocturne|liminal|reliquary)'){throw "Theme styling leaked into shared core"}
   $index=[IO.File]::ReadAllText((Join-Path $out 'index.html'))
   foreach($pagePath in @('index.html','about/index.html')){
    $pageHtml=[IO.File]::ReadAllText((Join-Path $out $pagePath))

@@ -160,3 +160,15 @@ For regression coverage run `bash tests/article-toc-smoke.sh` (requires Pandoc) 
 ### Markdown homepage padding
 
 The shared static page shell adds responsive horizontal inset to the generated Markdown page content. This prevents the first heading from touching a full-width theme background or gradient while preserving header alignment. Aurora additionally adjusts vertical spacing in its theme-scoped contract. These spacing rules apply when rebuilding existing sites; no Markdown edits are necessary.
+
+## Horror and unsettling reading themes
+
+Three dark, accessible, script-free editorial variants have been added:
+
+| Theme | Reading direction | Palette | Recommended Pandoc highlighting |
+| --- | --- | --- | --- |
+| `nocturne` | silencio, bosque y penumbra | `#0b1211` background · `#c4d8ad` accent | `zenburn` |
+| `liminal` | espacios vacíos y familiaridad inquietante | `#151718` background · `#cdd4b8` accent | `zenburn` |
+| `reliquary` | archivos góticos y manuscritos | `#191413` background · `#d9a78d` accent | `zenburn` |
+
+These themes extend the existing HTML/Pandoc interface and keep Markdown pages, archives, table of contents, taxonomy pages and homepage feeds under the same theme-scoped contract. The local dashboard contains representative visual samples and short reading excerpts. Decoration remains outside the prose column; there is no flicker, autoplay, remote font or animation. Existing themes are unchanged. For a Markdown-first horror publication enable `homepage.show_posts: true`, then run `./zeta.sh theme SITE nocturne zenburn` (or `liminal` / `reliquary`) and `./zeta.sh build SITE`; PowerShell: `.\zeta.ps1 theme SITE nocturne zenburn`.
