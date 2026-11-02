@@ -523,6 +523,8 @@ build_site() {
             --wrap=none
             --table-of-contents
             --toc-depth=3
+            "--lua-filter=${TEMPLATES_DIR}/common/filters/toc-policy.lua"
+            -M "zeta_toc_theme=${site_theme}" -M "zeta_toc_kind=post"
             --preserve-tabs
             --template="${theme_dir}/article.html"
             -V "rel_root=${rel_root}"
@@ -866,6 +868,10 @@ zeta_render_markdown_pages() {
         nav=$(zeta_pages_navigation "$site_dir" "$prefix" "$slug" "$blog_enabled")
         local options=(
             --from=markdown-raw_html --to=html5 --standalone --wrap=none
+            --table-of-contents --toc-depth=3
+            "--lua-filter=${TEMPLATES_DIR}/common/filters/toc-policy.lua"
+            -M "zeta_toc_theme=${theme_name}"
+            -M "zeta_toc_kind=$([[ "$slug" == index ]] && printf home || printf page)"
             "--template=${TEMPLATES_DIR}/common/pages/page.html"
             "--lua-filter=${TEMPLATES_DIR}/common/filters/page-links.lua"
             -M "zeta_page_depth=${depth}"

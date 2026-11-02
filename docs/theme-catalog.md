@@ -200,3 +200,13 @@ The CSS of the three horror themes now limits **the actual prose** independently
 These values are a **provisional optical baseline**, not a claim of a verified real-world characters-per-line measurement. They keep left-aligned body text, preserve the centered editorial presentation and allow a shorter, viewport-limited line on phones. Reliquary expands its outer folio to `54rem` while independently limiting its prose, avoiding the old narrow text area created by large interior padding. The same rhythm is used on Markdown-only pages where applicable.
 
 Recommended manual check: a full Spanish narrative on a desktop at 1366px and 1920px, on mobile at 375px, and at 200% browser zoom; test prose with punctuation, dialogue, chapter headings, lists and long words. Confirm that there is no horizontal page overflow, chapter headings remain discoverable in the text (no TOC), and the eye can return comfortably to the next line. User-supplied site CSS retains final precedence so the measure can be overridden if desired.
+
+## Contextual navigation policy
+
+Both Bash and PowerShell now share `templates/common/filters/toc-policy.lua`. A TOC follows the current heading on wide screens and remains inside the reading flow on narrow screens; Markdown-only pages use a native `details` disclosure.
+
+- Active with H2/H3 headings: `zen`, `console`, `organization`, `indie`.
+- Contextual when there are at least three H2/H3 headings and 800 words: `aurora`, `paper`, `gazette`, `magazine`, `folio`.
+- Disabled by default: `brutalist`, `nocturne`, `liminal`, `reliquary`.
+
+Frontmatter `toc: true` forces a TOC when headings exist, `toc: false` prevents it, and `toc: auto` follows the theme defaults. The homepage never has a TOC. The existing `zeta-toc.js` handles highlighting without a framework.
