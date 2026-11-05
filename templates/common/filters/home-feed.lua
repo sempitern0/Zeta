@@ -1,5 +1,8 @@
 -- Zeta homepage article feed: runs on staged HTML, never on Markdown sources.
-local function m(x) return pandoc.utils.stringify(x or '') end
+local function m(x)
+ if type(x)=='boolean' then return x and 'true' or 'false' end
+ return pandoc.utils.stringify(x or '')
+end
 local function read(p) local f=io.open(p,'rb'); if not f then return nil end; local s=f:read('*a');f:close();return s end
 local function write(p,s) local f=assert(io.open(p,'wb'));assert(f:write(s));assert(f:close()) end
 local function plain(s) return tostring(s or ''):gsub('<[^>]*>','') end

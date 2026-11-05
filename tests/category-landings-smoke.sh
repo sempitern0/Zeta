@@ -20,7 +20,7 @@ nav: true
 ---
 # About page marker
 MD
-for theme in music cuisine spirituality photography store services; do
+for theme in music cuisine spirituality photography store services academy; do
 cat > "$site/config.yaml" <<YAML
 site:
   title: "Category demo"

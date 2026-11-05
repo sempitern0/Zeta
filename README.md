@@ -17,7 +17,7 @@ Zeta turns Markdown into a complete, deployable website while keeping authorship
 
 - **Two native assistants:** Bash 4.3+ on Linux/macOS and PowerShell 7+ on Windows, with interactive menus and direct commands.
 - **Markdown-first:** pages, blog articles and metadata remain editable files under `sites/`.
-- **Nineteen distinct themes:** `zen`, `paper`, `console`, `indie`, `organization`, `brutalist`, `folio` and `aurora`, plus editorial, horror and category-specific landing layouts.
+- **Twenty distinct themes:** `zen`, `paper`, `console`, `indie`, `organization`, `brutalist`, `folio` and `aurora`, plus editorial, horror and category-specific landing layouts.
 - **Reader-friendly articles:** Pandoc-generated contents navigation with theme-specific styling, a sticky desktop sidebar and a smaller-screen fallback.
 - **Built-in publishing essentials:** navigation, category/tag archives, related articles, RSS/Atom, sitemaps, canonical URLs and structured metadata.
 - **Portable static output:** publish generated HTML, CSS and local assets to any compatible static host. No CMS or server-side runtime is needed.
@@ -122,12 +122,12 @@ Switch themes without rewriting your Markdown:
 ~~~bash
 ./zeta.sh theme my-site aurora zenburn
 ./zeta.sh fonts my-site recommended  # Optional local open-source coding font
-./zeta.sh dashboard                  # Browse the nineteen theme previews
+./zeta.sh dashboard                  # Browse the twenty theme previews
 ~~~
 
 PowerShell equivalents use `.\zeta.ps1`. Fonts are optional and stored locally. The selected theme also styles Markdown pages and article contents navigation. Read the [theme catalog](docs/theme-catalog.md) and [landing guide](docs/landing-themes.md) for layouts, configuration and CSS overrides.
 
-Category landing themes include `music`, `cuisine`, `spirituality`, `photography`, `store` and `services`. Set `homepage.layout: theme` in `config.yaml` to use the themed landing while keeping Markdown About and Contact pages. See the [landing guide](docs/landing-themes.md).
+Category landing themes include `music`, `cuisine`, `spirituality`, `photography`, `store`, `services` and `academy`. Set `homepage.layout: theme` in `config.yaml` to use the themed landing while keeping Markdown About and Contact pages. See the [landing guide](docs/landing-themes.md).
 
 ## Shared commands
 
@@ -162,7 +162,7 @@ Zeta stages builds before replacing the published output; a failed build preserv
 | [Terminal assistant](docs/terminal-assistant.md) | Menu navigation and command behavior |
 | [Markdown pages](docs/pages.md) | Navigation, frontmatter, drafts and clean URLs |
 | [Advanced content](docs/advanced-content.md) | Categories, tags and related content |
-| [Theme catalog](docs/theme-catalog.md) | All nineteen themes, fonts and article contents |
+| [Theme catalog](docs/theme-catalog.md) | All twenty themes, fonts and article contents |
 | [Landing pages](docs/landing-themes.md) | Hero content, calls to action and project cards |
 | [PowerShell](docs/powershell.md) | Native Windows setup and troubleshooting |
 | [SEO](docs/seo.md) | Canonicals, structured data, sitemaps and feeds |

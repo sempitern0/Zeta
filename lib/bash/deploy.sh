@@ -72,12 +72,12 @@ zeta_deploy_validate() {
         github-pages)
             zeta_deploy_read_file "$file" repository || return 1; repo="$ZETA_DEPLOY_VALUE"
             zeta_deploy_read_file "$file" branch || return 1; branch="$ZETA_DEPLOY_VALUE"
-            zeta_deploy_valid_repo "$repo" && zeta_deploy_valid_branch "$branch" || { msg_error 'Invalid GitHub Pages destination'; return 1; }
+            if ! zeta_deploy_valid_repo "$repo" || ! zeta_deploy_valid_branch "$branch"; then msg_error 'Invalid GitHub Pages destination'; return 1; fi
             ;;
         cloudflare-pages)
             zeta_deploy_read_file "$file" project || return 1; project="$ZETA_DEPLOY_VALUE"
             zeta_deploy_read_file "$file" account || return 1; account="$ZETA_DEPLOY_VALUE"
-            zeta_deploy_valid_slug "$project" && [[ -z "$account" || "$account" =~ ^[a-fA-F0-9]{32}$ ]] || { msg_error 'Invalid Cloudflare destination'; return 1; }
+            if ! zeta_deploy_valid_slug "$project" || [[ -n "$account" && ! "$account" =~ ^[a-fA-F0-9]{32}$ ]]; then msg_error 'Invalid Cloudflare destination'; return 1; fi
             ;;
         *) return 1 ;;
     esac
@@ -102,11 +102,11 @@ zeta_deploy_setup() {
     if [[ "$provider" == github-pages ]]; then
         read -rp "GitHub repository (owner/repository) [$repo]: " choice; repo="${choice:-$repo}"
         read -rp "Publishing branch [${branch:-gh-pages}]: " choice; branch="${choice:-${branch:-gh-pages}}"
-        zeta_deploy_valid_repo "$repo" && zeta_deploy_valid_branch "$branch" || { msg_error 'Invalid repository or branch'; return 1; }
+        if ! zeta_deploy_valid_repo "$repo" || ! zeta_deploy_valid_branch "$branch"; then msg_error 'Invalid repository or branch'; return 1; fi
     else
         read -rp "Cloudflare Pages project [$project]: " choice; project="${choice:-$project}"
         read -rp 'Cloudflare account ID (optional): ' choice; account="${choice:-$account}"
-        zeta_deploy_valid_slug "$project" && [[ -z "$account" || "$account" =~ ^[a-fA-F0-9]{32}$ ]] || { msg_error 'Invalid Cloudflare project or account'; return 1; }
+        if ! zeta_deploy_valid_slug "$project" || [[ -n "$account" && ! "$account" =~ ^[a-fA-F0-9]{32}$ ]]; then msg_error 'Invalid Cloudflare project or account'; return 1; fi
     fi
     printf '\nProvider: %s\n' "$provider"
     if [[ "$provider" == github-pages ]]; then printf 'Destination: %s (%s)\n' "$repo" "$branch"
@@ -141,7 +141,7 @@ zeta_deploy_status() {
     done
 }
 zeta_deploy_choose() {
-    local site="$1" requested="$2" available=() selection answer provider index
+    local site="$1" requested="${2:-}" available=() selection answer provider index
     ZETA_DEPLOY_SELECTED=()
     mapfile -t available < <(zeta_deploy_targets "$site")
     (("${#available[@]}" > 0)) || { msg_error "No destinations. Configure one: ./zeta.sh deploy setup $site"; return 1; }

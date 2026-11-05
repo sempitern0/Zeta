@@ -20,7 +20,7 @@ Both read the same `config.yaml`, Markdown articles and `templates/` and generat
 ~~~bash
 make syntax
 make test-tooling  # Lint failure propagation and staged-only hook checks
-make test          # All Bash regressions, including all eight themes
+make test          # All Bash regressions, including all twenty themes
 ./zeta.sh help
 ./main.sh help    # Legacy entry point
 ~~~
@@ -45,7 +45,7 @@ These tests run **locally**, with no GitHub Actions minutes or Docker required.
 
 ## Gallery and font verification
 
-Both assistants render the same shared, responsive workspace gallery via `templates/common/workspace/`. All eight samples are static HTML/CSS, requiring no JavaScript or network requests. Optional font recommendations are mapped by theme in each native shell; installation downloads a local licensed coding font only when requested. Validate generated output in Firefox, Chromium and Safari (desktop/mobile) for final visual confirmation; command-line smoke tests cannot establish pixel-perfect browser behavior.
+Both assistants render the same shared, responsive workspace gallery via `templates/common/workspace/`. All twenty samples are static HTML/CSS, requiring no JavaScript or network requests. Optional font recommendations are mapped by theme in each native shell; installation downloads a local licensed coding font only when requested. Validate generated output in Firefox, Chromium and Safari (desktop/mobile) for final visual confirmation; command-line smoke tests cannot establish pixel-perfect browser behavior.
 
 ## Source layout
 
@@ -64,7 +64,7 @@ See also [Windows setup](powershell.md) and [deployment](deployment.md).
 
 ## Markdown multipage regressions
 
-Run `bash tests/pages-bash-smoke.sh` or `.\tests\pages-powershell-smoke.ps1` for blog-free static site builds in each of the eight themes. The smoke tests assert clean URLs, relative Markdown links, draft exclusion and sitemap entries. These are local tests; GitHub Actions are not needed.
+Run `bash tests/pages-bash-smoke.sh` or `.\tests\pages-powershell-smoke.ps1` for blog-free static site builds in each of the twenty themes. The smoke tests assert clean URLs, relative Markdown links, draft exclusion and sitemap entries. These are local tests; GitHub Actions are not needed.
 
 ## Doctor 2.0: Markdown source integrity
 
@@ -137,9 +137,34 @@ No GitHub Actions or third-party web service is required.
 - Fixed Bash site creation duplicating About/Contact Markdown when templates have
   no site placeholders. The workspace regression compares those pages with their sources.
 - `make test-tooling` checks the lint/hook contract using a stub checker;
-  `make test` runs all nine Bash smoke scripts, including the eight-theme builds,
+  `make test` runs all nine Bash smoke scripts, including the twenty-theme builds,
   pages, taxonomy, SEO, Doctor and the interactive creation workflow. Both passed.
 
 ShellCheck itself and PowerShell were unavailable in the review environment, so
 these results do not claim a real ShellCheck pass or native Windows parity. The
 PowerShell engine was not changed. Run its existing suite on a suitable host.
+
+## All-theme native parity regression
+
+`make test-parity` (or `python3 tests/theme-parity.py`) requires Bash, PowerShell 7,
+Python 3 and Pandoc on the same machine. It discovers every theme, checks its
+highlight recommendation and builds the same fixture through both engines.
+It compares stylesheet ordering, headings, code languages and current navigation
+on the landing, archive, Markdown page and article. It also verifies skip links,
+landmarks, document language, local stylesheet targets and 4.5:1 contrast for
+declared solid page/navigation text colors. This token check does not evaluate
+computed CSS, images, gradients or user overrides. Output HTML need not
+be byte-identical. GitHub Actions runs this on Linux alongside the native
+PowerShell suites on Windows and Linux. Each PowerShell test runs in a fresh
+process, so test-local mocks cannot leak into another suite.
+
+For optional browser checks, install Playwright and Chromium, then run
+`python3 tests/theme-parity.py --browser`. Set `CHROMIUM` to a system Chromium
+executable if needed. This checks 375px/1440px overflow, keyboard skip-link order
+and matching computed syntax palettes between articles and Markdown pages.
+These checks complement, and do not replace, manual accessibility review.
+
+The Markdown page shell emits Pandoc's configured syntax CSS, matching article
+highlighting. Common layout CSS preserves the syntax foreground/background pair;
+plain code blocks still inherit the page palette. Explicit user highlight choices
+and site-local CSS retain precedence.

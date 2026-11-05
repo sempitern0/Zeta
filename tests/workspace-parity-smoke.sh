@@ -37,8 +37,8 @@ grep -Fq 'aria-labelledby="sites-heading"' "$ROOT/sites/index.html"
 grep -Fq 'Visual smoke' "$ROOT/sites/index.html"
 grep -Fq 'Ready' "$ROOT/sites/index.html"
 grep -Fq 'Accessibility and HTML' "$ROOT/sites/index.html"
-# Verify all nineteen theme samples in the generated static dashboard.
-for theme in zen paper console indie organization brutalist folio aurora gazette magazine nocturne liminal reliquary music cuisine spirituality photography store services; do
+# Verify all twenty theme samples in the generated static dashboard.
+for theme in zen paper console indie organization brutalist folio aurora gazette magazine nocturne liminal reliquary music cuisine spirituality photography store services academy; do
  grep -Fq "id=\"theme-$theme\"" "$ROOT/sites/index.html"
  grep -Fq ".sample--$theme{" "$ROOT/sites/workspace.css"
 done

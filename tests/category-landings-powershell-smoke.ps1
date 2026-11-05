@@ -2,6 +2,10 @@
 Set-StrictMode -Version Latest
 $ErrorActionPreference='Stop'
 $Root=Split-Path -Parent $PSScriptRoot
+$Templates=Join-Path $Root 'templates'
+$Sites=Join-Path $Root 'sites'
+$Utf8=[Text.UTF8Encoding]::new($false)
+. (Join-Path $Root 'lib/powershell/Dependencies.ps1')
 . (Join-Path $Root 'lib/powershell/Core.ps1')
 $site='zeta-category-ps-'+[guid]::NewGuid().ToString('N')
 $path=Join-Path $Root "sites/$site"
@@ -9,7 +13,7 @@ try{
  New-Item -ItemType Directory -Force -Path (Join-Path $path 'pages'),(Join-Path $path 'posts')|Out-Null
  [IO.File]::WriteAllText((Join-Path $path 'pages/index.md'),"---`ntitle: Home`nnav: true`n---`n# Markdown homepage marker`n")
  [IO.File]::WriteAllText((Join-Path $path 'pages/about.md'),"---`ntitle: About`nnav: true`n---`n# About page marker`n")
- foreach($theme in @('music','cuisine','spirituality','photography','store','services')){
+ foreach($theme in @('music','cuisine','spirituality','photography','store','services','academy')){
   $yaml=@"
 site:
   title: "Category"

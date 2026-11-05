@@ -4,7 +4,9 @@ set -euo pipefail
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)"
 tmp="$(mktemp -d)"
 trap 'rm -rf -- "$tmp"' EXIT
-# The downloader only needs the sites module; no network is necessary.
+# Load the downloader and its common helpers; no network is necessary.
+# shellcheck source=../lib/bash/common.sh
+source "$ROOT/lib/bash/common.sh"
 # shellcheck source=../lib/bash/sites.sh
 source "$ROOT/lib/bash/sites.sh"
 printf 'font fixture\n' > "$tmp/CascadiaCode[wght].ttf"

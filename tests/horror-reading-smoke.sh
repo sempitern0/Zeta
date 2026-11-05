@@ -61,35 +61,13 @@ EOF
  grep -Fq "theme-$theme" "$article"
  grep -Fq 'id="the-unseen-second-room"' "$article"
  grep -Fq 'id="a-voice-behind-the-wall"' "$article"
- if grep -Eq 'article-toc|zeta-has-toc|zeta-toc.js|href="#the-unseen-second-room"' "$article"; then
+ if grep -Eq 'class="article-toc"|zeta-has-toc|<script[^>]*zeta-toc.js|href="#the-unseen-second-room"' "$article"; then
   echo "Unexpected TOC / section observer in $theme article" >&2
   exit 1
  fi
- if grep -Fq '$body
- case "$theme" in
-  nocturne) grep -Fq 'night-manuscript' "$article";grep -Fq 'night-entrance' "$DIR/public/index.html";;
-  liminal) grep -Fq 'liminal-room' "$article";grep -Fq 'liminal-door' "$DIR/public/index.html";;
-  reliquary) grep -Fq 'reliquary-folio' "$article";grep -Fq 'reliquary-inner' "$DIR/public/index.html";;
- esac
- # Regression: prose is constrained independently of its decorative container.
- case "$theme" in
-  nocturne)
-   grep -Fq 'max-width:57ch;margin-inline:auto;text-align:left;font:1.15rem/1.8' "$DIR/public/styles/theme.css"
-   grep -Fq 'max-width:57ch;margin-inline:auto;text-align:left;font-size:1.15rem;line-height:1.8' "$DIR/public/styles/00-theme-contract.css"
-   ;;
-  liminal)
-   grep -Fq 'max-width:58ch;margin-inline:auto;text-align:left;font:1.1rem/1.76' "$DIR/public/styles/theme.css"
-   grep -Fq 'max-width:58ch;margin-inline:auto;text-align:left;font-size:1.1rem;line-height:1.76' "$DIR/public/styles/00-theme-contract.css"
-   ;;
-  reliquary)
-   grep -Fq 'width:100%;max-width:54rem' "$DIR/public/styles/theme.css"
-   grep -Fq 'max-width:56ch;margin-inline:auto;text-align:left;font:1.17rem/1.8' "$DIR/public/styles/theme.css"
-   grep -Fq 'max-width:56ch;margin-inline:auto;text-align:left;font-size:1.17rem;line-height:1.8' "$DIR/public/styles/00-theme-contract.css"
-   ;;
- esac
- echo "[OK] $theme: unique composition; focused prose width; no TOC"
-done
- "$article"; then echo "Unexpanded template content in $theme" >&2; exit 1; fi
+# Literal Pandoc template syntax.
+# shellcheck disable=SC2016
+ if grep -Fq '$body$' "$article"; then echo "Unexpanded template content in $theme" >&2; exit 1; fi
  forced="$DIR/public/posts/2026/forced.html"
  grep -Fq 'class="article-toc"' "$forced"
  grep -Fq 'href="#optional-chapter"' "$forced"

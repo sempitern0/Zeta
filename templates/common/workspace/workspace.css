@@ -94,3 +94,8 @@ a{color:var(--accent);text-underline-offset:.2em}a:focus-visible{outline:3px sol
 .sample--photography{--sample-bg:#151718;--sample-fg:#f4f1e9;--sample-muted:#b5bcb9;--sample-accent:#e9d6af;--sample-panel:#252b2b}
 .sample--store{--sample-bg:#f6f1e9;--sample-fg:#2b3533;--sample-muted:#65716a;--sample-accent:#2d6558;--sample-panel:#fffdf9}
 .sample--services{--sample-bg:#0b1c2b;--sample-fg:#f0f7fa;--sample-muted:#b4c8d2;--sample-accent:#86d9d0;--sample-panel:#152f40}
+
+.sample--academy{--sample-bg:#f6f8fc;--sample-fg:#172a46;--sample-muted:#405573;--sample-accent:#234f9b;--sample-panel:#e7edf7}
+
+.sample--gazette{--sample-bg:#f8f5ee;--sample-fg:#27211f;--sample-muted:#655b55;--sample-accent:#823535;--sample-panel:#eee8dc;font-family:Georgia,serif}
+.sample--magazine{--sample-bg:#fff9ed;--sample-fg:#271b27;--sample-muted:#6b5367;--sample-accent:#97345e;--sample-panel:#f6eada}

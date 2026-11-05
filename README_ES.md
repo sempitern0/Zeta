@@ -17,7 +17,7 @@ Zeta convierte Markdown en un sitio web completo y publicable, manteniendo el co
 
 - **Dos asistentes nativos:** Bash 4.3+ en Linux/macOS y PowerShell 7+ en Windows, con menús interactivos y comandos directos.
 - **Markdown como fuente:** páginas, artículos y metadatos se conservan como archivos editables dentro de `sites/`.
-- **diecinueve temas con personalidad:** `zen`, `paper`, `console`, `indie`, `organization`, `brutalist`, `folio` y `aurora`, con diseños responsive.
+- **veinte temas con personalidad:** `zen`, `paper`, `console`, `indie`, `organization`, `brutalist`, `folio` y `aurora`, con diseños responsive.
 - **Lectura cómoda:** índices generados por Pandoc, estilos propios de cada tema, barra lateral fija en escritorio y alternativa para móvil.
 - **Publicación completa:** navegación, archivos de categorías y etiquetas, artículos relacionados, RSS/Atom, sitemaps, URLs canónicas y metadatos estructurados.
 - **HTML estático y portable:** publica HTML, CSS y recursos locales en cualquier alojamiento estático compatible, sin CMS ni runtime de servidor.
@@ -122,7 +122,7 @@ Cambia de tema sin reescribir el contenido Markdown:
 ~~~bash
 ./zeta.sh theme my-site aurora zenburn
 ./zeta.sh fonts my-site recommended  # Fuente de código abierto local y opcional
-./zeta.sh dashboard                  # Galería de los diecinueve temas
+./zeta.sh dashboard                  # Galería de los veinte temas
 ~~~
 
 En PowerShell utiliza `.\zeta.ps1`. Las fuentes son opcionales y se almacenan localmente. El tema elegido también afecta a las páginas Markdown y al índice lateral de los artículos. Consulta el [catálogo de temas](docs/theme-catalog.md) y la [guía de landings](docs/landing-themes.md) para diseños, configuración y CSS.
@@ -160,7 +160,7 @@ Zeta genera primero en un directorio temporal; si falla, mantiene la salida publ
 | [Asistente de terminal](docs/terminal-assistant.md) | Menús y comportamiento de comandos |
 | [Páginas Markdown](docs/pages.md) | Navegación, frontmatter, borradores y URLs |
 | [Contenido avanzado](docs/advanced-content.md) | Categorías, etiquetas y artículos relacionados |
-| [Catálogo de temas](docs/theme-catalog.md) | Los diecinueve temas, fuentes e índices |
+| [Catálogo de temas](docs/theme-catalog.md) | Los veinte temas, fuentes e índices |
 | [Landings](docs/landing-themes.md) | Cabeceras, llamadas a la acción y tarjetas |
 | [PowerShell](docs/powershell.md) | Instalación nativa en Windows y diagnóstico |
 | [SEO](docs/seo.md) | URLs canónicas, metadatos, sitemaps y feeds |
@@ -188,4 +188,4 @@ Zeta puede mostrar artículos recientes en `pages/index.md` mediante `homepage.s
 
 ### Nuevas landing pages por categoría
 
-Zeta incluye `music`, `cuisine`, `spirituality`, `photography`, `store` y `services`. Configura `homepage.layout: theme` en `config.yaml` para conservar las páginas Markdown secundarias y utilizar la portada visual del tema. Consulta [la guía de landing pages](docs/landing-themes.md).
+Zeta incluye `music`, `cuisine`, `spirituality`, `photography`, `store`, `services` y `academy`. Configura `homepage.layout: theme` en `config.yaml` para conservar las páginas Markdown secundarias y utilizar la portada visual del tema. Consulta [la guía de landing pages](docs/landing-themes.md).

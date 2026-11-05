@@ -30,7 +30,7 @@ build:
  $path=Join-Path $siteDir 'config.yaml'
  Save $path $yaml
  $script:choices=[Collections.Generic.Queue[string]]::new()
- $script:choices.Enqueue('2')
+ $script:choices.Enqueue(([array]::IndexOf(@(Themes), 'brutalist') + 1).ToString())
  $script:choices.Enqueue('1')
  $script:choices.Enqueue('N')
  function Read-Host {
