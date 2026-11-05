@@ -281,8 +281,9 @@ function Build([string]$name){
    $pageTemplate=Get-ZetaTemplate $theme $tpl.Name
    $pandocOptions=@('-f','markdown','-t','html5','--standalone','--quiet','--template',$pageTemplate)
    $pandocOptions+=@('--defaults',$defaultsPath)
-   if($pagesMode -and $tpl.Name -eq 'posts.html'){
-    $pandocOptions+=@('-V',('page_navigation='+(Get-ZetaPageNavigation $name './' 'blog' $blogEnabled)))
+   if($pagesMode -and $tpl.Name -in @('posts.html','index.html')){
+    $active=if($tpl.Name -eq 'index.html'){'index'}else{'blog'}
+    $pandocOptions+=@('-V',('page_navigation='+(Get-ZetaPageNavigation $name './' $active $blogEnabled)))
    }
    $pandocOptions+=@(Styles $c.theme $dir '')
    $pandocOptions+=@('-o',(Join-Path $stage $tpl.Name))
@@ -413,7 +414,6 @@ function Get-ZetaPageNavigation([string]$name,[string]$prefix,[string]$active,[b
  $entries=[Collections.Generic.List[object]]::new()
  foreach($file in @(Get-ChildItem -LiteralPath $pages -Filter '*.md' -File)) {
   $slug=$file.BaseName
-  if($slug -eq 'index' -and $homepageLayout -eq 'theme'){continue}
   if($slug -notmatch '^[a-z0-9]+(-[a-z0-9]+)*$' -or $slug -in @('posts','blog')){throw "Invalid page: $slug"}
   if((Meta $file.FullName draft) -eq 'true' -or (Meta $file.FullName nav) -eq 'false'){continue}
   $title=Meta $file.FullName menu_title
@@ -443,6 +443,7 @@ function Render-ZetaPages([string]$name,[string]$stage,[hashtable]$c,[bool]$blog
  $sourceFiles=@(Get-ChildItem -LiteralPath $pages -Filter '*.md' -File | Sort-Object Name)
  foreach($file in $sourceFiles){
   $slug=$file.BaseName
+  if($slug -eq 'index' -and $homepageLayout -eq 'theme'){continue}
   if($slug -notmatch '^[a-z0-9]+(-[a-z0-9]+)*$' -or $slug -in @('posts','blog')){throw "Invalid or reserved Markdown page: $slug"}
   if((Meta $file.FullName draft) -eq 'true'){
    if($slug -eq 'index'){throw 'The homepage cannot be a draft'}

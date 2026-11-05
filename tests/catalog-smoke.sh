@@ -47,7 +47,7 @@ EOF
  grep -Fq 'Catalog Example' "$DIR/public/posts/2026/demo.html"
  grep -Fq '<html lang="en">' "$DIR/public/index.html"
  case "$theme" in
-  brutalist|folio|aurora|nocturne|liminal|reliquary|gazette|magazine)
+  brutalist|folio|aurora|nocturne|liminal|reliquary)
    [[ -s "$DIR/public/styles/catalog.css" && -s "$DIR/public/styles/theme.css" ]]
    grep -Fq "theme-$theme" "$DIR/public/index.html"
    grep -Fq 'About this project' "$DIR/public/index.html"
