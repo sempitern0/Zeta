@@ -1,4 +1,4 @@
-# Landing themes · indie and organization
+# Landing themes · categories and portfolios
 
 [← All themes](theme-catalog.md)
 
@@ -57,3 +57,38 @@ Without `external_url`, the card links to the article's generated page. With it,
 Both themes provide responsive layouts and keyboard navigation; no live GitHub API is required. Publish only the generated `public/` folder.
 
 **Related:** [deployment](deployment.md) · [Windows setup](powershell.md).
+
+
+## Category landing designs
+
+Six category themes follow the existing Pandoc template contract. They work in Bash and PowerShell without extra frontend dependencies, external fonts or JavaScript.
+
+| Theme | Use case | Visual treatment |
+| --- | --- | --- |
+| `music` | Artists, albums, live shows | Vinyl record and dark stage |
+| `cuisine` | Chefs, recipes, restaurants | Warm recipe paper |
+| `spirituality` | Mindfulness and reflection | Soft circular aura |
+| `photography` | Photography portfolios | Framed imagery |
+| `store` | Boutique collections | Product display |
+| `services` | Agencies and consultancies | Structured technical grid |
+
+### Display a themed homepage with Markdown pages
+
+Zeta's creation wizard generates `pages/index.md`, which normally takes priority over a theme's designed homepage. To display the themed landing while retaining Markdown pages such as About and Contact, use:
+
+```yaml
+homepage:
+  layout: theme  # Default is markdown
+  show_posts: false
+```
+
+`homepage.layout` accepts `markdown` (default) or `theme`. Invalid values fail the build. The file `pages/index.md` stays on disk and is not overwritten. Switching back to `markdown` restores its published content on the next build. The hero uses your `landing.md` and `landing.yaml`; when no hero image is provided, a built-in CSS illustration appears. For a design-led landing, set `homepage.show_posts: false` to avoid inserting a separate feed into the hero.
+
+```bash
+./zeta.sh theme my-site music zenburn
+./zeta.sh build my-site
+./zeta.sh doctor my-site
+./zeta.sh dashboard
+```
+
+Both assistants discover themes from their directories automatically. The dashboard now includes an example for each of the six categories. Store and services are visual starting points, not e-commerce checkout or appointment-booking engines. Link CTAs to external providers as needed.

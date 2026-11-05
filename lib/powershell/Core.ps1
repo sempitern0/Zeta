@@ -270,7 +270,7 @@ function Build([string]$name){
   $blogEnabled=(-not $pagesMode) -or ((Yaml (ConfigPath $name) build blog 'true') -ne 'false')
   $homepageLayout=Yaml (ConfigPath $name) homepage layout 'markdown'
   if($homepageLayout -notin @('markdown','theme')){throw 'homepage.layout must be markdown or theme'}
-  $vars['blog_enabled']=$blogEnabled.ToString().ToLowerInvariant()
+  if($blogEnabled){$vars['blog_enabled']='true'}
   # Keep generated HTML out of native arguments (Windows has a 32K command-line limit).
   # Pandoc defaults variables preserve raw HTML, unlike Markdown metadata.
   $defaultsPath=Join-Path $stage '.zeta-template-defaults.json'

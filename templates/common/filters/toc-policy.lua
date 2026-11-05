@@ -1,6 +1,6 @@
 -- Shared TOC policy; the 'toc' metadata field is reserved by Pandoc.
-local always={zen=true,console=true,organization=true,indie=true}
-local contextual={aurora=true,paper=true,gazette=true,magazine=true,folio=true}
+local always={zen=true,console=true,organization=true,indie=true,services=true}
+local contextual={aurora=true,paper=true,gazette=true,magazine=true,folio=true,music=true,cuisine=true,spirituality=true,photography=true,store=true}
 local function flag(v)
  if v==nil then return nil end
  if type(v)=='boolean' then return v and 'true' or 'false' end

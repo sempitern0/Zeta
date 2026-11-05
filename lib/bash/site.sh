@@ -625,7 +625,7 @@ build_site() {
             -V "hero_alt=$(html_escape "$landing_hero_alt")"
             -V "landing_content=${landing_content}"
         )
-        page_opts+=(-V "blog_enabled=$blog_enabled")
+        [[ "$blog_enabled" == true ]] && page_opts+=(-V "blog_enabled=true")
         if [[ "$pages_mode" == true && ( "$base_html" == posts.html || "$base_html" == index.html ) ]]; then
             local archive_nav
             archive_nav=$(zeta_pages_navigation "$site_dir" "./" "$([[ "$base_html" == index.html ]] && printf index || printf blog)" "$blog_enabled")
