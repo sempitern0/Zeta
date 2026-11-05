@@ -1,0 +1,17 @@
+/* Scoped spirituality landing theme. Shared layout comes from landing.css. */
+body.theme-spirituality{--bg:#f1ede9;--panel:#fbf8f4;--border:#d8c9d9;--text-main:#302e3f;--text-muted:#676178;--accent:#78618d;--accent-cyan:#554566;--surface:#fbf8f4;--focus-ring:#78618d;--font-sans:system-ui,-apple-system,"Segoe UI",sans-serif}
+.theme-spirituality .header{background:#fbf8f4}
+.theme-spirituality .hero-grid{min-height:35rem;gap:clamp(2rem,6vw,7rem)}
+.theme-spirituality .hero h1{max-width:13ch;font-size:clamp(3.2rem,7vw,7.5rem);line-height:1.02;letter-spacing:-.065em}
+.theme-spirituality .lead{color:#676178;max-width:53ch}
+.theme-spirituality .primary{background:#78618d;color:#f1ede9;border-color:#78618d}
+.theme-spirituality .secondary{border-color:#d8c9d9;color:#302e3f;background:transparent}
+.theme-spirituality .art{position:relative;min-height:26rem;overflow:hidden;display:grid;place-content:center;border:1px solid #d8c9d9;background:#fbf8f4}
+.theme-spirituality .art-placeholder{transform:none;color:#78618d;font-weight:800;letter-spacing:-.055em;text-align:center}
+.theme-spirituality .art img{width:100%;height:100%;max-height:32rem;object-fit:cover}
+.theme-spirituality .info{border-top:1px solid #d8c9d9}
+.theme-spirituality .updates{background:#fbf8f4}
+.theme-spirituality .card{background:#f1ede9;border-color:#d8c9d9}
+.theme-spirituality a:focus-visible{outline:3px solid #78618d;outline-offset:4px}
+.theme-spirituality .hero{background:radial-gradient(circle at 80% 48%,#e6d9e6,transparent 43%),#f1ede9}.theme-spirituality .hero h1{font-family:Georgia,serif;font-weight:400}.theme-spirituality .art{border-radius:50% 50% 6rem 6rem;background:radial-gradient(circle at 50% 40%,#fdf9f2 0 19%,#ded3e4 20% 39%,#b7a3c8 40% 41%,#e8e0e8 42%);border:0}.theme-spirituality .btn{border-radius:100px}
+@media(max-width:48rem){.theme-spirituality .hero-grid{min-height:0}.theme-spirituality .art{min-height:17rem;aspect-ratio:auto;transform:none;border-width:3px}.theme-spirituality .hero h1{font-size:clamp(2.8rem,10vw,4.3rem)}}

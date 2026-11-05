@@ -462,6 +462,9 @@ build_site() {
         fi
     fi
     local pages_mode=false blog_enabled=true
+    local homepage_layout
+    homepage_layout=$(get_site_yaml_prop "$config_file" homepage layout markdown)
+    case "$homepage_layout" in markdown|theme) ;; *) msg_error "homepage.layout must be markdown or theme"; rm -rf -- "$staging_dir"; return 1 ;; esac
     if [[ -d "${site_dir}/pages" || -L "${site_dir}/pages" ]]; then
         if ! ensure_zeta_page_home "$site_dir" "$config_file"; then
             rm -rf -- "$staging_dir"
@@ -599,7 +602,7 @@ build_site() {
         base_html=$(basename "$html_file")
         case "$base_html" in
             article.html|post_link.html) continue ;;
-            index.html) [[ "$pages_mode" == true ]] && continue ;;
+            index.html) [[ "$pages_mode" == true && "$homepage_layout" != theme ]] && continue ;;
             posts.html) [[ "$pages_mode" == true && "$blog_enabled" == false ]] && continue ;;
         esac
 
@@ -622,9 +625,10 @@ build_site() {
             -V "hero_alt=$(html_escape "$landing_hero_alt")"
             -V "landing_content=${landing_content}"
         )
-        if [[ "$pages_mode" == true && "$base_html" == posts.html ]]; then
+        page_opts+=(-V "blog_enabled=$blog_enabled")
+        if [[ "$pages_mode" == true && ( "$base_html" == posts.html || "$base_html" == index.html ) ]]; then
             local archive_nav
-            archive_nav=$(zeta_pages_navigation "$site_dir" "./" blog "$blog_enabled")
+            archive_nav=$(zeta_pages_navigation "$site_dir" "./" "$([[ "$base_html" == index.html ]] && printf index || printf blog)" "$blog_enabled")
             page_opts+=(-V "page_navigation=${archive_nav}")
         fi
         append_css_vars page_opts "" "${theme_dir}/styles" "${site_dir}/styles"
@@ -636,7 +640,7 @@ build_site() {
     done < <(find "$theme_dir" -maxdepth 1 -type f -name '*.html' -print | sort)
 
     if [[ "$pages_mode" == true ]]; then
-        if ! zeta_render_markdown_pages "$site_dir" "$output_dir" "$site_url" "$theme_dir" "$site_title" "$site_desc" "$site_author" "$site_lang" "$blog_enabled" "$site_theme"; then
+        if ! zeta_render_markdown_pages "$site_dir" "$output_dir" "$site_url" "$theme_dir" "$site_title" "$site_desc" "$site_author" "$site_lang" "$blog_enabled" "$site_theme" "$homepage_layout"; then
             rm -rf -- "$staging_dir"
             return 1
         fi
@@ -834,7 +838,7 @@ zeta_pages_navigation() {
 zeta_render_markdown_pages() {
     local site_dir="$1" output_dir="$2" site_url="$3" theme_dir="$4"
     local site_title="$5" site_desc="$6" site_author="$7" site_lang="$8" blog_enabled="$9"
-    local theme_name="${10}"
+    local theme_name="${10}" homepage_layout="${11:-markdown}"
     local pages_dir="${site_dir}/pages" source slug draft title desc destination prefix canonical depth nav
     [[ -f "${pages_dir}/index.md" && ! -L "${pages_dir}/index.md" ]] || {
         msg_error "pages/index.md is required for a Markdown-driven site."; return 1
@@ -850,6 +854,7 @@ zeta_render_markdown_pages() {
             msg_error "Reserved page slug: $slug"; return 1
         fi
         draft=$(extract_frontmatter_property "$source" draft 2>/dev/null || true)
+        [[ "$slug" == index && "$homepage_layout" == theme ]] && continue
         if [[ "$draft" == "true" ]]; then
             [[ "$slug" != "index" ]] || { msg_error "The homepage cannot be a draft."; return 1; }
             continue

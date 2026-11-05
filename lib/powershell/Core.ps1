@@ -268,12 +268,15 @@ function Build([string]$name){
   $pagesDir=Join-Path $dir 'pages'
   $pagesMode=Test-Path -LiteralPath (Join-Path $pagesDir 'index.md') -PathType Leaf
   $blogEnabled=(-not $pagesMode) -or ((Yaml (ConfigPath $name) build blog 'true') -ne 'false')
+  $homepageLayout=Yaml (ConfigPath $name) homepage layout 'markdown'
+  if($homepageLayout -notin @('markdown','theme')){throw 'homepage.layout must be markdown or theme'}
+  $vars['blog_enabled']=$blogEnabled.ToString().ToLowerInvariant()
   # Keep generated HTML out of native arguments (Windows has a 32K command-line limit).
   # Pandoc defaults variables preserve raw HTML, unlike Markdown metadata.
   $defaultsPath=Join-Path $stage '.zeta-template-defaults.json'
   Save $defaultsPath (@{variables=$vars} | ConvertTo-Json -Depth 10)
   foreach($tpl in (Get-ChildItem $theme -Filter '*.html' -File)){
-   if($pagesMode -and ($tpl.Name -eq 'index.html' -or (-not $blogEnabled -and $tpl.Name -eq 'posts.html'))){continue}
+   if($pagesMode -and (($tpl.Name -eq 'index.html' -and $homepageLayout -ne 'theme') -or (-not $blogEnabled -and $tpl.Name -eq 'posts.html'))){continue}
    if($tpl.Name -in @('article.html','post_link.html')){continue}
    $pageTemplate=Get-ZetaTemplate $theme $tpl.Name
    $pandocOptions=@('-f','markdown','-t','html5','--standalone','--quiet','--template',$pageTemplate)
@@ -286,7 +289,7 @@ function Build([string]$name){
    Invoke-ZetaPandoc $pandocOptions
   }
   Remove-Item -LiteralPath $defaultsPath -Force
-  if($pagesMode){Render-ZetaPages $name $stage $c $blogEnabled}
+  if($pagesMode){Render-ZetaPages $name $stage $c $blogEnabled $homepageLayout}
   # Post list insertion happens after the Markdown homepage, before SEO.
   $homeFilter=Join-Path $Templates 'common/filters/home-feed.lua'
   $homeMode=Yaml (ConfigPath $name) homepage show_posts auto
@@ -410,6 +413,7 @@ function Get-ZetaPageNavigation([string]$name,[string]$prefix,[string]$active,[b
  $entries=[Collections.Generic.List[object]]::new()
  foreach($file in @(Get-ChildItem -LiteralPath $pages -Filter '*.md' -File)) {
   $slug=$file.BaseName
+  if($slug -eq 'index' -and $homepageLayout -eq 'theme'){continue}
   if($slug -notmatch '^[a-z0-9]+(-[a-z0-9]+)*$' -or $slug -in @('posts','blog')){throw "Invalid page: $slug"}
   if((Meta $file.FullName draft) -eq 'true' -or (Meta $file.FullName nav) -eq 'false'){continue}
   $title=Meta $file.FullName menu_title
@@ -433,7 +437,7 @@ function Get-ZetaPageNavigation([string]$name,[string]$prefix,[string]$active,[b
  return ($links.ToArray() -join ' ')
 }
 
-function Render-ZetaPages([string]$name,[string]$stage,[hashtable]$c,[bool]$blogEnabled){
+function Render-ZetaPages([string]$name,[string]$stage,[hashtable]$c,[bool]$blogEnabled,[string]$homepageLayout='markdown'){
  $site=SiteDir $name
  $pages=Join-Path $site 'pages'
  $sourceFiles=@(Get-ChildItem -LiteralPath $pages -Filter '*.md' -File | Sort-Object Name)

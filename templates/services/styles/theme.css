@@ -1,0 +1,17 @@
+/* Scoped services landing theme. Shared layout comes from landing.css. */
+body.theme-services{color-scheme:dark;--bg:#0b1c2b;--panel:#152f40;--border:#385265;--text-main:#f0f7fa;--text-muted:#b4c8d2;--accent:#86d9d0;--accent-cyan:#86d9d0;--surface:#152f40;--focus-ring:#86d9d0;--font-sans:system-ui,-apple-system,"Segoe UI",sans-serif}
+.theme-services .header{background:#152f40}
+.theme-services .hero-grid{min-height:35rem;gap:clamp(2rem,6vw,7rem)}
+.theme-services .hero h1{max-width:13ch;font-size:clamp(3.2rem,7vw,7.5rem);line-height:1.02;letter-spacing:-.065em}
+.theme-services .lead{color:#b4c8d2;max-width:53ch}
+.theme-services .primary{background:#86d9d0;color:#0b1c2b;border-color:#86d9d0}
+.theme-services .secondary{border-color:#385265;color:#f0f7fa;background:transparent}
+.theme-services .art{position:relative;min-height:26rem;overflow:hidden;display:grid;place-content:center;border:1px solid #385265;background:#152f40}
+.theme-services .art-placeholder{transform:none;color:#86d9d0;font-weight:800;letter-spacing:-.055em;text-align:center}
+.theme-services .art img{width:100%;height:100%;max-height:32rem;object-fit:cover}
+.theme-services .info{border-top:1px solid #385265}
+.theme-services .updates{background:#152f40}
+.theme-services .card{background:#0b1c2b;border-color:#385265}
+.theme-services a:focus-visible{outline:3px solid #86d9d0;outline-offset:4px}
+.theme-services .hero{background:linear-gradient(125deg,#0b1c2b,#193a4f)}.theme-services .art{background:repeating-linear-gradient(0deg,transparent 0 3.8rem,#86d9d01a 3.8rem calc(3.8rem + 1px)),repeating-linear-gradient(90deg,transparent 0 3.8rem,#86d9d01a 3.8rem calc(3.8rem + 1px)),#152f40}.theme-services .card{border-radius:0;border-left:4px solid #86d9d0}
+@media(max-width:48rem){.theme-services .hero-grid{min-height:0}.theme-services .art{min-height:17rem;aspect-ratio:auto;transform:none;border-width:3px}.theme-services .hero h1{font-size:clamp(2.8rem,10vw,4.3rem)}}
