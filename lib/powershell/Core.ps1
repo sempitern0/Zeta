@@ -477,6 +477,9 @@ function Render-ZetaPages([string]$name,[string]$stage,[hashtable]$c,[bool]$blog
     '-V',('site_lang='+(Escape $c.language)),'-V',('site_theme='+(Escape $c.theme)),
     '-V',('page_slug='+(Escape $slug)),'-V',('canonical='+(Escape $canonical)),
     '-V',('rel_root='+$root),'-V',('page_navigation='+$pageNavigation))
+   $pageHighlightFlag='--highlight-style'
+   if(((& pandoc --help) -join [Environment]::NewLine).Contains('--syntax-highlighting')){$pageHighlightFlag='--syntax-highlighting'}
+   $opts+=("$pageHighlightFlag=$($c.highlight)")
    $opts+=@(Styles $c.theme $site $root)
    $opts+=@('-o',$dest)
   if($opts -contains '--lua-filter=' -or $opts -contains ''){throw "Pandoc received an empty argument for page: $slug"}

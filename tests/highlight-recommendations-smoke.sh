@@ -6,7 +6,9 @@ TEMPLATES_DIR="$ROOT/templates"
 source "$ROOT/lib/bash/common.sh"
 # shellcheck source=../lib/bash/sites.sh
 source "$ROOT/lib/bash/sites.sh"
-for theme in zen paper console indie organization brutalist folio aurora gazette magazine nocturne liminal reliquary; do
+for theme_dir in "$ROOT"/templates/*; do
+  [[ -f "$theme_dir/index.html" ]] || continue
+  theme="${theme_dir##*/}"
   zeta_highlight_recommend "$theme"
   [[ -n "$ZETA_HIGHLIGHT_PRIMARY" && -n "$ZETA_HIGHLIGHT_REASON" ]]
   pandoc --list-highlight-styles | grep -Fqx "$ZETA_HIGHLIGHT_PRIMARY"

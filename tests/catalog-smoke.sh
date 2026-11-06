@@ -25,7 +25,7 @@ Use **Markdown** everywhere.
 | Chromium | HTML |
 EOF
 printf '## About this project\n\nMade with **Zeta**.\n' > "$DIR/landing.md"
-for theme in zen paper console indie organization brutalist folio aurora gazette magazine nocturne liminal reliquary music cuisine spirituality photography store services; do
+for theme in zen paper console indie organization brutalist folio aurora gazette magazine nocturne liminal reliquary music cuisine spirituality photography store services academy; do
 cat > "$DIR/config.yaml" <<EOF
 site:
   title: "Catalog Smoke"

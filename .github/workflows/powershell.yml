@@ -35,6 +35,9 @@ jobs:
           }
           foreach ($test in (Get-ChildItem ./tests/*-smoke.ps1 | Sort-Object Name)) {
             Write-Host "Running $($test.Name)"
-            & $test.FullName
-            if (-not $?) { throw "Test failed: $($test.Name)" }
+            & pwsh -NoProfile -File $test.FullName
+            if ($LASTEXITCODE -ne 0) { throw "Test failed: $($test.Name)" }
           }
+      - name: Compare Bash and PowerShell publishing contracts
+        if: runner.os == 'Linux'
+        run: python3 tests/theme-parity.py

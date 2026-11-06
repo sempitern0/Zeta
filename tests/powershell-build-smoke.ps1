@@ -39,6 +39,7 @@ build:
   $post=@'
 ---
 title: "Test article"
+toc: true
 description: "A Markdown publishing test."
 category: "Godot"
 tags: [plugins, tools]

@@ -4,4 +4,4 @@
 @media(prefers-reduced-motion:reduce){body.zeta-landing{scroll-behavior:auto}.zeta-landing *,.zeta-landing *::before,.zeta-landing *::after{transition-duration:.01ms!important;animation-duration:.01ms!important}}
 
 /* Shared landing article detail styles. */
-.zeta-landing .reading .article-body{font-size:1.04rem}.zeta-landing .reading .article-body h2{color:var(--accent)}.zeta-landing .reading .article-body div.sourceCode,.zeta-landing .reading .article-body pre:not(.sourceCode){background:var(--panel)}.zeta-landing .reading .article-body thead th{background:var(--panel)}.zeta-landing .reading article{margin-bottom:3rem}
+.zeta-landing .reading .article-body{font-size:1.04rem}.zeta-landing .reading .article-body h2{color:var(--accent)}.zeta-landing .reading .article-body pre:not(.sourceCode){background:var(--panel)}.zeta-landing .reading .article-body thead th{background:var(--panel)}.zeta-landing .reading article{margin-bottom:3rem}

@@ -41,7 +41,7 @@ date: "2026-10-13"
 ---
 Should not publish.
 MD
-for theme in zen paper console indie organization brutalist folio aurora gazette magazine nocturne liminal reliquary music cuisine spirituality photography store services; do
+for theme in zen paper console indie organization brutalist folio aurora gazette magazine nocturne liminal reliquary music cuisine spirituality photography store services academy; do
 cat > "$dir/config.yaml" <<EOF
 site:
   title: "Page smoke"

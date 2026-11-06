@@ -1,0 +1,24 @@
+/* Scoped academy landing theme. Shared layout comes from landing.css. */
+body.theme-academy{color-scheme:light;--bg:#f6f8fc;--panel:#e7edf7;--border:#697a95;--text-main:#172a46;--text-muted:#405573;--accent:#234f9b;--accent-cyan:#234f9b;--surface:#e7edf7;--focus-ring:#234f9b;--font-sans:system-ui,-apple-system,"Segoe UI",sans-serif}
+.theme-academy .header{background:#e7edf7}
+.theme-academy .hero-grid{min-height:35rem;gap:clamp(2rem,6vw,7rem)}
+.theme-academy .hero h1{max-width:13ch;font-size:clamp(3.2rem,7vw,7.5rem);line-height:1.02;letter-spacing:-.065em}
+.theme-academy .lead{color:#405573;max-width:53ch}
+.theme-academy .primary{background:#234f9b;color:#f6f8fc;border-color:#234f9b}
+.theme-academy .secondary{border-color:#697a95;color:#172a46;background:transparent}
+.theme-academy .art{position:relative;min-height:26rem;overflow:hidden;display:grid;place-content:center;border:1px solid #697a95;background:#e7edf7}
+.theme-academy .art-placeholder{transform:none;color:#234f9b;font-weight:800;letter-spacing:-.055em;text-align:center}
+.theme-academy .art img{width:100%;height:100%;max-height:32rem;object-fit:cover}
+.theme-academy .info{border-top:1px solid #697a95}
+.theme-academy .updates{background:#e7edf7}
+.theme-academy .card{background:#f6f8fc;border-color:#697a95}
+.theme-academy a:focus-visible{outline:3px solid #234f9b;outline-offset:4px}
+.theme-academy .hero{background:linear-gradient(125deg,#f6f8fc,#dce7f7)}.theme-academy .art{background:repeating-linear-gradient(0deg,transparent 0 3.8rem,#234f9b1a 3.8rem calc(3.8rem + 1px)),repeating-linear-gradient(90deg,transparent 0 3.8rem,#234f9b1a 3.8rem calc(3.8rem + 1px)),#e7edf7}.theme-academy .card{border-radius:0;border-left:4px solid #234f9b}
+@media(max-width:48rem){.theme-academy .hero-grid{min-height:0}.theme-academy .art{min-height:17rem;aspect-ratio:auto;transform:none;border-width:3px}.theme-academy .hero h1{font-size:clamp(2.8rem,10vw,4.3rem)}}
+
+/* A calm study surface with ordered lesson cards. */
+.theme-academy .hero h1{letter-spacing:-.035em;max-width:14ch}
+.theme-academy .art{border-radius:1rem;background:repeating-linear-gradient(0deg,transparent 0 2.8rem,#234f9b1a 2.8rem calc(2.8rem + 1px)),#e7edf7}
+.theme-academy .cards{counter-reset:lesson}
+.theme-academy .card{counter-increment:lesson;border-radius:.6rem}
+.theme-academy .card::before{content:counter(lesson,decimal-leading-zero);font:700 1.4rem ui-monospace,monospace;color:var(--accent)}

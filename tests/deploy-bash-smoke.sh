@@ -29,7 +29,10 @@ require_site_slug() { [[ "$1" == example ]]; }
 find_site_config() { printf '%s/config.yaml\n' "$1"; }
 get_site_yaml_prop() { printf 'public\n'; }
 is_safe_relative_dir() { [[ "$1" == public ]]; }
+# Use the sourced implementation here; dispatcher mocks are defined later.
+# shellcheck disable=SC2218
 zeta_deploy_status example | grep -Fq 'example/site'
+# shellcheck disable=SC2218
 zeta_deploy_run example true > "$tmp/dry.log"
 grep -Fq 'DRY RUN:' "$tmp/dry.log"
 grep -Fq 'index.html' "$tmp/dry.log"
@@ -44,6 +47,7 @@ if zeta_deploy_status example > /dev/null 2>&1; then echo 'Invalid repository wa
 # Ensure the command dispatcher never launches setup implicitly.
 # shellcheck source=../lib/bash/cli.sh
 source "$ROOT/lib/bash/cli.sh"
+PREVIEW_PORT=8000
 zeta_deploy_run() { printf 'publish:%s:%s\n' "$1" "${2:-false}"; }
 zeta_deploy_setup() { printf 'setup:%s\n' "$1"; }
 zeta_deploy_status() { printf 'status:%s\n' "$1"; }

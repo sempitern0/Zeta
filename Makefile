@@ -71,3 +71,7 @@ test: check test-tooling ## Run all Bash smoke tests (requires Pandoc; temporary
 		[ "$$file" = tests/tooling-smoke.sh ] && continue; \
 		bash "$$file"; \
 	done
+
+.PHONY: test-parity
+test-parity: ## Compare all themes with Bash and PowerShell (requires Python 3 and pwsh)
+	@python3 tests/theme-parity.py

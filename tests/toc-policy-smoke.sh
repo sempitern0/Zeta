@@ -3,11 +3,13 @@ set -euo pipefail
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)"
 command -v pandoc >/dev/null || { echo 'Pandoc required' >&2; exit 2; }
 dir="$(mktemp -d)";trap 'rm -rf -- "$dir"' EXIT
+# Literal Pandoc template syntax.
+# shellcheck disable=SC2016
 printf '%s\n' '$if(zeta_toc_enabled)$ENABLED$else$DISABLED$endif$: $toc$' > "$dir/t.html"
 printf '## One\n\nWords.\n\n## Two\n\nMore words.\n' > "$dir/short.md"
-for theme in zen console indie organization aurora paper gazette magazine folio brutalist nocturne liminal reliquary; do
+for theme in zen console indie organization aurora paper gazette magazine folio brutalist nocturne liminal reliquary music cuisine spirituality photography store services academy; do
  output="$(pandoc "$dir/short.md" -t html5 --standalone --table-of-contents --lua-filter="$ROOT/templates/common/filters/toc-policy.lua" -M "zeta_toc_theme=$theme" --template="$dir/t.html")"
- case "$theme" in zen|console|indie|organization) [[ "$output" == ENABLED:* ]] ;; *) [[ "$output" == DISABLED:* ]] ;; esac
+ case "$theme" in zen|console|indie|organization|services|academy) [[ "$output" == ENABLED:* ]] ;; *) [[ "$output" == DISABLED:* ]] ;; esac
 done
 printf '%s\n' '---' 'toc: true' '---' '## Secret room' '' 'Story.' > "$dir/explicit.md"
 output="$(pandoc "$dir/explicit.md" -t html5 --standalone --table-of-contents --lua-filter="$ROOT/templates/common/filters/toc-policy.lua" -M zeta_toc_theme=nocturne --template="$dir/t.html")"

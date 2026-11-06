@@ -839,6 +839,10 @@ zeta_render_markdown_pages() {
     local site_dir="$1" output_dir="$2" site_url="$3" theme_dir="$4"
     local site_title="$5" site_desc="$6" site_author="$7" site_lang="$8" blog_enabled="$9"
     local theme_name="${10}" homepage_layout="${11:-markdown}"
+    local page_config page_highlight page_highlight_flag
+    page_config=$(find_site_config "$site_dir") || return 1
+    page_highlight=$(get_site_yaml_prop "$page_config" theme pandoc_theme zenburn)
+    page_highlight_flag=$(pandoc_highlight_option 2>/dev/null || true)
     local pages_dir="${site_dir}/pages" source slug draft title desc destination prefix canonical depth nav
     [[ -f "${pages_dir}/index.md" && ! -L "${pages_dir}/index.md" ]] || {
         msg_error "pages/index.md is required for a Markdown-driven site."; return 1
@@ -891,6 +895,7 @@ zeta_render_markdown_pages() {
             -V "canonical=$(html_escape "$canonical")"
             -V "page_navigation=${nav}"
         )
+        [[ -z "$page_highlight_flag" ]] || options+=("${page_highlight_flag}=${page_highlight}")
         append_css_vars options "$prefix" "${theme_dir}/styles" "${site_dir}/styles"
         if ! pandoc "$source" "${options[@]}" -o "$destination"; then
             msg_error "Failed to render Markdown page: $source"; return 1

@@ -16,7 +16,7 @@ zeta_homepage_setup() {
     fi
     limit="${limit:-$current_limit}"
     [[ "$mode" == auto || "$mode" == true || "$mode" == false ]] || { msg_error 'Use auto, true or false'; return 1; }
-    [[ "$limit" =~ ^[0-9]+$ ]] && (( limit >= 1 && limit <= 30 )) || { msg_error 'Article limit must be 1..30'; return 1; }
+    if ! [[ "$limit" =~ ^[0-9]+$ ]] || ! (( limit >= 1 && limit <= 30 )); then msg_error 'Article limit must be 1..30'; return 1; fi
     temp="$config.homepage-tmp.$$"
     awk -v show="$mode" -v limit="$limit" '
       /^homepage:[[:space:]]*$/ {inside=1;found=1;print;print "  show_posts: " show;print "  posts_limit: " limit;next}

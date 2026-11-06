@@ -61,7 +61,7 @@ Both themes provide responsive layouts and keyboard navigation; no live GitHub A
 
 ## Category landing designs
 
-Six category themes follow the existing Pandoc template contract. They work in Bash and PowerShell without extra frontend dependencies, external fonts or JavaScript.
+Seven category themes follow the existing Pandoc template contract. They work in Bash and PowerShell without extra frontend dependencies, external fonts or JavaScript.
 
 | Theme | Use case | Visual treatment |
 | --- | --- | --- |
@@ -91,4 +91,23 @@ homepage:
 ./zeta.sh dashboard
 ```
 
-Both assistants discover themes from their directories automatically. The dashboard now includes an example for each of the six categories. Store and services are visual starting points, not e-commerce checkout or appointment-booking engines. Link CTAs to external providers as needed.
+Both assistants discover themes from their directories automatically. The dashboard now includes an example for each of the seven categories. Store and services are visual starting points, not e-commerce checkout or appointment-booking engines. Link CTAs to external providers as needed.
+
+## Academy: educational publishing
+
+`academy` adds a light, calm landing for courses, workshops and technical tutorials.
+It uses numbered lesson cards and enables contextual navigation whenever a lesson
+has H2/H3 headings. Content, navigation and optional hero/CTA settings follow the
+same contract as the other category themes. Recommended highlighting: `tango`;
+alternative: `kate`. No learning-management backend is implied.
+
+```sh
+./zeta.sh theme my-site academy tango
+```
+
+```powershell
+./zeta.ps1 theme my-site academy tango
+```
+
+Both commands rebuild the site. Set `homepage.layout: theme` for the designed
+landing, or retain `markdown` for a prose-first homepage.

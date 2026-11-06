@@ -2,7 +2,7 @@
 
 [← Project overview](../README.md) · [Landing configuration](landing-themes.md)
 
-Zeta provides **nineteen static themes** that work with Bash and PowerShell and share the same Markdown, YAML and template contracts.
+Zeta provides **twenty static themes** that work with Bash and PowerShell and share the same Markdown, YAML and template contracts.
 
 | Theme | Visual identity | Use case |
 | :-- | :-- | :-- |
@@ -25,6 +25,7 @@ Zeta provides **nineteen static themes** that work with Bash and PowerShell and 
 | photography | Framed portfolio landing | Visual artists |
 | store | Product display | Boutiques |
 | services | Professional grid | Agencies |
+| academy | Pale blue study surface, numbered lesson cards | Courses, tutorials and knowledge bases |
 
 ## Smart code highlighting recommendations
 
@@ -42,12 +43,13 @@ When creating a site, editing its appearance, or switching themes, Zeta recommen
 | aurora | breezedark | zenburn | navy, teal |
 | gazette | tango | kate | newsprint, burgundy |
 | magazine | kate | tango | cream, magenta |
+| academy | tango | kate | pale blue, ink |
 
 The recommended style is the *default*, not a restriction. Zeta checks what the installed Pandoc supports, falls back to an available style where necessary, and offers all available styles in the interactive list. An explicit `theme SITE THEME STYLE` command still uses the supplied style without substitution. No external AI, network service or API key is required.
 
 ## Visual theme gallery and open-source fonts
 
-Run `./zeta.sh dashboard` or `.\\zeta.ps1 dashboard`, then open `sites/index.html` (or use the local `serve` command). The workspace includes nineteen representative, responsive visual samples, even if no site has been created. Samples do not replace real Pandoc builds and do not download fonts, load images or require a framework.
+Run `./zeta.sh dashboard` or `.\\zeta.ps1 dashboard`, then open `sites/index.html` (or use the local `serve` command). The workspace includes twenty representative, responsive visual samples, even if no site has been created. Samples do not replace real Pandoc builds and do not download fonts, load images or require a framework.
 
 | Theme | Optional coding font | Retained reading / UI font |
 | :-- | :-- | :-- |
@@ -96,7 +98,7 @@ The output targets current Chrome/Edge, Firefox and Safari. **Visual browser tes
 
 ## Content and templates
 
-All nineteen themes render Markdown articles, code, tables, archives and SEO files. The three new themes also support an optional landing.md introduction. indie and organization additionally support landing.yaml hero artwork and CTAs. See the [landing guide](landing-themes.md).
+All twenty themes render Markdown articles, code, tables, archives and SEO files. The three new themes also support an optional landing.md introduction. indie and organization additionally support landing.yaml hero artwork and CTAs. See the [landing guide](landing-themes.md).
 
 ## Run local tests
 
@@ -109,7 +111,7 @@ bash tests/catalog-smoke.sh
 .\tests\powershell-build-smoke.ps1
 ~~~
 
-The tests build all eight themes using Pandoc without running GitHub Actions.
+The tests build all twenty themes using Pandoc without running GitHub Actions.
 
 During interactive `create` and interactive theme selection, Zeta asks whether to install the recommended open-source coding font. The default is **No**. Files already present in `.zeta-cache/fonts` are reused before attempting downloads; the site retains its system font fallbacks if the download fails.
 
@@ -117,7 +119,7 @@ During interactive `create` and interactive theme selection, Zeta asks whether t
 
 The selected theme now determines the palette and typography of the Markdown homepage, About, Contact and other static pages as well as the blog. These pages keep one accessible shared HTML shell for navigation and clean URLs, with independent per-theme contracts in `templates/<theme>/styles/00-theme-contract.css`. Both Bash and PowerShell include the selected theme styles in generated HTML; no JavaScript or CSS framework is needed. The static-page shell shares visual identity, but is intentionally not a pixel-identical clone of each theme's dedicated blog landing layout.
 
-To refresh existing sites without deleting content, rebuild them using `./zeta.sh build SITE` or `.\\zeta.ps1 build SITE`. Verify `public/index.html`, `public/about/index.html` and `public/posts.html` together. The local page smoke suites check theme class and stylesheet links for all eight themes.
+To refresh existing sites without deleting content, rebuild them using `./zeta.sh build SITE` or `.\\zeta.ps1 build SITE`. Verify `public/index.html`, `public/about/index.html` and `public/posts.html` together. The local page smoke suites check theme class and stylesheet links for all twenty themes.
 
 ### Core navigation background token
 
@@ -227,4 +229,4 @@ Frontmatter `toc: true` forces a TOC when headings exist, `toc: false` prevents 
 
 ## Category landing themes
 
-The `music`, `cuisine`, `spirituality`, `photography`, `store` and `services` variants contain their own HTML templates and CSS contracts. Set `homepage.layout: theme` to use the designed homepage even with `pages/index.md`; see [landing settings](landing-themes.md).
+The `music`, `cuisine`, `spirituality`, `photography`, `store`, `services` and `academy` variants contain their own HTML templates and CSS contracts. Set `homepage.layout: theme` to use the designed homepage even with `pages/index.md`; see [landing settings](landing-themes.md).

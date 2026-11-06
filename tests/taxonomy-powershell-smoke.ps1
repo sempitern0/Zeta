@@ -44,9 +44,9 @@ try{
   $fixture=Join-Path $dir "$kind-only"
   [void](New-Item -ItemType Directory -Force -Path (Join-Path $fixture 'posts/2026'),(Join-Path $fixture 'styles'))
   Copy-Item -Path (Join-Path $dir 'styles/*.css') -Destination (Join-Path $fixture 'styles')
-  $home='<html lang="en"><head><title>Fixture</title><meta name="description" content="Fixture"><link rel="canonical" href="https://example.org/"><link rel="stylesheet" href="styles/zeta-pages.css"><link rel="stylesheet" href="styles/00-theme-contract.css"></head><body><nav aria-label="Primary navigation"><a href="index.html">Home</a></nav></body></html>'
+  $fixtureHome='<html lang="en"><head><title>Fixture</title><meta name="description" content="Fixture"><link rel="canonical" href="https://example.org/"><link rel="stylesheet" href="styles/zeta-pages.css"><link rel="stylesheet" href="styles/00-theme-contract.css"></head><body><nav aria-label="Primary navigation"><a href="index.html">Home</a></nav></body></html>'
   $article='<html lang="en"><head><title>One</title><meta name="description" content="One"><link rel="canonical" href="https://example.org/posts/2026/one.html"></head><body><main><h1>One</h1></main></body></html>'
-  [IO.File]::WriteAllText((Join-Path $fixture 'index.html'),$home,$utf8)
+  [IO.File]::WriteAllText((Join-Path $fixture 'index.html'),$fixtureHome,$utf8)
   [IO.File]::WriteAllText((Join-Path $fixture 'posts/2026/one.html'),$article,$utf8)
   [IO.File]::WriteAllText((Join-Path $fixture 'sitemap.xml'),'<urlset><url><loc>https://example.org/</loc></url><url><loc>https://example.org/posts/2026/one.html</loc></url></urlset>',$utf8)
   [IO.File]::WriteAllText((Join-Path $fixture '.zeta-taxonomy.tsv'),(@('posts/2026/one.html',$kind,'only','Only') -join [char]9),$utf8)

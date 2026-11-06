@@ -21,7 +21,7 @@ body.zeta-static-page{--page-bg:#0e1726;--page-panel:#172438;--page-fg:#f5f8fd;-
 .zeta-static-page a:focus{outline-color:var(--page-focus)}
 .zeta-static-page .zeta-skip{background:var(--page-link);color:var(--page-bg)}
 .zeta-static-page .article-body blockquote{color:var(--page-muted);border-left-color:var(--page-link)}
-.zeta-static-page .article-body pre,.zeta-static-page .article-body div.sourceCode{background:var(--page-panel);border-color:var(--page-border)}
+.zeta-static-page .article-body pre:not(.sourceCode){background:var(--page-panel);border-color:var(--page-border)}
 .zeta-static-page .article-body :not(pre)>code{background:var(--page-panel);border-color:var(--page-border)}
 .zeta-static-page .article-body .table-scroll,.zeta-static-page .article-body th,.zeta-static-page .article-body td{border-color:var(--page-border)}
 

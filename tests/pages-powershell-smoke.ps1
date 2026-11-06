@@ -10,7 +10,7 @@ try {
  if(-not (Get-Command pandoc -ErrorAction SilentlyContinue)){throw 'Pandoc required'}
  . (Join-Path $Root 'lib/powershell/Dependencies.ps1')
  . (Join-Path $Root 'lib/powershell/Core.ps1')
- foreach($theme in @('zen','paper','console','indie','organization','brutalist','folio','aurora','nocturne','liminal','reliquary','gazette','magazine','music','cuisine','spirituality','photography','store','services')){
+ foreach($theme in @('zen','paper','console','indie','organization','brutalist','folio','aurora','nocturne','liminal','reliquary','gazette','magazine','music','cuisine','spirituality','photography','store','services','academy')){
   $name='pages-'+$theme
   $site=Join-Path $Sites $name
   [void](New-Item -ItemType Directory -Path (Join-Path $site 'pages'),(Join-Path $site 'posts') -Force)
