@@ -1,0 +1,17 @@
+/* Scoped store landing theme. Shared layout comes from landing.css. */
+body.theme-store{--bg:#f6f1e9;--panel:#fffdf9;--border:#d6e3db;--text-main:#2b3533;--text-muted:#65716a;--accent:#2d6558;--accent-cyan:#17483d;--surface:#fffdf9;--focus-ring:#2d6558;--font-sans:system-ui,-apple-system,"Segoe UI",sans-serif}
+.theme-store .header{background:#fffdf9}
+.theme-store .hero-grid{min-height:35rem;gap:clamp(2rem,6vw,7rem)}
+.theme-store .hero h1{max-width:13ch;font-size:clamp(3.2rem,7vw,7.5rem);line-height:1.02;letter-spacing:-.065em}
+.theme-store .lead{color:#65716a;max-width:53ch}
+.theme-store .primary{background:#2d6558;color:#f6f1e9;border-color:#2d6558}
+.theme-store .secondary{border-color:#d6e3db;color:#2b3533;background:transparent}
+.theme-store .art{position:relative;min-height:26rem;overflow:hidden;display:grid;place-content:center;border:1px solid #d6e3db;background:#fffdf9}
+.theme-store .art-placeholder{transform:none;color:#2d6558;font-weight:800;letter-spacing:-.055em;text-align:center}
+.theme-store .art img{width:100%;height:100%;max-height:32rem;object-fit:cover}
+.theme-store .info{border-top:1px solid #d6e3db}
+.theme-store .updates{background:#fffdf9}
+.theme-store .card{background:#f6f1e9;border-color:#d6e3db}
+.theme-store a:focus-visible{outline:3px solid #2d6558;outline-offset:4px}
+.theme-store .hero{background:linear-gradient(120deg,#f6f1e9,#e6e9dc)}.theme-store .art{border-radius:11rem 11rem 1rem 1rem;background:linear-gradient(130deg,#e6d9c5,#d0dfd6);border:10px solid #fffdf9}.theme-store .art-placeholder{display:grid;place-content:center;width:15rem;height:15rem;background:#fffdf9;border:1px solid #718e7e;box-shadow:16px 16px 0 #aac6b4;transform:rotate(-6deg);color:#17483d;font-size:2.8rem;text-align:center}.theme-store .primary{color:#fffdf9}
+@media(max-width:48rem){.theme-store .hero-grid{min-height:0}.theme-store .art{min-height:17rem;aspect-ratio:auto;transform:none;border-width:3px}.theme-store .hero h1{font-size:clamp(2.8rem,10vw,4.3rem)}}

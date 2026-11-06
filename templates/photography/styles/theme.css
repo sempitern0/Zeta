@@ -1,0 +1,17 @@
+/* Scoped photography landing theme. Shared layout comes from landing.css. */
+body.theme-photography{color-scheme:dark;--bg:#151718;--panel:#252b2b;--border:#54605c;--text-main:#f4f1e9;--text-muted:#b5bcb9;--accent:#e9d6af;--accent-cyan:#f4f1e9;--surface:#252b2b;--focus-ring:#e9d6af;--font-sans:system-ui,-apple-system,"Segoe UI",sans-serif}
+.theme-photography .header{background:#252b2b}
+.theme-photography .hero-grid{min-height:35rem;gap:clamp(2rem,6vw,7rem)}
+.theme-photography .hero h1{max-width:13ch;font-size:clamp(3.2rem,7vw,7.5rem);line-height:1.02;letter-spacing:-.065em}
+.theme-photography .lead{color:#b5bcb9;max-width:53ch}
+.theme-photography .primary{background:#e9d6af;color:#151718;border-color:#e9d6af}
+.theme-photography .secondary{border-color:#54605c;color:#f4f1e9;background:transparent}
+.theme-photography .art{position:relative;min-height:26rem;overflow:hidden;display:grid;place-content:center;border:1px solid #54605c;background:#252b2b}
+.theme-photography .art-placeholder{transform:none;color:#e9d6af;font-weight:800;letter-spacing:-.055em;text-align:center}
+.theme-photography .art img{width:100%;height:100%;max-height:32rem;object-fit:cover}
+.theme-photography .info{border-top:1px solid #54605c}
+.theme-photography .updates{background:#252b2b}
+.theme-photography .card{background:#151718;border-color:#54605c}
+.theme-photography a:focus-visible{outline:3px solid #e9d6af;outline-offset:4px}
+.theme-photography .hero{background:linear-gradient(90deg,#151718 0%,#151718 56%,#242b29 56%)}.theme-photography .hero h1{text-transform:uppercase;font-weight:800}.theme-photography .art{border:16px solid #e8e5df;box-shadow:0 25px 50px #0008;background:linear-gradient(135deg,#67736c 0 28%,#232d2b 28% 56%,#8c8070 56%);min-height:30rem}
+@media(max-width:48rem){.theme-photography .hero-grid{min-height:0}.theme-photography .art{min-height:17rem;aspect-ratio:auto;transform:none;border-width:3px}.theme-photography .hero h1{font-size:clamp(2.8rem,10vw,4.3rem)}}

@@ -2,7 +2,7 @@
 
 [← Project overview](../README.md) · [Landing configuration](landing-themes.md)
 
-Zeta provides **eight static themes** that work with Bash and PowerShell and share the same Markdown, YAML and template contracts.
+Zeta provides **nineteen static themes** that work with Bash and PowerShell and share the same Markdown, YAML and template contracts.
 
 | Theme | Visual identity | Use case |
 | :-- | :-- | :-- |
@@ -14,6 +14,17 @@ Zeta provides **eight static themes** that work with Bash and PowerShell and sha
 | brutalist | Bold yellow and black, offset graphic cards | Creative studios |
 | folio | Soft paper tones, serif type, airy portfolio | Designers and writers |
 | aurora | Cinematic gradients, teal accents, modular cards | Digital products |
+| gazette | Traditional broadsheet | Newspapers |
+| magazine | Contemporary editorial | Publications |
+| nocturne | Forest solitude | Horror narratives |
+| liminal | Empty architecture | Horror narratives |
+| reliquary | Archived manuscripts | Gothic narratives |
+| music | Vinyl-inspired dark landing | Artists and events |
+| cuisine | Warm editorial recipe landing | Food and chefs |
+| spirituality | Soft circular composition | Wellness |
+| photography | Framed portfolio landing | Visual artists |
+| store | Product display | Boutiques |
+| services | Professional grid | Agencies |
 
 ## Smart code highlighting recommendations
 
@@ -36,7 +47,7 @@ The recommended style is the *default*, not a restriction. Zeta checks what the 
 
 ## Visual theme gallery and open-source fonts
 
-Run `./zeta.sh dashboard` or `.\\zeta.ps1 dashboard`, then open `sites/index.html` (or use the local `serve` command). The workspace includes eight representative, responsive visual samples, even if no site has been created. Samples do not replace real Pandoc builds and do not download fonts, load images or require a framework.
+Run `./zeta.sh dashboard` or `.\\zeta.ps1 dashboard`, then open `sites/index.html` (or use the local `serve` command). The workspace includes nineteen representative, responsive visual samples, even if no site has been created. Samples do not replace real Pandoc builds and do not download fonts, load images or require a framework.
 
 | Theme | Optional coding font | Retained reading / UI font |
 | :-- | :-- | :-- |
@@ -85,7 +96,7 @@ The output targets current Chrome/Edge, Firefox and Safari. **Visual browser tes
 
 ## Content and templates
 
-All eight themes render Markdown articles, code, tables, archives and SEO files. The three new themes also support an optional landing.md introduction. indie and organization additionally support landing.yaml hero artwork and CTAs. See the [landing guide](landing-themes.md).
+All nineteen themes render Markdown articles, code, tables, archives and SEO files. The three new themes also support an optional landing.md introduction. indie and organization additionally support landing.yaml hero artwork and CTAs. See the [landing guide](landing-themes.md).
 
 ## Run local tests
 
@@ -212,3 +223,8 @@ Both Bash and PowerShell now share `templates/common/filters/toc-policy.lua`. A 
 Frontmatter `toc: true` forces a TOC when headings exist, `toc: false` prevents it, and `toc: auto` follows the theme defaults. The homepage never has a TOC. The existing `zeta-toc.js` handles highlighting without a framework.
 
 **Explicit exception for story-first themes:** `toc: true` renders the same accessible index in Nocturne, Liminal, and Reliquary. Without that override, their articles remain uninterrupted and never expose upcoming chapters in a sidebar.
+
+
+## Category landing themes
+
+The `music`, `cuisine`, `spirituality`, `photography`, `store` and `services` variants contain their own HTML templates and CSS contracts. Set `homepage.layout: theme` to use the designed homepage even with `pages/index.md`; see [landing settings](landing-themes.md).

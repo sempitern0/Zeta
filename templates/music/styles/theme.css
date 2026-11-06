@@ -1,0 +1,17 @@
+/* Scoped music landing theme. Shared layout comes from landing.css. */
+body.theme-music{color-scheme:dark;--bg:#11101d;--panel:#232036;--border:#392c46;--text-main:#f7f0e4;--text-muted:#bcb5d0;--accent:#ffad66;--accent-cyan:#ffd6a5;--surface:#232036;--focus-ring:#ffad66;--font-sans:system-ui,-apple-system,"Segoe UI",sans-serif}
+.theme-music .header{background:#232036}
+.theme-music .hero-grid{min-height:35rem;gap:clamp(2rem,6vw,7rem)}
+.theme-music .hero h1{max-width:13ch;font-size:clamp(3.2rem,7vw,7.5rem);line-height:1.02;letter-spacing:-.065em}
+.theme-music .lead{color:#bcb5d0;max-width:53ch}
+.theme-music .primary{background:#ffad66;color:#11101d;border-color:#ffad66}
+.theme-music .secondary{border-color:#392c46;color:#f7f0e4;background:transparent}
+.theme-music .art{position:relative;min-height:26rem;overflow:hidden;display:grid;place-content:center;border:1px solid #392c46;background:#232036}
+.theme-music .art-placeholder{transform:none;color:#ffad66;font-weight:800;letter-spacing:-.055em;text-align:center}
+.theme-music .art img{width:100%;height:100%;max-height:32rem;object-fit:cover}
+.theme-music .info{border-top:1px solid #392c46}
+.theme-music .updates{background:#232036}
+.theme-music .card{background:#11101d;border-color:#392c46}
+.theme-music a:focus-visible{outline:3px solid #ffad66;outline-offset:4px}
+.theme-music .hero{background:radial-gradient(circle at 80% 30%,#42305b,transparent 42%),#11101d}.theme-music .art{border-radius:50%;aspect-ratio:1;min-height:0;box-shadow:0 0 0 13px #30283d,0 0 0 14px #705a70}.theme-music .art:before{content:"";position:absolute;inset:9%;border-radius:50%;border:1px dashed #a78b9c;pointer-events:none}
+@media(max-width:48rem){.theme-music .hero-grid{min-height:0}.theme-music .art{min-height:17rem;aspect-ratio:auto;transform:none;border-width:3px}.theme-music .hero h1{font-size:clamp(2.8rem,10vw,4.3rem)}}

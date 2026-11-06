@@ -41,7 +41,7 @@ date: "2026-10-13"
 ---
 Should not publish.
 MD
-for theme in zen paper console indie organization brutalist folio aurora gazette magazine nocturne liminal reliquary; do
+for theme in zen paper console indie organization brutalist folio aurora gazette magazine nocturne liminal reliquary music cuisine spirituality photography store services; do
 cat > "$dir/config.yaml" <<EOF
 site:
   title: "Page smoke"
@@ -64,7 +64,7 @@ EOF
  test -s "$dir/public/styles/zeta-navigation.css"
  test -s "$dir/public/styles/00-theme-contract.css"
  grep -Fq -- '--zeta-nav-background' "$dir/public/styles/00-theme-contract.css"
- if grep -Eq 'zeta-theme-(zen|paper|console|indie|organization|brutalist|folio|aurora|nocturne|liminal|reliquary)' "$dir/public/styles/zeta-pages.css"; then echo "Unexpected matching content" >&2; exit 1; fi
+ if grep -Eq 'zeta-theme-(zen|paper|console|indie|organization|brutalist|folio|aurora|nocturne|liminal|reliquary|music|cuisine|spirituality|photography|store|services)' "$dir/public/styles/zeta-pages.css"; then echo "Unexpected matching content" >&2; exit 1; fi
 
  grep -Fq "zeta-theme-$theme" "$dir/public/index.html"
  grep -Fq "zeta-theme-$theme" "$dir/public/about/index.html"

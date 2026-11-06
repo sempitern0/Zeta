@@ -1,0 +1,3 @@
+:root{--zeta-nav-background:#fff9ee;--zeta-nav-ink:#32231c;--zeta-nav-current:#b74c2c;--zeta-nav-type:system-ui,-apple-system,"Segoe UI",sans-serif}
+body.zeta-static-page.zeta-theme-cuisine{--page-bg:#f6eee0;--page-panel:#fff9ee;--page-fg:#32231c;--page-muted:#735d50;--page-link:#80371f;--page-border:#e4caba;--page-focus:#b74c2c;background:#f6eee0}
+body.zeta-static-page.zeta-theme-cuisine .zeta-content{max-width:76rem;padding-block:clamp(2rem,5vw,5rem)}

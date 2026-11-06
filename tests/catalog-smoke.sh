@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Local regression across all eight themes. Does not invoke GitHub Actions.
+# Local regression across all themes. Does not invoke GitHub Actions.
 set -euo pipefail
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)"
 command -v pandoc >/dev/null || { echo "Pandoc required" >&2; exit 2; }
@@ -25,7 +25,7 @@ Use **Markdown** everywhere.
 | Chromium | HTML |
 EOF
 printf '## About this project\n\nMade with **Zeta**.\n' > "$DIR/landing.md"
-for theme in zen paper console indie organization brutalist folio aurora nocturne liminal reliquary; do
+for theme in zen paper console indie organization brutalist folio aurora gazette magazine nocturne liminal reliquary music cuisine spirituality photography store services; do
 cat > "$DIR/config.yaml" <<EOF
 site:
   title: "Catalog Smoke"
@@ -52,7 +52,7 @@ EOF
    grep -Fq "theme-$theme" "$DIR/public/index.html"
    grep -Fq 'About this project' "$DIR/public/index.html"
    ;;
-  indie|organization)
+  indie|organization|music|cuisine|spirituality|photography|store|services)
    [[ -s "$DIR/public/styles/landing.css" ]]
    grep -Fq 'About this project' "$DIR/public/index.html"
    ;;
