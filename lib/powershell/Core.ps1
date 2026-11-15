@@ -1,4 +1,5 @@
 # Zeta PowerShell: Markdown, YAML, generation, and static output.
+. (Join-Path $PSScriptRoot 'BuildGuard.ps1')
 function Save([string]$Path,[string]$Content) {
  $dir=Split-Path $Path -Parent
  if(!(Test-Path $dir)){[void](New-Item -ItemType Directory -Force -Path $dir)}
@@ -209,6 +210,8 @@ function Build([string]$name){
  }
  $stage=Join-Path $dir ('.zeta-ps-'+[guid]::NewGuid().ToString('N'))
  $final=Join-Path $dir $c.output;$previous="$final.zeta-previous"
+ $manifest=Join-Path $dir '.zeta-build-manifest.tsv'
+ $nextManifest=Join-Path $dir ('.zeta-build-next-'+[guid]::NewGuid().ToString('N')+'.tmp')
  $files=@(Posts $name)
  if(Test-Path -LiteralPath (Join-Path $dir 'pages') -PathType Container){
   Ensure-ZetaPageHome $name
@@ -399,12 +402,21 @@ function Build([string]$name){
   }finally{Remove-Item -LiteralPath $extrasTemp -Force -ErrorAction SilentlyContinue}
   Remove-Item -LiteralPath $updates -Force
 
+  $forceBuild=[bool](Get-Variable -Name Force -Scope Script -ValueOnly -ErrorAction SilentlyContinue)
+  Assert-ZetaBuildOutputSafe $final $manifest $name $forceBuild
+  [IO.File]::WriteAllLines($nextManifest,[string[]]@(Get-ZetaBuildManifest $stage),$Utf8)
   if(Test-Path $previous){Remove-Item $previous -Recurse -Force}
   if(Test-Path $final){Move-Item $final $previous}
   try{Move-Item $stage $final}catch{if(Test-Path $previous){Move-Item $previous $final};throw}
   if(Test-Path $previous){Remove-Item $previous -Recurse -Force}
+  try{Move-Item -LiteralPath $nextManifest -Destination $manifest -Force}catch{
+    Write-Warning 'Build published but integrity manifest was not saved. Next build will require confirmation.'
+  }
   Write-Host "[OK] $name : $($files.Count) articles" -ForegroundColor Green
- } finally {if(Test-Path $stage){Remove-Item $stage -Recurse -Force}}
+ } finally {
+  if(Test-Path $stage){Remove-Item $stage -Recurse -Force}
+  if(Test-Path $nextManifest){Remove-Item -LiteralPath $nextManifest -Force}
+ }
 }
 
 
