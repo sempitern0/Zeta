@@ -10,7 +10,7 @@ function Get-ZetaBuildManifest([string]$directory) {
   }
   $array=$lines.ToArray()
   [Array]::Sort($array,[StringComparer]::Ordinal)
-  return ,$array
+  return $array
 }
 function Assert-ZetaBuildOutputSafe([string]$directory,[string]$manifest,[string]$name,[bool]$force=$false) {
   if(-not (Test-Path -LiteralPath $directory)){return}
