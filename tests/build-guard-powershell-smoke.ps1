@@ -4,6 +4,8 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference='Stop'
 $Root=Split-Path -Parent $PSScriptRoot
 . (Join-Path $Root 'lib/powershell/BuildGuard.ps1')
+# Declining the prompt is deterministic even when this test runs in an interactive shell.
+function Read-Host { param([string]$Prompt) return 'N' }
 $temp=Join-Path ([IO.Path]::GetTempPath()) ('zeta-output-guard-'+[guid]::NewGuid().ToString('N'))
 try{
   $public=Join-Path $temp 'public'
