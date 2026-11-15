@@ -153,7 +153,7 @@ For an alternate preview port use `./zeta.sh --port 8080 preview my-site` or `.\
 2. Run `build SITE` and then `doctor SITE`. Preview pages and article navigation in a browser.
 3. Deploy **only `sites/my-site/public/`** (or the configured output directory). Keep Markdown sources and site configuration private to your authoring workspace.
 
-Zeta stages builds before replacing the published output; a failed build preserves the previous generated site. Doctor reports broken local links, assets and metadata, plus a **heuristic** quality score—not a Lighthouse score or search ranking. Read [Deployment](docs/deployment.md) and [SEO](docs/seo.md) for hosting and metadata details.
+Zeta stages builds before replacing the published output; a failed build preserves the previous generated site. A SHA-256 baseline also detects manual edits, additions or removals inside `public/`; the build asks before replacing such output (or cancels safely without a terminal). Use `--force` / `-Force` for an explicitly authorized replacement, and keep permanent CSS customizations in `sites/<site>/styles/`. See [build output protection](docs/build-output-protection.md). Doctor reports broken local links, assets and metadata, plus a **heuristic** quality score—not a Lighthouse score or search ranking. Read [Deployment](docs/deployment.md) and [SEO](docs/seo.md) for hosting and metadata details.
 
 ## Documentation and development
 
