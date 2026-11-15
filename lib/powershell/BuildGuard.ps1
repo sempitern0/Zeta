@@ -4,7 +4,7 @@ function Get-ZetaBuildManifest([string]$directory) {
   if(-not (Test-Path -LiteralPath $directory -PathType Container)){return @()}
   $root=[IO.Path]::GetFullPath($directory)
   foreach($item in @(Get-ChildItem -LiteralPath $root -File -Recurse -Force)){
-    $relative=[IO.Path]::GetRelativePath($root,$item.FullName).Replace('\\','/')
+    $relative=[IO.Path]::GetRelativePath($root,$item.FullName).Replace('\','/')
     $hash=if($item.LinkType){"link:$($item.Target -join ',')"}else{(Get-FileHash -LiteralPath $item.FullName -Algorithm SHA256).Hash.ToLowerInvariant()}
     $lines.Add("$hash`t$relative")
   }
