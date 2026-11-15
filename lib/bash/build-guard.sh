@@ -30,7 +30,7 @@ zeta_build_output_guard() {
         return 1
     fi
     zeta_build_manifest "$final" "$probe" || return 1
-    if [[ -f "$manifest" ]] && cmp -s "$probe" "$manifest"; then
+    if [[ -f "$manifest" ]] && cmp -s "$probe" <(tr -d '\015' < "$manifest"); then
         return 0
     fi
     # A pre-existing directory with no manifest is unverified, never assumed safe.
