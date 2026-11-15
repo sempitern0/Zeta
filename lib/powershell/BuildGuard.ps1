@@ -3,7 +3,9 @@ function Get-ZetaBuildManifest([string]$directory) {
   if(-not (Test-Path -LiteralPath $directory -PathType Container)){return @()}
   $root=[IO.Path]::GetFullPath($directory)
   $entries=[Collections.Generic.SortedDictionary[string,string]]::new([StringComparer]::Ordinal)
-  foreach($item in @(Get-ChildItem -LiteralPath $root -File -Recurse -Force)){
+  foreach($item in @(Get-ChildItem -LiteralPath $root -Recurse -Force)){
+    # Include symlinked directories as tracked entries, but not regular directories.
+    if($item.PSIsContainer -and -not $item.LinkType){continue}
     $relative=[IO.Path]::GetRelativePath($root,$item.FullName).Replace('\','/')
     $hash=if($item.LinkType){"link:$($item.Target -join ',')"}else{(Get-FileHash -LiteralPath $item.FullName -Algorithm SHA256).Hash.ToLowerInvariant()}
     $entries[$relative]=$hash
