@@ -777,6 +777,22 @@ build_site() {
     fi
     rm -f -- "$update_map"
 
+    # Check the previous output against its baseline before replacement.
+    local manifest_path="${site_dir}/.zeta-build-manifest.tsv"
+    local manifest_probe="${site_dir}/.zeta-build-probe-${BASHPID:-$}.tmp"
+    local manifest_next="${site_dir}/.zeta-build-next-${BASHPID:-$}.tmp"
+    if ! zeta_build_output_guard "$final_output_dir" "$manifest_path" "$site_slug" "$manifest_probe"; then
+        rm -f -- "$manifest_probe" "$manifest_next"
+        rm -rf -- "$staging_dir"
+        return 1
+    fi
+    rm -f -- "$manifest_probe"
+    if ! zeta_build_manifest "$staging_dir" "$manifest_next"; then
+        msg_error "Could not prepare output integrity manifest."
+        rm -f -- "$manifest_next"
+        rm -rf -- "$staging_dir"
+        return 1
+    fi
     local previous_output="${final_output_dir}.zeta-previous"
     mkdir -p "$(dirname "$final_output_dir")"
     rm -rf -- "$previous_output"
@@ -792,9 +808,13 @@ build_site() {
         msg_error "Could not publish the completed build to '${final_output_dir}'."
         if [[ -e "$previous_output" ]]; then mv -- "$previous_output" "$final_output_dir" 2>/dev/null || true; fi
         rm -rf -- "$staging_dir"
+        rm -f -- "$manifest_next"
         return 1
     fi
     rm -rf -- "$previous_output"
+    if ! mv -f -- "$manifest_next" "$manifest_path"; then
+        msg_warn "Build published, but integrity manifest was not saved. Next build will request confirmation."
+    fi
 
     msg_success "Site '${site_slug}' built: ${built_count} post(s) -> ${final_output_dir}"
 }
