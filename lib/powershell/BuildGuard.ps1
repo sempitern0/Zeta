@@ -1,16 +1,14 @@
 # A SHA-256 baseline outside public/ detects edits to generated output.
 function Get-ZetaBuildManifest([string]$directory) {
-  $lines=[Collections.Generic.List[string]]::new()
   if(-not (Test-Path -LiteralPath $directory -PathType Container)){return @()}
   $root=[IO.Path]::GetFullPath($directory)
+  $entries=[Collections.Generic.SortedDictionary[string,string]]::new([StringComparer]::Ordinal)
   foreach($item in @(Get-ChildItem -LiteralPath $root -File -Recurse -Force)){
     $relative=[IO.Path]::GetRelativePath($root,$item.FullName).Replace('\','/')
     $hash=if($item.LinkType){"link:$($item.Target -join ',')"}else{(Get-FileHash -LiteralPath $item.FullName -Algorithm SHA256).Hash.ToLowerInvariant()}
-    $lines.Add("$hash`t$relative")
+    $entries[$relative]=$hash
   }
-  $array=$lines.ToArray()
-  [Array]::Sort($array,[StringComparer]::Ordinal)
-  return $array
+  foreach($path in $entries.Keys){Write-Output ("{0}`t{1}" -f $entries[$path],$path)}
 }
 function Assert-ZetaBuildOutputSafe([string]$directory,[string]$manifest,[string]$name,[bool]$force=$false) {
   if(-not (Test-Path -LiteralPath $directory)){return}
