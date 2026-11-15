@@ -779,8 +779,8 @@ build_site() {
 
     # Check the previous output against its baseline before replacement.
     local manifest_path="${site_dir}/.zeta-build-manifest.tsv"
-    local manifest_probe="${site_dir}/.zeta-build-probe-${BASHPID:-$}.tmp"
-    local manifest_next="${site_dir}/.zeta-build-next-${BASHPID:-$}.tmp"
+    local manifest_probe="${site_dir}/.zeta-build-probe-${BASHPID:-$$}.tmp"
+    local manifest_next="${site_dir}/.zeta-build-next-${BASHPID:-$$}.tmp"
     if ! zeta_build_output_guard "$final_output_dir" "$manifest_path" "$site_slug" "$manifest_probe"; then
         rm -f -- "$manifest_probe" "$manifest_next"
         rm -rf -- "$staging_dir"
