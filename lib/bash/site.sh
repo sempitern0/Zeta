@@ -800,6 +800,7 @@ build_site() {
         mv -- "$final_output_dir" "$previous_output" || {
             msg_error "Could not stage the previous build for replacement."
             rm -rf -- "$staging_dir"
+            rm -f -- "$manifest_next"
             return 1
         }
     fi
